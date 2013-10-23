@@ -24,7 +24,7 @@ public class DealerTest {
 	public void testDealCards() {
 		Dealer testDealer = new DealerImpl();
 		PokerHand testHand = testDealer.dealCards();
-		assertEquals(5, testHand.getTheActualCards().size());
+		assertEquals(5, testHand.getCardsToKeep().size());
 	}
 
 	@Test
@@ -45,7 +45,7 @@ public class DealerTest {
 	
 	@Test
 	public void testPotentialHand(){
-		
+		fail("Not yet implementated");
 	}
 	
 

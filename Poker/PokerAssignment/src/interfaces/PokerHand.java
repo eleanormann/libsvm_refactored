@@ -15,19 +15,22 @@ public interface PokerHand {
 	 */
 	int getRank(); 
 	
-	/**Each implementation has an ArrayList of Cards making up the hand
-	 * @param hand
+	/**Each implementation has an ArrayList of Cards making up the cardsToKeep
+	 * @param cardsToKeep
 	 */
-	void setHand(ArrayList<Card> hand);
+	void setCardsToKeep(ArrayList<Card> hand);
 	
 	/**
-	 * this should be getHand() I dont know why I called it this. probably some clarity issue elsewhere
-	 * @return
+	 *
+	 * @return scoring cards
 	 */
-	ArrayList<Card> getTheActualCards();
+	ArrayList<Card> getCardsToKeep();
 	
-	/**This method removes the cards that do not make up the hand, e.g. if it were a pair the 
-	 * three non-pair cards would be added to a new list, removed from PokerHand.hand and the new list returned
+	/*
+	 * this method could be deprecated now because I changed the design a bit
+	 */
+	/**This method removes the cards that do not make up the cardsToKeep, e.g. if it were a pair the 
+	 * three non-pair cards would be added to a new list, removed from PokerHand.cardsToKeep and the new list returned
 	 * It is not crucial to the game to return the list but may be useful for GUI
 	 * @return
 	 */

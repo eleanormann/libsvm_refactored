@@ -10,7 +10,7 @@ import java.util.Collections;
  */
 public class Deck {
 	private static Deck deck = null;
-	ArrayList<Card> cards;
+	private ArrayList<Card> cards;
 	
 	/**
 	 * creates a deck of Card objects, one for each suit-value combo. 
