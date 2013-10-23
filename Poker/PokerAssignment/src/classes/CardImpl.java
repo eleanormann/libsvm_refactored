@@ -59,5 +59,19 @@ public class CardImpl implements Card {
 	public String toString(){
 		return VALUE_NAMES[getValue()] + " of " + SUIT_NAMES[getSuit()];
 	}
+
+
+	@Override
+	public int compare(Card card1, Card card2) {
+		if(card1.getValue()<card2.getValue()){
+			return -1;
+		}else if(card1.getValue()==card2.getValue()){
+			return 0;
+		}else if(card1.getValue()>card2.getValue()){
+			return 1;
+		}else{
+			throw new IllegalArgumentException();
+		}
+	}
 	
 }

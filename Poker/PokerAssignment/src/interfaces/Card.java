@@ -3,6 +3,8 @@
  */
 package interfaces;
 
+import java.util.Comparator;
+
 /**
  * @author eleanormann
  * adapted from @author Owen Astrachan, Object-Oriented Design Concepts via Playing Cards 
@@ -12,9 +14,10 @@ package interfaces;
  * getters in the interface.  
  * 
  */
-public interface Card {
+public interface Card extends Comparator<Card>{
 
 	public int getSuit();
 	public int getValue();
+	
 			
 }
