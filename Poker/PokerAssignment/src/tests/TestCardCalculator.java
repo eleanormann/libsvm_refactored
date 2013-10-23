@@ -6,7 +6,7 @@ import interfaces.Card;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Arrays;
-
+import java.util.List;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -48,10 +48,6 @@ public class TestCardCalculator {
 		
 	}
 	
-	@Test
-	public void testGetValuesAndSuits() {
-		fail("Not yet implemented");
-	}
 	
 	@Test
 	public void testCollectionsSort() {
@@ -67,5 +63,51 @@ public class TestCardCalculator {
 		assertTrue(diff);
 	}
 	
+	/*
+	 * test using true consecutives and one sequence
+	 */
+	@Test
+	public void testConsecCardCalcDiff1Seq1(){
+		List<Card> consecs = calc.consecCardComparer(1);
+		assertEquals(2, consecs.size());
+	}
 
+	/*
+	 * test using true consecutives and two sequences; first largest
+	 */
+	@Test
+	public void testConsecCardCalcDiff1Seq2(){
+		List<Card> newcards = new ArrayList<Card>();
+		newcards.add(new CardImpl(1,1));
+		newcards.add(new CardImpl(1,2));
+		newcards.add(new CardImpl(3,3));
+		newcards.add(new CardImpl(4,7));
+		newcards.add(new CardImpl(3,6));
+		calc = new CardCalculator(newcards);
+		List<Card> consecs = calc.consecCardComparer(1);
+		int i = 0;
+		
+		assertEquals(3, consecs.size());
+	}
+	/*
+	 * test using true consecutives and two sequences; same size, with matching suit for the second
+	 * note that the 7 chosen depends on the order drawn - need to add something to ensure same suit consecs are chosen
+	 */
+	@Test
+	public void testConsecCardCalcDiff1Seq2a(){
+		List<Card> newcards = new ArrayList<Card>();
+		newcards.add(new CardImpl(1,1));
+		newcards.add(new CardImpl(1,2));
+		newcards.add(new CardImpl(4,7));
+		newcards.add(new CardImpl(3,7));
+		newcards.add(new CardImpl(3,6));
+		calc = new CardCalculator(newcards);
+		List<Card> consecs = calc.consecCardComparer(1);
+		int i = 0;
+		while(i<consecs.size()){
+			System.out.println(consecs.get(i).toString());
+			i++;
+		}
+		assertEquals(2, consecs.size());
+	}
 }
