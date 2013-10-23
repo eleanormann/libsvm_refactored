@@ -1,6 +1,6 @@
 package interfaces;
 
-import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -18,13 +18,13 @@ public interface PokerHand {
 	/**Each implementation has an ArrayList of Cards making up the cardsToKeep
 	 * @param cardsToKeep
 	 */
-	void setCardsToKeep(ArrayList<Card> hand);
+	void setCardsToKeep(List<Card> hand);
 	
 	/**
 	 *
 	 * @return scoring cards
 	 */
-	ArrayList<Card> getCardsToKeep();
+	List<Card> getCardsToKeep();
 	
 	/*
 	 * this method could be deprecated now because I changed the design a bit
@@ -34,5 +34,7 @@ public interface PokerHand {
 	 * It is not crucial to the game to return the list but may be useful for GUI
 	 * @return
 	 */
-	ArrayList<Card> discard();
+	List<Card> discard();
+
+	void setCardsToDiscard(List<Card> arrayList);
 }
