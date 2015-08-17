@@ -1,7 +1,23 @@
 package libsvm;
 public class svm_parameter implements Cloneable,java.io.Serializable
 {
+	
 	/* svm_type */
+	public enum SvmType{
+		C_SVC(0), NU_SVC(1), ONE_CLASS(2), EPSILON_SVR(3), NU_SVR(4);
+		private int value;
+		 
+		private SvmType(int value) {
+			this.value = value;
+		}
+
+		public int getValue() {
+			// TODO Auto-generated method stub
+			return value;
+		}
+	}
+	
+	
 	public static final int C_SVC = 0;
 	public static final int NU_SVC = 1;
 	public static final int ONE_CLASS = 2;
