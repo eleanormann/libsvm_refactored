@@ -260,8 +260,8 @@ public class svm_toy extends Applet {
 
 		// build problem
 		svm_problem prob = new svm_problem();
-		prob.l = point_list.size();
-		prob.y = new double[prob.l];
+		prob.length = point_list.size();
+		prob.y = new double[prob.length];
 
 		if(param.kernel_type == SvmParameter.PRECOMPUTED)
 		{
@@ -270,8 +270,8 @@ public class svm_toy extends Applet {
 			param.svmType == SvmType.NU_SVR)
 		{
 			if(param.gamma == 0) param.gamma = 1;
-			prob.x = new SvmNode[prob.l][1];
-			for(int i=0;i<prob.l;i++)
+			prob.x = new SvmNode[prob.length][1];
+			for(int i=0;i<prob.length;i++)
 			{
 				point p = point_list.elementAt(i);
 				prob.x[i][0] = new SvmNode();
@@ -329,8 +329,8 @@ public class svm_toy extends Applet {
 		else
 		{
 			if(param.gamma == 0) param.gamma = 0.5;
-			prob.x = new SvmNode [prob.l][2];
-			for(int i=0;i<prob.l;i++)
+			prob.x = new SvmNode [prob.length][2];
+			for(int i=0;i<prob.length;i++)
 			{
 				point p = point_list.elementAt(i);
 				prob.x[i][0] = new SvmNode();
