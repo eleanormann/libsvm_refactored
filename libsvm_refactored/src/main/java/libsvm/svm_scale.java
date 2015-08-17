@@ -1,7 +1,12 @@
-import libsvm.*;
-import java.io.*;
-import java.util.*;
-import java.text.DecimalFormat;
+package libsvm;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Formatter;
+import java.util.StringTokenizer;
 
 class svm_scale
 {

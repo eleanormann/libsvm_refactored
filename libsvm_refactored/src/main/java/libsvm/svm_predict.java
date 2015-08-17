@@ -1,3 +1,5 @@
+package libsvm;
+
 import libsvm.*;
 import java.io.*;
 import java.util.*;
@@ -33,7 +35,7 @@ class svm_predict {
 		return Integer.parseInt(s);
 	}
 
-	private static void predict(BufferedReader input, DataOutputStream output, svm_model model, int predict_probability) throws IOException
+	private static void predict(BufferedReader input, DataOutputStream output, SvmModel model, int predict_probability) throws IOException
 	{
 		int correct = 0;
 		int total = 0;
@@ -46,8 +48,8 @@ class svm_predict {
 
 		if(predict_probability == 1)
 		{
-			if(svm_type == svm_parameter.EPSILON_SVR ||
-			   svm_type == svm_parameter.NU_SVR)
+			if(svm_type == SvmParameter.EPSILON_SVR ||
+			   svm_type == SvmParameter.NU_SVR)
 			{
 				svm_predict.info("Prob. model for test data: target value = predicted value + z,\nz: Laplace distribution e^(-|z|/sigma)/(2sigma),sigma="+svm.svm_get_svr_probability(model)+"\n");
 			}
@@ -71,16 +73,16 @@ class svm_predict {
 
 			double target = atof(st.nextToken());
 			int m = st.countTokens()/2;
-			svm_node[] x = new svm_node[m];
+			SvmNode[] x = new SvmNode[m];
 			for(int j=0;j<m;j++)
 			{
-				x[j] = new svm_node();
+				x[j] = new SvmNode();
 				x[j].index = atoi(st.nextToken());
 				x[j].value = atof(st.nextToken());
 			}
 
 			double v;
-			if (predict_probability==1 && (svm_type==svm_parameter.C_SVC || svm_type==svm_parameter.NU_SVC))
+			if (predict_probability==1 && (svm_type==SvmParameter.C_SVC || svm_type==SvmParameter.NU_SVC))
 			{
 				v = svm.svm_predict_probability(model,x,prob_estimates);
 				output.writeBytes(v+" ");
@@ -104,8 +106,8 @@ class svm_predict {
 			sumvy += v*target;
 			++total;
 		}
-		if(svm_type == svm_parameter.EPSILON_SVR ||
-		   svm_type == svm_parameter.NU_SVR)
+		if(svm_type == SvmParameter.EPSILON_SVR ||
+		   svm_type == SvmParameter.NU_SVR)
 		{
 			svm_predict.info("Mean squared error = "+error/total+" (regression)\n");
 			svm_predict.info("Squared correlation coefficient = "+
@@ -157,7 +159,7 @@ class svm_predict {
 		{
 			BufferedReader input = new BufferedReader(new FileReader(argv[i]));
 			DataOutputStream output = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(argv[i+2])));
-			svm_model model = svm.svm_load_model(argv[i+1]);
+			SvmModel model = svm.svm_load_model(argv[i+1]);
 			if (model == null)
 			{
 				System.err.print("can't open model file "+argv[i+1]+"\n");

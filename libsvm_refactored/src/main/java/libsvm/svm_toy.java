@@ -1,4 +1,8 @@
+package libsvm;
+
 import libsvm.*;
+import libsvm.SvmParameter.SvmType;
+
 import java.applet.*;
 import java.awt.*;
 import java.util.*;
@@ -161,11 +165,11 @@ public class svm_toy extends Applet {
 		// guard
 		if(point_list.isEmpty()) return;
 
-		svm_parameter param = new svm_parameter();
+		SvmParameter param = new SvmParameter();
 
 		// default values
-		param.svm_type = svm_parameter.C_SVC;
-		param.kernel_type = svm_parameter.RBF;
+		param.svmType = SvmType.C_SVC;
+		param.kernel_type = SvmParameter.RBF;
 		param.degree = 3;
 		param.gamma = 0;
 		param.coef0 = 0;
@@ -197,7 +201,7 @@ public class svm_toy extends Applet {
 			switch(argv[i-1].charAt(1))
 			{
 				case 's':
-					param.svm_type = atoi(argv[i]);
+					param.svmType = param.getSvmTypeFromSvmParameter(atoi(argv[i]));
 					break;
 				case 't':
 					param.kernel_type = atoi(argv[i]);
@@ -259,27 +263,27 @@ public class svm_toy extends Applet {
 		prob.l = point_list.size();
 		prob.y = new double[prob.l];
 
-		if(param.kernel_type == svm_parameter.PRECOMPUTED)
+		if(param.kernel_type == SvmParameter.PRECOMPUTED)
 		{
 		}
-		else if(param.svm_type == svm_parameter.EPSILON_SVR ||
-			param.svm_type == svm_parameter.NU_SVR)
+		else if(param.svmType == SvmType.EPSILON_SVR ||
+			param.svmType == SvmType.NU_SVR)
 		{
 			if(param.gamma == 0) param.gamma = 1;
-			prob.x = new svm_node[prob.l][1];
+			prob.x = new SvmNode[prob.l][1];
 			for(int i=0;i<prob.l;i++)
 			{
 				point p = point_list.elementAt(i);
-				prob.x[i][0] = new svm_node();
+				prob.x[i][0] = new SvmNode();
 				prob.x[i][0].index = 1;
 				prob.x[i][0].value = p.x;
 				prob.y[i] = p.y;
 			}
 
 			// build model & classify
-			svm_model model = svm.svm_train(prob, param);
-			svm_node[] x = new svm_node[1];
-			x[0] = new svm_node();
+			SvmModel model = svm.svm_train(prob, param);
+			SvmNode[] x = new SvmNode[1];
+			x[0] = new SvmNode();
 			x[0].index = 1;
 			int[] j = new int[XLEN];
 
@@ -308,7 +312,7 @@ public class svm_toy extends Applet {
 				buffer_gc.drawLine(i-1,j[i-1],i,j[i]);
 				window_gc.drawLine(i-1,j[i-1],i,j[i]);
 
-				if(param.svm_type == svm_parameter.EPSILON_SVR)
+				if(param.svmType == SvmType.EPSILON_SVR)
 				{
 					buffer_gc.setColor(colors[2]);
 					window_gc.setColor(colors[2]);
@@ -325,24 +329,24 @@ public class svm_toy extends Applet {
 		else
 		{
 			if(param.gamma == 0) param.gamma = 0.5;
-			prob.x = new svm_node [prob.l][2];
+			prob.x = new SvmNode [prob.l][2];
 			for(int i=0;i<prob.l;i++)
 			{
 				point p = point_list.elementAt(i);
-				prob.x[i][0] = new svm_node();
+				prob.x[i][0] = new SvmNode();
 				prob.x[i][0].index = 1;
 				prob.x[i][0].value = p.x;
-				prob.x[i][1] = new svm_node();
+				prob.x[i][1] = new SvmNode();
 				prob.x[i][1].index = 2;
 				prob.x[i][1].value = p.y;
 				prob.y[i] = p.value;
 			}
 
 			// build model & classify
-			svm_model model = svm.svm_train(prob, param);
-			svm_node[] x = new svm_node[2];
-			x[0] = new svm_node();
-			x[1] = new svm_node();
+			SvmModel model = svm.svm_train(prob, param);
+			SvmNode[] x = new SvmNode[2];
+			x[0] = new SvmNode();
+			x[1] = new SvmNode();
 			x[0].index = 1;
 			x[1].index = 2;
 
@@ -352,7 +356,7 @@ public class svm_toy extends Applet {
 					x[0].value = (double) i / XLEN;
 					x[1].value = (double) j / YLEN;
 					double d = svm.svm_predict(model, x);
-					if (param.svm_type == svm_parameter.ONE_CLASS && d<0) d=2;
+					if (param.svmType == SvmType.ONE_CLASS && d<0) d=2;
 					buffer_gc.setColor(colors[(int)d]);
 					window_gc.setColor(colors[(int)d]);
 					buffer_gc.drawLine(i,j,i,j);
@@ -377,7 +381,7 @@ public class svm_toy extends Applet {
 		try {
 			DataOutputStream fp = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(filename)));
 
-			int svm_type = svm_parameter.C_SVC;
+			int svm_type = SvmParameter.C_SVC;
 			int svm_type_idx = args.indexOf("-s ");
 			if(svm_type_idx != -1)
 			{
@@ -386,7 +390,7 @@ public class svm_toy extends Applet {
 			}
 
 			int n = point_list.size();
-			if(svm_type == svm_parameter.EPSILON_SVR || svm_type == svm_parameter.NU_SVR)
+			if(svm_type == SvmParameter.EPSILON_SVR || svm_type == SvmParameter.NU_SVR)
 			{
 				for(int i=0;i<n;i++)
 				{
