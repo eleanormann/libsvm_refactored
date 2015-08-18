@@ -12,9 +12,10 @@ public class SvmParameter implements Cloneable,java.io.Serializable
 	public enum KernelType {
 		linear, poly, rbf, sigmoid, precomputed
 	}
-	
-	
-	/* svm_type */
+		
+	/* svm_type 
+	 * TODO replace all refs with SvmType and remove
+	 * Comment expires 18th September 2015*/
 	public static final int C_SVC = 0;
 	public static final int NU_SVC = 1;
 	public static final int ONE_CLASS = 2;

@@ -2181,9 +2181,8 @@ public class svm {
 		}
 	}
 
-	public static int svm_get_svm_type(SvmModel model) {
-		return model.getParam().getIntEquivalentOfSvmType(
-				model.getParam().svmType);
+	public static SvmType getSvmTypeFromModel(SvmModel model) {
+		return model.getParam().svmType;
 	}
 
 	public static int svm_get_nr_class(SvmModel model) {
@@ -2421,14 +2420,6 @@ public class svm {
 		fp.close();
 	}
 
-	private static double atof(String s) {
-		return Double.valueOf(s).doubleValue();
-	}
-
-	private static int atoi(String s) {
-		return Integer.parseInt(s);
-	}
-
 	private static boolean read_model_header(BufferedReader fp, SvmModel model) {
 		SvmParameter param = new SvmParameter();
 		model.setParam(param);
@@ -2462,45 +2453,45 @@ public class svm {
 						return false;
 					}
 				} else if (cmd.startsWith("degree"))
-					param.degree = atoi(arg);
+					param.degree = Integer.parseInt(arg);
 				else if (cmd.startsWith("gamma"))
-					param.gamma = atof(arg);
+					param.gamma = Double.parseDouble(arg);
 				else if (cmd.startsWith("coef0"))
-					param.coef0 = atof(arg);
+					param.coef0 = Double.parseDouble(arg);
 				else if (cmd.startsWith("nr_class"))
-					model.nr_class = atoi(arg);
+					model.nr_class = Integer.parseInt(arg);
 				else if (cmd.startsWith("total_sv"))
-					model.l = atoi(arg);
+					model.l = Integer.parseInt(arg);
 				else if (cmd.startsWith("rho")) {
 					int n = model.nr_class * (model.nr_class - 1) / 2;
 					model.rho = new double[n];
 					StringTokenizer st = new StringTokenizer(arg);
 					for (int i = 0; i < n; i++)
-						model.rho[i] = atof(st.nextToken());
+						model.rho[i] = Double.parseDouble(st.nextToken());
 				} else if (cmd.startsWith("label")) {
 					int n = model.nr_class;
 					model.label = new int[n];
 					StringTokenizer st = new StringTokenizer(arg);
 					for (int i = 0; i < n; i++)
-						model.label[i] = atoi(st.nextToken());
+						model.label[i] = Integer.parseInt(st.nextToken());
 				} else if (cmd.startsWith("probA")) {
 					int n = model.nr_class * (model.nr_class - 1) / 2;
 					model.probA = new double[n];
 					StringTokenizer st = new StringTokenizer(arg);
 					for (int i = 0; i < n; i++)
-						model.probA[i] = atof(st.nextToken());
+						model.probA[i] = Double.parseDouble(st.nextToken());
 				} else if (cmd.startsWith("probB")) {
 					int n = model.nr_class * (model.nr_class - 1) / 2;
 					model.probB = new double[n];
 					StringTokenizer st = new StringTokenizer(arg);
 					for (int i = 0; i < n; i++)
-						model.probB[i] = atof(st.nextToken());
+						model.probB[i] = Double.parseDouble(st.nextToken());
 				} else if (cmd.startsWith("nr_sv")) {
 					int n = model.nr_class;
 					model.nSV = new int[n];
 					StringTokenizer st = new StringTokenizer(arg);
 					for (int i = 0; i < n; i++)
-						model.nSV[i] = atoi(st.nextToken());
+						model.nSV[i] = Integer.parseInt(st.nextToken());
 				} else if (cmd.startsWith("SV")) {
 					break;
 				} else {
@@ -2548,13 +2539,13 @@ public class svm {
 			StringTokenizer st = new StringTokenizer(line, " \t\n\r\f:");
 
 			for (int k = 0; k < m; k++)
-				model.sv_coef[k][i] = atof(st.nextToken());
+				model.sv_coef[k][i] = Double.parseDouble(st.nextToken());
 			int n = st.countTokens() / 2;
 			model.SV[i] = new SvmNode[n];
 			for (int j = 0; j < n; j++) {
 				model.SV[i][j] = new SvmNode();
 				model.SV[i][j].index = Integer.parseInt(st.nextToken());
-				model.SV[i][j].value = atof(st.nextToken());
+				model.SV[i][j].value = Double.parseDouble(st.nextToken());
 			}
 		}
 

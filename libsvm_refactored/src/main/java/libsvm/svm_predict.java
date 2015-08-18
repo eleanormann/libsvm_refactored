@@ -1,10 +1,15 @@
 package libsvm;
 
 import libsvm.*;
+import libsvm.SvmParameter.SvmType;
+import helpers.HelpMessages;
+
 import java.io.*;
 import java.util.*;
 
 class svm_predict {
+	
+
 	private static svm_print_interface svm_print_null = new svm_print_interface()
 	{
 		public void print(String s) {}
@@ -42,14 +47,13 @@ class svm_predict {
 		double error = 0;
 		double sumv = 0, sumy = 0, sumvv = 0, sumyy = 0, sumvy = 0;
 
-		int svm_type=svm.svm_get_svm_type(model);
+		SvmType svmType=svm.getSvmTypeFromModel(model);
 		int nr_class=svm.svm_get_nr_class(model);
 		double[] prob_estimates=null;
 
 		if(predict_probability == 1)
 		{
-			if(svm_type == SvmParameter.EPSILON_SVR ||
-			   svm_type == SvmParameter.NU_SVR)
+			if(svmType == SvmType.EPSILON_SVR || svmType == SvmType.NU_SVR)
 			{
 				svm_predict.info("Prob. model for test data: target value = predicted value + z,\nz: Laplace distribution e^(-|z|/sigma)/(2sigma),sigma="+svm.svm_get_svr_probability(model)+"\n");
 			}
@@ -82,7 +86,7 @@ class svm_predict {
 			}
 
 			double v;
-			if (predict_probability==1 && (svm_type==SvmParameter.C_SVC || svm_type==SvmParameter.NU_SVC))
+			if (predict_probability==1 && (svmType==SvmType.C_SVC || svmType==SvmType.NU_SVC))
 			{
 				v = svm.svm_predict_probability(model,x,prob_estimates);
 				output.writeBytes(v+" ");
@@ -106,8 +110,8 @@ class svm_predict {
 			sumvy += v*target;
 			++total;
 		}
-		if(svm_type == SvmParameter.EPSILON_SVR ||
-		   svm_type == SvmParameter.NU_SVR)
+		if(svmType == SvmType.EPSILON_SVR ||
+		   svmType == SvmType.NU_SVR)
 		{
 			svm_predict.info("Mean squared error = "+error/total+" (regression)\n");
 			svm_predict.info("Squared correlation coefficient = "+
@@ -120,12 +124,8 @@ class svm_predict {
 				 "% ("+correct+"/"+total+") (classification)\n");
 	}
 
-	private static void exit_with_help()
-	{
-		System.err.print("usage: svm_predict [options] test_file model_file output_file\n"
-		+"options:\n"
-		+"-b probability_estimates: whether to predict probability estimates, 0 or 1 (default 0); one-class SVM not supported yet\n"
-		+"-q : quiet mode (no outputs)\n");
+	private static void exit_with_help() {
+		System.err.print(HelpMessages.PREDICT_HELP_MESSAGE_ON_BAD_INPUT);
 		System.exit(1);
 	}
 
