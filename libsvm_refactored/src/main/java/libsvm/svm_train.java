@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
+import ui.SvmPrintInterface;
 import libsvm.SvmParameter.SvmType;
 
 class svm_train {
@@ -21,15 +22,10 @@ class svm_train {
 	private int cross_validation;
 	private int nr_fold;
 
-	private static svm_print_interface svm_print_null = new svm_print_interface() {
+	private static SvmPrintInterface svm_print_null = new SvmPrintInterface() {
 		public void print(String s) {
 		}
 	};
-
-	private static void exitWithHelp() {
-		System.out.print(HelpMessages.HELP_MESSAGE_ON_BAD_INPUT);
-		System.exit(1);
-	}
 
 	private void do_cross_validation() {
 		int i;
@@ -99,7 +95,7 @@ class svm_train {
 
 	private void parse_command_line(String argv[]) {
 		int i;
-		svm_print_interface print_func = null; // default printing to stdout
+		SvmPrintInterface print_func = null; // default printing to stdout
 
 		param = new SvmParameter();
 		// default values
@@ -125,7 +121,7 @@ class svm_train {
 			if (argv[i].charAt(0) != '-')
 				break;
 			if (++i >= argv.length)
-				exitWithHelp();
+				HelpMessages.exitWithHelp(true);
 			switch (argv[i - 1].charAt(1)) {
 			case 's':
 				param.svmType = param.getSvmTypeFromSvmParameter(Integer
@@ -173,7 +169,7 @@ class svm_train {
 				nr_fold = Integer.parseInt(argv[i]);
 				if (nr_fold < 2) {
 					System.err.print("n-fold cross validation: n must >= 2\n");
-					exitWithHelp();
+					HelpMessages.exitWithHelp(true);
 				}
 				break;
 			case 'w':
@@ -198,7 +194,7 @@ class svm_train {
 				break;
 			default:
 				System.err.print("Unknown option: " + argv[i - 1] + "\n");
-				exitWithHelp();
+				HelpMessages.exitWithHelp(true);
 			}
 		}
 
@@ -207,7 +203,7 @@ class svm_train {
 		// determine filenames
 
 		if (i >= argv.length)
-			exitWithHelp();
+			HelpMessages.exitWithHelp(true);
 
 		input_file_name = argv[i];
 

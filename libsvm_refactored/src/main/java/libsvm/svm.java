@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.Random;
 import java.util.StringTokenizer;
 
+import ui.SvmPrintInterface;
 import libsvm.SvmParameter.SvmType;
 
 //
@@ -1243,14 +1244,14 @@ public class svm {
 	public static final int LIBSVM_VERSION = 320;
 	public static final Random rand = new Random();
 
-	private static svm_print_interface svm_print_stdout = new svm_print_interface() {
+	private static SvmPrintInterface svm_print_stdout = new SvmPrintInterface() {
 		public void print(String s) {
 			System.out.print(s);
 			System.out.flush();
 		}
 	};
 
-	private static svm_print_interface svm_print_string = svm_print_stdout;
+	private static SvmPrintInterface svm_print_string = svm_print_stdout;
 
 	static void info(String s) {
 		svm_print_string.print(s);
@@ -2676,7 +2677,7 @@ public class svm {
 	}
 
 	public static void svm_set_print_string_function(
-			svm_print_interface print_func) {
+			SvmPrintInterface print_func) {
 		if (print_func == null)
 			svm_print_string = svm_print_stdout;
 		else
