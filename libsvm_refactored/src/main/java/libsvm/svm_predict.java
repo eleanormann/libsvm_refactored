@@ -18,7 +18,7 @@ class svm_predict {
 
 	private static SvmPrintInterface svmPrintString = SvmPrinterFactory.getPrinter(PrintMode.STANDARD);
 
-	static void info(String s) {
+	private static void info(String s) {
 		svmPrintString.print(s);
 	}
 
@@ -108,8 +108,9 @@ class svm_predict {
 
 		// parse options
 		for (i = 0; i < argv.length; i++) {
-			if (argv[i].charAt(0) != '-')
-				break;
+			if (argv[i].charAt(0) != '-') {
+				break;				
+			}
 			++i;
 			switch (argv[i - 1].charAt(1)) {
 			case 'b':
@@ -130,7 +131,7 @@ class svm_predict {
 			return;
 		}
 		try {
-			BufferedReader input = new BufferedReader(new FileReader(argv[i]));
+			BufferedReader input = createReader(argv[i]);
 			DataOutputStream output = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(argv[i + 2])));
 			SvmModel model = svm.svm_load_model(argv[i + 1]);
 			
@@ -161,5 +162,10 @@ class svm_predict {
 		} catch (ArrayIndexOutOfBoundsException e) {
 			SvmPrinterFactory.getPrinter(PrintMode.PREDICT_BAD_INPUT).print(e.toString());
 		}
+	}
+
+	private static BufferedReader createReader(String filename) throws FileNotFoundException {
+		BufferedReader input = new BufferedReader(new FileReader(filename));
+		return input;
 	}
 }
