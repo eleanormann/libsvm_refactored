@@ -16,28 +16,18 @@ import ui.SvmPrinterFactory.PrintMode;
 
 class svm_predict {
 
-	private static SvmPrintInterface svm_print_stdout = new SvmPrintInterface() {
-		public void print(String s) {
-			System.out.print(s);
-		}
-	};
-
-	private static SvmPrintInterface svm_print_string = svm_print_stdout;
+	private static SvmPrintInterface svmPrintString = SvmPrinterFactory.getPrinter(PrintMode.STANDARD);
 
 	static void info(String s) {
-		svm_print_string.print(s);
+		svmPrintString.print(s);
 	}
 
 	private static double atof(String s) {
 		return Double.valueOf(s).doubleValue();
 	}
 
-	private static int atoi(String s) {
-		return Integer.parseInt(s);
-	}
-
-	private static void predict(BufferedReader input, DataOutputStream output,
-			SvmModel model, int predict_probability) throws IOException {
+	private static void predict(BufferedReader input, DataOutputStream output, SvmModel model, int predict_probability)
+			throws IOException {
 		int correct = 0;
 		int total = 0;
 		double error = 0;
@@ -49,9 +39,8 @@ class svm_predict {
 
 		if (predict_probability == 1) {
 			if (svmType == SvmType.EPSILON_SVR || svmType == SvmType.NU_SVR) {
-				svm_predict
-						.info("Prob. model for test data: target value = predicted value + z,\nz: Laplace distribution e^(-|z|/sigma)/(2sigma),sigma="
-								+ svm.svm_get_svr_probability(model) + "\n");
+				svm_predict.info("Prob. model for test data: target value = predicted value + z,\nz: "
+						+ "Laplace distribution e^(-|z|/sigma)/(2sigma),sigma=" + svm.svm_get_svr_probability(model) + "\n");
 			} else {
 				int[] labels = new int[nr_class];
 				svm.svm_get_labels(model, labels);
@@ -74,13 +63,12 @@ class svm_predict {
 			SvmNode[] x = new SvmNode[m];
 			for (int j = 0; j < m; j++) {
 				x[j] = new SvmNode();
-				x[j].index = atoi(st.nextToken());
+				x[j].index = Integer.parseInt(st.nextToken());
 				x[j].value = atof(st.nextToken());
 			}
 
 			double v;
-			if (predict_probability == 1
-					&& (svmType == SvmType.C_SVC || svmType == SvmType.NU_SVC)) {
+			if (predict_probability == 1 && (svmType == SvmType.C_SVC || svmType == SvmType.NU_SVC)) {
 				v = svm.svm_predict_probability(model, x, prob_estimates);
 				output.writeBytes(v + " ");
 				for (int j = 0; j < nr_class; j++)
@@ -102,21 +90,21 @@ class svm_predict {
 			++total;
 		}
 		if (svmType == SvmType.EPSILON_SVR || svmType == SvmType.NU_SVR) {
-			svm_predict.info("Mean squared error = " + error / total
-					+ " (regression)\n");
+			svm_predict.info("Mean squared error = " + error / total + " (regression)\n");
 			svm_predict.info("Squared correlation coefficient = "
-					+ ((total * sumvy - sumv * sumy) * (total * sumvy - sumv
-							* sumy))
-					/ ((total * sumvv - sumv * sumv) * (total * sumyy - sumy
-							* sumy)) + " (regression)\n");
-		} else
-			svm_predict.info("Accuracy = " + (double) correct / total * 100
-					+ "% (" + correct + "/" + total + ") (classification)\n");
+					+ ((total * sumvy - sumv * sumy) * (total * sumvy - sumv * sumy))
+					/ ((total * sumvv - sumv * sumv) * (total * sumyy - sumy * sumy)) + " (regression)\n");
+		} else {
+			svm_predict.info("Accuracy = " + (double) correct / total * 100 + "% (" + correct + "/" + total
+					+ ") (classification)\n");
+		}
 	}
 
+	// TODO: handle IOException properly
 	public static void main(String argv[]) throws IOException {
-		int i, predict_probability = 0;
-		svm_print_string = svm_print_stdout;
+		int i = 0;
+		int predict_probability = 0;
+		svmPrintString = SvmPrinterFactory.getPrinter(PrintMode.STANDARD);
 
 		// parse options
 		for (i = 0; i < argv.length; i++) {
@@ -125,41 +113,44 @@ class svm_predict {
 			++i;
 			switch (argv[i - 1].charAt(1)) {
 			case 'b':
-				predict_probability = atoi(argv[i]);
+				predict_probability = Integer.parseInt(argv[i]);
 				break;
 			case 'q':
-					svm_print_string = SvmPrinterFactory.getPrinter(PrintMode.QUIET);
+				svmPrintString = SvmPrinterFactory.getPrinter(PrintMode.QUIET);
 				i--;
 				break;
 			default:
 				SvmPrinterFactory.getPrinter(PrintMode.PREDICT_BAD_INPUT)
-						.print("Unknown option: " + argv[i - 1] + "\n");
+				.print("Unknown option: " + argv[i - 1] + "\n");
 				return;
 			}
 		}
-		if (i >= argv.length - 2){
+		if (i >= argv.length - 2) {
 			SvmPrinterFactory.getPrinter(PrintMode.PREDICT_BAD_INPUT).print("");
 			return;
-		}	
+		}
 		try {
 			BufferedReader input = new BufferedReader(new FileReader(argv[i]));
-			DataOutputStream output = new DataOutputStream(
-					new BufferedOutputStream(new FileOutputStream(argv[i + 2])));
+			DataOutputStream output = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(argv[i + 2])));
 			SvmModel model = svm.svm_load_model(argv[i + 1]);
+			
+			//TODO: refactor this logic to avoid repetition
 			if (model == null) {
 				System.err.print("can't open model file " + argv[i + 1] + "\n");
-				System.exit(1);
+				input.close();
+				output.close();
+				return;
 			}
 			if (predict_probability == 1) {
 				if (svm.svm_check_probability_model(model) == 0) {
-					System.err
-							.print("Model does not support probabiliy estimates\n");
-					System.exit(1);
+					System.err.print("Model does not support probabiliy estimates\n");
+					input.close();
+					output.close();
+					return;
 				}
 			} else {
 				if (svm.svm_check_probability_model(model) != 0) {
-					svm_predict
-							.info("Model supports probability estimates, but disabled in prediction.\n");
+					svm_predict.info("Model supports probability estimates, but disabled in prediction.\n");
 				}
 			}
 			predict(input, output, model, predict_probability);
