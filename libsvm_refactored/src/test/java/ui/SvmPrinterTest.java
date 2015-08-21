@@ -48,4 +48,11 @@ public class SvmPrinterTest {
 		SvmPrinterFactory.getPrinter(PrintMode.STANDARD).print("anything");
 		assertEquals("anything", outContent.toString().trim());
 	}
+	
+	@Test
+	public void inputErrorForTrainModeShouldPrintTrainErrorMessage() {
+		SvmPrinterFactory.getPrinter(PrintMode.TRAIN_BAD_INPUT).print("anything");
+		assertEquals("anything", errContent.toString().trim());
+		assertEquals(HelpMessages.TRAIN_HELP_MESSAGE_ON_BAD_INPUT, outContent.toString().trim());
+	}
 }

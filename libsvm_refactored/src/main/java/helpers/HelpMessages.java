@@ -27,7 +27,7 @@ public class HelpMessages {
 		+"-b probability_estimates : whether to train a SVC or SVR model for probability estimates, 0 or 1 (default 0)\n"
 		+"-wi weight : set the parameter C of class i to weight*C, for C-SVC (default 1)\n"
 		+"-v n : n-fold cross validation mode\n"
-		+"-q : quiet mode (no outputs)\n";
+		+"-q : quiet mode (no outputs)";
 	
 	public static final String PREDICT_HELP_MESSAGE_ON_BAD_INPUT = "usage: svm_predict [options] test_file model_file output_file\n"
 			+"options:\n"

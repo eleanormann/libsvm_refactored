@@ -2,18 +2,12 @@ package libsvm;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
 import helpers.HelpMessages;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
-
-import mockit.Mock;
-import mockit.MockUp;
 
 import org.junit.After;
 import org.junit.Before;
