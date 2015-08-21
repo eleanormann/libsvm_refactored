@@ -1,11 +1,15 @@
 package libsvm;
 
+import helpers.ErrorResponseHandler;
+import helpers.ResponseHandler;
+
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Map;
 import java.util.Random;
 import java.util.StringTokenizer;
 
@@ -2556,65 +2560,38 @@ public class svm {
 
 	public static String svm_check_parameter(svm_problem prob,
 			SvmParameter param) {
-		// svm_type
-
-		//TODO: change this local svm_type to a SvmType
-		//Comment expires 17th September 2015
 		int svm_type = param.getIntEquivalentOfSvmType(param.svmType);
-		if (svm_type != SvmParameter.C_SVC && svm_type != SvmParameter.NU_SVC
-				&& svm_type != SvmParameter.ONE_CLASS
-				&& svm_type != SvmParameter.EPSILON_SVR
-				&& svm_type != SvmParameter.NU_SVR)
-			return "unknown svm type";
-
-		// kernel_type, degree
-
-		int kernel_type = param.kernel_type;
-		if (kernel_type != SvmParameter.LINEAR
-				&& kernel_type != SvmParameter.POLY
-				&& kernel_type != SvmParameter.RBF
-				&& kernel_type != SvmParameter.SIGMOID
-				&& kernel_type != SvmParameter.PRECOMPUTED)
-			return "unknown kernel type";
-
-		if (param.gamma < 0)
-			return "gamma < 0";
-
-		if (param.degree < 0)
-			return "degree of polynomial kernel < 0";
-
+		StringBuilder validationMsg = new StringBuilder();
+		
+		validationMsg.append(checkSvmType(svm_type));
+		validationMsg.append(checkKernelType(param.kernel_type));
+		validationMsg.append(checkGamma(param.gamma));
+		validationMsg.append(checkDegreeOfPolynomialKernel(param.degree));
+		
 		// cache_size,eps,C,nu,p,shrinking
-
-		if (param.cache_size <= 0)
-			return "cache_size <= 0";
-
-		if (param.eps <= 0)
-			return "eps <= 0";
-
+		validationMsg.append(checkCacheSize(param.cache_size));
+		validationMsg.append(checkEps(param.eps));
+		
 		if (svm_type == SvmParameter.C_SVC
 				|| svm_type == SvmParameter.EPSILON_SVR
 				|| svm_type == SvmParameter.NU_SVR)
-			if (param.C <= 0)
-				return "C <= 0";
+			
+			validationMsg.append(checkC(param.C));
 
 		if (svm_type == SvmParameter.NU_SVC
 				|| svm_type == SvmParameter.ONE_CLASS
-				|| svm_type == SvmParameter.NU_SVR)
-			if (param.nu <= 0 || param.nu > 1)
-				return "nu <= 0 or nu > 1";
+				|| svm_type == SvmParameter.NU_SVR){
+			
+			validationMsg.append(checkNu(param.nu));
+		}
+			
+		if (svm_type == SvmParameter.EPSILON_SVR){
+			validationMsg.append(checkP(param.p));
+		}
+		
+		validationMsg.append(checkShrinking(param.shrinking));
 
-		if (svm_type == SvmParameter.EPSILON_SVR)
-			if (param.p < 0)
-				return "p < 0";
-
-		if (param.shrinking != 0 && param.shrinking != 1)
-			return "shrinking != 0 and shrinking != 1";
-
-		if (param.probability != 0 && param.probability != 1)
-			return "probability != 0 and probability != 1";
-
-		if (param.probability == 1 && svm_type == SvmParameter.ONE_CLASS)
-			return "one-class SVM probability output not supported yet";
+		validationMsg.append(checkProbability(param.probability, param.svmType));
 
 		// check whether nu-svc is feasible
 
@@ -2665,6 +2642,46 @@ public class svm {
 		return null;
 	}
 
+	//TODO: change this local svm_type to a SvmType
+	//Comment expires 17th September 2015
+	public static String checkSvmType(int svm_type) {
+		
+		if (svm_type != SvmParameter.C_SVC && svm_type != SvmParameter.NU_SVC
+				&& svm_type != SvmParameter.ONE_CLASS
+				&& svm_type != SvmParameter.EPSILON_SVR
+				&& svm_type != SvmParameter.NU_SVR){
+			
+			return "ERROR: unknown svm type\n";
+		}
+		return new SvmParameter().getSvmTypeFromSvmParameter(svm_type).toString();	
+	}
+
+	public static String checkKernelType(int kernelType) {
+		if (kernelType != SvmParameter.LINEAR 
+				&& kernelType != SvmParameter.POLY 
+				&& kernelType != SvmParameter.RBF
+				&& kernelType != SvmParameter.SIGMOID 
+				&& kernelType != SvmParameter.PRECOMPUTED) {
+			return "ERROR: unknown kernel type\n";
+		} else {
+			return "kernel type: " + kernelType + "\n";
+		}
+	}
+
+	public static String checkGamma(double gamma) {
+		if(gamma < 0) {
+			return "ERROR: gamma less than zero\n";
+		}
+		return "Gamma = " + gamma + "\n";
+	}
+
+	public static String checkDegreeOfPolynomialKernel(int degree) {
+		if (degree < 0){
+			return "ERROR: degree of polynomial kernel < 0\n";
+		}
+		return "Degree = " + degree + "\n";
+	}
+	
 	public static int svm_check_probability_model(SvmModel model) {
 		if (((model.getParam().svmType == SvmType.C_SVC || model
 				.getParam().svmType == SvmType.NU_SVC)
@@ -2683,4 +2700,66 @@ public class svm {
 		else
 			svm_print_string = print_func;
 	}
+
+	public static String checkCacheSize(double cache_size) {
+		if (cache_size <= 0) {
+			return "ERROR: cache size <= 0\n";
+		} else {
+			return "Cache size: " + cache_size + "\n";
+		}
+	}
+
+	public static String checkEps(double eps) {
+		if (eps <= 0){
+			return "ERROR: eps <= 0\n";			
+		}else{
+			return "Eps = " + eps + "\n";
+		}
+	}
+	
+	public static String checkC(double c){
+		if (c <= 0){
+			return "ERROR: C <= 0\n";
+		}else{
+			return "C = " + c + "\n";
+		}
+	}
+
+	public static String checkNu(double nu) {
+		if (nu <= 0 || nu > 1){
+			return "ERROR: nu <= 0 or nu > 1\n";			
+		}else{
+			return "Nu = " + nu + "\n";
+		}
+	}
+
+	public static String checkP(double p) {
+		if (p < 0){
+			return "ERROR: p < 0\n";			
+		}else{
+			return "p = " + p + "\n";
+		}
+	}
+
+	public static String checkShrinking(int shrinking) {
+		if (shrinking != 0 && shrinking != 1){
+			return "ERROR: shrinking is neither 0 nor 1\n";
+		}else{
+			return "Shrinking = " + shrinking + "\n";
+		}
+	}
+
+	public static String checkProbability(int probability, SvmType svmType) {
+		if (probability != 0 && probability != 1){
+			return "ERROR: Probability is neither 0 nor 1\n";	
+		}
+		if (probability == 1 && svmType == SvmType.ONE_CLASS){
+			return "ERROR: one-class SVM probability output not supported yet";
+		}
+		return "Probability = " + probability + "\n";
+
+	}
+
+
+	
 }
