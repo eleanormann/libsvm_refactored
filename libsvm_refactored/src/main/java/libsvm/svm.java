@@ -2644,7 +2644,7 @@ public class svm {
 				}
 			}
 		}
-		return "nu feasibility checked and OK";
+		return "Nu = " + param.nu + ": feasibility checked and is OK";
 	}
 
 	//TODO: change this local svm_type to a SvmType
