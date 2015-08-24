@@ -9,6 +9,7 @@ import java.io.DataOutputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Random;
 import java.util.StringTokenizer;
@@ -1784,12 +1785,14 @@ public class svm {
 		for (i = 0; i < l; i++) {
 			int this_label = (int) (prob.y[i]);
 			int j;
-			for (j = 0; j < nr_class; j++) {
-				if (this_label == label[j]) {
+
+			for (j = 0; j < nr_class; j++){
+				if (this_label == label[j]) { 
 					++count[j];
 					break;
-				}
+				}					
 			}
+
 			data_label[i] = j;
 			if (j == nr_class) {
 				if (nr_class == max_nr_class) {
@@ -2594,52 +2597,54 @@ public class svm {
 		validationMsg.append(checkProbability(param.probability, param.svmType));
 
 		// check whether nu-svc is feasible
+		validationMsg.append(checkFeasibilityOfNu(svm_type, prob, param));
 
+
+		return validationMsg.toString();
+	}
+
+	
+
+	protected static String checkFeasibilityOfNu(int svm_type, svm_problem prob, SvmParameter param) {
 		if (svm_type == SvmParameter.NU_SVC) {
-			int l = prob.length;
-			int max_nr_class = 16;
-			int nr_class = 0;
-			int[] label = new int[max_nr_class];
-			int[] count = new int[max_nr_class];
+			int problemLength = prob.length;
+			int arrayLength = 16;
+			int currentIndexInProblem = 0; 
+			int[] label = new int[arrayLength]; 
+			int[] count = new int[arrayLength];
 
 			int i;
-			for (i = 0; i < l; i++) {
-				int this_label = (int) prob.y[i];
+			for (i = 0; i < problemLength; i++) { //9 = problemLength
+				int currentYpoint = (int) prob.y[i]; //1,1,0,0,1,0
 				int j;
-				for (j = 0; j < nr_class; j++)
-					if (this_label == label[j]) {
-						++count[j];
+				for (j = 0; j < currentIndexInProblem; j++){
+					if (currentYpoint == label[j]) { 
+						++count[j];						
 						break;
-					}
+					}					
+				}
 
-				if (j == nr_class) {
-					if (nr_class == max_nr_class) {
-						max_nr_class *= 2;
-						int[] new_data = new int[max_nr_class];
-						System.arraycopy(label, 0, new_data, 0, label.length);
-						label = new_data;
-
-						new_data = new int[max_nr_class];
-						System.arraycopy(count, 0, new_data, 0, count.length);
-						count = new_data;
+				if (j == currentIndexInProblem) {
+					if (currentIndexInProblem == arrayLength) {
+						label = extendArrayLength(label);
+						count = extendArrayLength(count);
 					}
-					label[nr_class] = this_label;
-					count[nr_class] = 1;
-					++nr_class;
+					label[currentIndexInProblem] = currentYpoint;
+					count[currentIndexInProblem] = 1;
+					++currentIndexInProblem;
 				}
 			}
 
-			for (i = 0; i < nr_class; i++) {
+			for (i = 0; i < currentIndexInProblem; i++) {
 				int n1 = count[i];
-				for (int j = i + 1; j < nr_class; j++) {
+				for (int j = i + 1; j < currentIndexInProblem; j++) {
 					int n2 = count[j];
 					if (param.nu * (n1 + n2) / 2 > Math.min(n1, n2))
-						return "specified nu is infeasible";
+						return "ERROR: "+ param.nu + " is not a feasible nu for these data";
 				}
 			}
 		}
-
-		return null;
+		return "nu feasibility checked and OK";
 	}
 
 	//TODO: change this local svm_type to a SvmType
@@ -2760,6 +2765,11 @@ public class svm {
 
 	}
 
+	public static int[] extendArrayLength(int[] originalArray) {
+		int doubledLength = originalArray.length * 2;
+		int[] newArray = Arrays.copyOf(originalArray, doubledLength);
+		return newArray;
+	}
 
 	
 }

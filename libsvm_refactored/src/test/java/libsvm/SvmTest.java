@@ -115,6 +115,29 @@ public class SvmTest {
 		assertThat(errorMessage, equalTo("Probability = 0\n"));
 	}
 	
+	@Test
+	public void extendArrayLengthShouldReturnCopyWithDoubleLength(){
+		int[] originalArray = {1,2,3,4,5};
+		int[] expectedArray = {1,2,3,4,5,0,0,0,0,0};
+		originalArray = svm.extendArrayLength(originalArray);
+		assertThat(originalArray, equalTo(expectedArray));
+	}
+	
+	@Test
+	public void checkFeasibilityOfNuReturnsErrorMessageWhenUnfeasible(){
+		
+		svm_problem dataset = new svm_problem();
+		dataset.y = new double[]{1,1,1,1,0,0,0,1,0};
+		dataset.x = new SvmNode[][] {
+				{ new SvmNode(1, 5), new SvmNode(2, 6), new SvmNode(3, 4), new SvmNode(4, 4), new SvmNode(-1, 0) },
+				{ new SvmNode(5, 10), new SvmNode(6, 9), new SvmNode(7, 8), new SvmNode(8, 10), new SvmNode(9, 9) }};
+		dataset.length = dataset.y.length;
+		SvmParameter param = new SvmParameter();
+		param.nu = .8;
+		String message = svm.checkFeasibilityOfNu(SvmParameter.NU_SVC, dataset, param);
+		assertThat(message, equalTo("ERROR: "+param.nu +" is not a feasible nu for these data"));
+	}
+	
 	private SvmModel createModel(SvmType svmType) {
 		SvmModel model = new SvmModel();
 		SvmParameter param = new SvmParameter();
