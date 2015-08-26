@@ -1,7 +1,16 @@
 package libsvm;
 
-import helpers.ErrorResponseHandler;
-import helpers.ResponseHandler;
+import helpers.CChecker;
+import helpers.CacheSizeChecker;
+import helpers.DegreeChecker;
+import helpers.EpsChecker;
+import helpers.GammaChecker;
+import helpers.KernelChecker;
+import helpers.NuChecker;
+import helpers.PChecker;
+import helpers.ProbabilityChecker;
+import helpers.ShrinkingChecker;
+import helpers.SvmTypeChecker;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -2566,125 +2575,41 @@ public class svm {
 		int svm_type = param.getIntEquivalentOfSvmType(param.svmType);
 		StringBuilder validationMsg = new StringBuilder();
 		
-		validationMsg.append(checkSvmType(svm_type));
-		validationMsg.append(checkKernelType(param.kernel_type));
-		validationMsg.append(checkGamma(param.gamma));
-		validationMsg.append(checkDegreeOfPolynomialKernel(param.degree));
+		validationMsg.append(new SvmTypeChecker().checkSvmType(svm_type));
+		validationMsg.append(new KernelChecker().checkKernelType(param.kernel_type));
+		validationMsg.append(new GammaChecker().checkGamma(param.gamma));
+		validationMsg.append(new DegreeChecker().checkDegreeOfPolynomialKernel(param.degree));
 		
 		// cache_size,eps,C,nu,p,shrinking
-		validationMsg.append(checkCacheSize(param.cache_size));
-		validationMsg.append(checkEps(param.eps));
+		validationMsg.append(new CacheSizeChecker().checkCacheSize(param.cache_size));
+		validationMsg.append(new EpsChecker().checkEps(param.eps));
 		
 		if (svm_type == SvmParameter.C_SVC
 				|| svm_type == SvmParameter.EPSILON_SVR
 				|| svm_type == SvmParameter.NU_SVR)
 			
-			validationMsg.append(checkC(param.C));
+			validationMsg.append(new CChecker().checkC(param.C));
 
 		if (svm_type == SvmParameter.NU_SVC
 				|| svm_type == SvmParameter.ONE_CLASS
 				|| svm_type == SvmParameter.NU_SVR){
 			
-			validationMsg.append(checkNu(param.nu));
+			validationMsg.append(new NuChecker().checkNu(param.nu));
 		}
 			
 		if (svm_type == SvmParameter.EPSILON_SVR){
-			validationMsg.append(checkP(param.p));
+			validationMsg.append(new PChecker().checkP(param.p));
 		}
 		
-		validationMsg.append(checkShrinking(param.shrinking));
+		validationMsg.append(new ShrinkingChecker().checkShrinking(param.shrinking));
 
-		validationMsg.append(checkProbability(param.probability, param.svmType));
+		validationMsg.append(new ProbabilityChecker().checkProbability(param.probability, param.svmType));
 
 		// check whether nu-svc is feasible
-		validationMsg.append(checkFeasibilityOfNu(svm_type, prob, param));
+		validationMsg.append(new NuChecker().checkFeasibilityOfNu(svm_type, prob, param));
 
 
 		return validationMsg.toString();
-	}
-
-	
-
-	protected static String checkFeasibilityOfNu(int svm_type, svm_problem prob, SvmParameter param) {
-		if (svm_type == SvmParameter.NU_SVC) {
-			int problemLength = prob.length;
-			int arrayLength = 16;
-			int currentIndexInProblem = 0; 
-			int[] label = new int[arrayLength]; 
-			int[] count = new int[arrayLength];
-
-			int i;
-			for (i = 0; i < problemLength; i++) { //9 = problemLength
-				int currentYpoint = (int) prob.y[i]; //1,1,0,0,1,0
-				int j;
-				for (j = 0; j < currentIndexInProblem; j++){
-					if (currentYpoint == label[j]) { 
-						++count[j];						
-						break;
-					}					
-				}
-
-				if (j == currentIndexInProblem) {
-					if (currentIndexInProblem == arrayLength) {
-						label = extendArrayLength(label);
-						count = extendArrayLength(count);
-					}
-					label[currentIndexInProblem] = currentYpoint;
-					count[currentIndexInProblem] = 1;
-					++currentIndexInProblem;
-				}
-			}
-
-			for (i = 0; i < currentIndexInProblem; i++) {
-				int n1 = count[i];
-				for (int j = i + 1; j < currentIndexInProblem; j++) {
-					int n2 = count[j];
-					if (param.nu * (n1 + n2) / 2 > Math.min(n1, n2))
-						return "ERROR: "+ param.nu + " is not a feasible nu for these data";
-				}
-			}
-		}
-		return "Nu = " + param.nu + ": feasibility checked and is OK";
-	}
-
-	//TODO: change this local svm_type to a SvmType
-	//Comment expires 17th September 2015
-	public static String checkSvmType(int svm_type) {
-		
-		if (svm_type != SvmParameter.C_SVC && svm_type != SvmParameter.NU_SVC
-				&& svm_type != SvmParameter.ONE_CLASS
-				&& svm_type != SvmParameter.EPSILON_SVR
-				&& svm_type != SvmParameter.NU_SVR){
-			
-			return "ERROR: unknown svm type\n";
-		}
-		return new SvmParameter().getSvmTypeFromSvmParameter(svm_type).toString();	
-	}
-
-	public static String checkKernelType(int kernelType) {
-		if (kernelType != SvmParameter.LINEAR 
-				&& kernelType != SvmParameter.POLY 
-				&& kernelType != SvmParameter.RBF
-				&& kernelType != SvmParameter.SIGMOID 
-				&& kernelType != SvmParameter.PRECOMPUTED) {
-			return "ERROR: unknown kernel type\n";
-		} else {
-			return "kernel type: " + kernelType + "\n";
-		}
-	}
-
-	public static String checkGamma(double gamma) {
-		if(gamma < 0) {
-			return "ERROR: gamma less than zero\n";
-		}
-		return "Gamma = " + gamma + "\n";
-	}
-
-	public static String checkDegreeOfPolynomialKernel(int degree) {
-		if (degree < 0){
-			return "ERROR: degree of polynomial kernel < 0\n";
-		}
-		return "Degree = " + degree + "\n";
 	}
 	
 	public static int svm_check_probability_model(SvmModel model) {
@@ -2705,71 +2630,7 @@ public class svm {
 		else
 			svm_print_string = print_func;
 	}
-
-	public static String checkCacheSize(double cache_size) {
-		if (cache_size <= 0) {
-			return "ERROR: cache size <= 0\n";
-		} else {
-			return "Cache size: " + cache_size + "\n";
-		}
-	}
-
-	public static String checkEps(double eps) {
-		if (eps <= 0){
-			return "ERROR: eps <= 0\n";			
-		}else{
-			return "Eps = " + eps + "\n";
-		}
-	}
 	
-	public static String checkC(double c){
-		if (c <= 0){
-			return "ERROR: C <= 0\n";
-		}else{
-			return "C = " + c + "\n";
-		}
-	}
-
-	public static String checkNu(double nu) {
-		if (nu <= 0 || nu > 1){
-			return "ERROR: nu <= 0 or nu > 1\n";			
-		}else{
-			return "Nu = " + nu + "\n";
-		}
-	}
-
-	public static String checkP(double p) {
-		if (p < 0){
-			return "ERROR: p < 0\n";			
-		}else{
-			return "p = " + p + "\n";
-		}
-	}
-
-	public static String checkShrinking(int shrinking) {
-		if (shrinking != 0 && shrinking != 1){
-			return "ERROR: shrinking is neither 0 nor 1\n";
-		}else{
-			return "Shrinking = " + shrinking + "\n";
-		}
-	}
-
-	public static String checkProbability(int probability, SvmType svmType) {
-		if (probability != 0 && probability != 1){
-			return "ERROR: Probability is neither 0 nor 1\n";	
-		}
-		if (probability == 1 && svmType == SvmType.ONE_CLASS){
-			return "ERROR: one-class SVM probability output not supported yet";
-		}
-		return "Probability = " + probability + "\n";
-
-	}
-
-	public static int[] extendArrayLength(int[] originalArray) {
-		int doubledLength = originalArray.length * 2;
-		int[] newArray = Arrays.copyOf(originalArray, doubledLength);
-		return newArray;
-	}
 
 	
 }
