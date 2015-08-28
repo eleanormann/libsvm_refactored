@@ -1,17 +1,16 @@
 package org.mann.helpers;
 
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertThat;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.mann.helpers.ParameterValidationManager;
 import org.mann.libsvm.SvmNode;
 import org.mann.libsvm.SvmParameter;
+import org.mann.libsvm.SvmParameter.SvmType;
 import org.mann.libsvm.svm;
 import org.mann.libsvm.svm_problem;
-import org.mann.libsvm.SvmParameter.SvmType;
 
 public class ParameterValidationManagerTest {
 	private ParameterValidationManager manager; 
@@ -21,6 +20,14 @@ public class ParameterValidationManagerTest {
 		manager = new ParameterValidationManager(new StringBuilder());
 	}
 	
+	@Test
+	public void checkValidationMessageIsComplete(){
+		String expectedMessage = "Svm type: NU_SVC\nkernel type: 1\nGamma = 1.0\nDegree = 1\nCache size = 1.0\n"
+				+ "Eps = 1.0\nC = 1.0\nNu = 1.0\np = 1.0\nShrinking = 1\nProbability = 1\n";
+		manager.runCheckAndGetResponse("SvmType", manager, createSvmParameter());
+		assertThat(manager.getValidationMessage().toString(), equalTo(expectedMessage));
+	}
+	
 	@Test(expected = NullPointerException.class)
 	public void checkSvmParameterShouldReturnExceptionWhenSvmTypeNotSet(){
 		svm.svm_check_parameter(null, new SvmParameter());
@@ -28,66 +35,66 @@ public class ParameterValidationManagerTest {
 	
 	@Test
 	public void parameterCheckerShouldReturnSvmTypeWhenRequested() {
-		checkValidationMessage("SvmType", "Svm Type: NU_SVC");
+		checkValidationMessageContainsString("SvmType", "Svm Type: NU_SVC");
 	}
 
 	@Test
 	public void parameterCheckerShouldReturnKernelTypeWhenRequested() {
-		checkValidationMessage("Kernel", "kernel type: 1\n");
+		checkValidationMessageContainsString("Kernel", "kernel type: 1\n");
 	}
 	
 	@Test
 	public void parameterCheckerShouldReturnGammaWhenRequested() {
-		checkValidationMessage("Gamma", "Gamma = 1.0\n");
+		checkValidationMessageContainsString("Gamma", "Gamma = 1.0\n");
 	}
 	
 	@Test
 	public void parameterCheckerShouldReturnDegreeWhenRequested() {
-		checkValidationMessage("Degree", "Degree = 1\n");
+		checkValidationMessageContainsString("Degree", "Degree = 1\n");
 	}
 	
 	@Test
 	public void parameterCheckerShouldReturnCacheSizeWhenRequested() {
-		checkValidationMessage("Cache", "Cache size: 1.0\n");
+		checkValidationMessageContainsString("Cache", "Cache size: 1.0\n");
 	}
 	
 	@Test
 	public void parameterCheckerShouldReturnEpsWhenRequested() {
-		checkValidationMessage("Eps", "Eps = 1.0\n");
+		checkValidationMessageContainsString("Eps", "Eps = 1.0\n");
 	}
 	
 	@Test
 	public void parameterCheckerShouldReturnCWhenRequested() {
-		checkValidationMessage("C", "C = 1.0\n");
+		checkValidationMessageContainsString("C", "C = 1.0\n");
 	}
 	
 	@Test
 	public void parameterCheckerShouldReturnNuWhenRequested() {
-		checkValidationMessage("Nu", "Nu = 1.0\n");
+		checkValidationMessageContainsString("Nu", "Nu = 1.0\n");
 	}
 	
 	@Test
 	public void parameterCheckerShouldReturnPWhenRequested() {
-		checkValidationMessage("P", "p = 1.0\n");
+		checkValidationMessageContainsString("P", "p = 1.0\n");
 	}
 	
 	@Test
 	public void parameterCheckerShouldReturnShrinkingWhenRequested() {
-		checkValidationMessage("Shrinking", "Shrinking = 1\n");
+		checkValidationMessageContainsString("Shrinking", "Shrinking = 1\n");
 	}
 	
 	@Test
 	public void parameterCheckerShouldReturnProbabilityWhenRequested() {
-		checkValidationMessage("Probability","Probability = 1\n");
+		checkValidationMessageContainsString("Probability","Probability = 1\n");
 	}
 	
 	@Test
 	public void parameterCheckerShouldReturnFeasibilityOfNuWhenRequested() {
 		//TODO fix this so it fails if nu is not set
-		checkValidationMessage("Feasibility of Nu","Nu = 0.0: feasibility checked and is OK");
+		checkValidationMessageContainsString("Feasibility of Nu","Nu = 0.0: feasibility checked and is OK");
 	}
 	
-	private void checkValidationMessage(String checkType, String expectedMessage) {
+	private void checkValidationMessageContainsString(String checkType, String expectedMessage) {
 		manager.runCheckAndGetResponse(checkType, manager, createSvmParameter());
 		assertThat(manager.getValidationMessage().toString(), containsString(expectedMessage));
 	}

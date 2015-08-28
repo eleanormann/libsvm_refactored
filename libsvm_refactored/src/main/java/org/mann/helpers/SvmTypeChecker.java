@@ -14,20 +14,8 @@ public class SvmTypeChecker implements Checker{
 		this.manager = parameterValidationManager;
 	}
 
-	// TODO: decide whether this int needs to be changed to SvmType earlier in the workflow
-	// Comment expires 28th September 2015
-	public void checkSvmType(int svm_type) {
-		try{
-			SvmType svmType = new SvmParameter().getSvmTypeFromSvmParameter(svm_type);
-			manager.getValidationMessage().append("Svm Type: " + svmType);
-		}catch(IllegalArgumentException e){
-			manager.getValidationMessage().append("ERROR: Not yet implemented\n");
-			e.printStackTrace();
-		}
-	}
-
 	public Checker checkParameter(SvmParameter params) {
-		checkSvmType(-1);
+		manager.getValidationMessage().append("Svm Type: " + params.svmType + "\n");
 		return manager.runCheckAndGetResponse("Kernel", manager, params);
 	}
 

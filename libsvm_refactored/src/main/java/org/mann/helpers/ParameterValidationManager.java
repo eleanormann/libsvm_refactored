@@ -1,8 +1,6 @@
 package org.mann.helpers;
 
 import org.mann.libsvm.SvmParameter;
-import org.mann.libsvm.svm_problem;
-import org.mann.libsvm.SvmParameter.SvmType;
 
 public class ParameterValidationManager {
 	private StringBuilder validationMessage;
@@ -18,9 +16,6 @@ public class ParameterValidationManager {
 	public Checker runCheckAndGetResponse(String checkType, ParameterValidationManager manager, SvmParameter params) {
 		Checker checker = null;
 		switch(checkType){
-			case "SvmType":
-				checker = new SvmTypeChecker(this);
-				break;
 			case "Kernel":
 				checker = new KernelChecker(this);
 				break;
