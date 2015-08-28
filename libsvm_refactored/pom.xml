@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>libsvm</groupId>
+	<groupId>org.mann.libsvm</groupId>
 	<artifactId>libsvm_refactored</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 
@@ -47,6 +47,19 @@
                     <workingDirectory>${user.dir}</workingDirectory>
                 </configuration>
             </plugin>
+            <plugin>
+    <groupId>org.pitest</groupId>
+    <artifactId>pitest-maven</artifactId>
+    <version>LATEST</version>
+    <configuration>
+        <targetClasses>
+            <param>com.your.package.root.want.to.mutate*</param>
+        </targetClasses>
+        <targetTests>
+            <param>com.your.package.root*</param>
+        </targetTests>
+    </configuration>
+</plugin>
         </plugins>
         </build>
 </project>
