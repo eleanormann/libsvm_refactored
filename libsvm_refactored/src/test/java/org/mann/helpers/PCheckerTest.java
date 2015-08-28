@@ -12,22 +12,36 @@ import org.mann.libsvm.SvmParameter;
 public class PCheckerTest {
 
 	@Test
-	public void checkPShouldReturnErrorWhenLessThanZero(){
+	public void checkPShouldAddErrorMessageWhenPLessThanZero(){
 		ParameterValidationManager manager = new ParameterValidationManager(new StringBuilder()); 
 		new PChecker(manager).checkP(-1);
 		assertThat(manager.getValidationMessage().toString(), equalTo("ERROR: p < 0\n"));
 	}
 
 	@Test
-	public void checkParameterShouldReturnErrorWhenLessThanZero(){
+	public void checkParameterShouldAddInfoMessageWhenPGreaterThanZero(){
 		ParameterValidationManager manager = new ParameterValidationManager(new StringBuilder()); 
-		new PChecker(manager).checkParameter(createSvmParameter());
+		new PChecker(manager).checkParameter(createSvmParameter(1));
 		assertThat(manager.getValidationMessage().toString(), containsString("p = 1.0\n"));
 	}
 
-	private SvmParameter createSvmParameter() {
+	@Test
+	public void checkPShouldAddInfoMessageWhenPGreaterThanZero(){
+		ParameterValidationManager manager = new ParameterValidationManager(new StringBuilder()); 
+		new PChecker(manager).checkP(1);
+		assertThat(manager.getValidationMessage().toString(), equalTo("p = 1.0\n"));
+	}
+	
+	@Test
+	public void checkParameterShouldAddErrorMessageWhenPLessThanZero(){
+		ParameterValidationManager manager = new ParameterValidationManager(new StringBuilder()); 
+		new PChecker(manager).checkParameter(createSvmParameter(-1));
+		assertThat(manager.getValidationMessage().toString(), containsString("ERROR: p < 0\n"));
+	}
+	
+	private SvmParameter createSvmParameter(int value) {
 		SvmParameter params = new SvmParameter();
-		params.p = 1;
+		params.p = value;
 		return params;
 	}
 }

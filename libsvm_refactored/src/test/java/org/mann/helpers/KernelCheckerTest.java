@@ -12,24 +12,36 @@ import org.mann.libsvm.SvmParameter;
 public class KernelCheckerTest {
 
 	@Test
-	public void checkKernelTypeShouldReturnErrorWhenNotRecognised(){
+	public void checkKernelTypeShouldAddErrorMessageWhenKernelNotRecognised(){
 		ParameterValidationManager manager = new ParameterValidationManager(new StringBuilder()); 
 		new KernelChecker(manager).checkKernelType(-1);
 		assertThat(manager.getValidationMessage().toString(), equalTo("ERROR: unknown kernel type\n"));
 	}
 
 	@Test
-	public void checkParameterShouldReturnErrorWhenNotRecognised(){
+	public void checkParameterShouldAddErrorMessageWhenKernelNotRecognised(){
 		ParameterValidationManager manager = new ParameterValidationManager(new StringBuilder()); 
-		new KernelChecker(manager).checkParameter(createSvmParameter());
-		assertThat(manager.getValidationMessage().toString(), containsString("kernel type: 1\n"));
+		new KernelChecker(manager).checkParameter(createSvmParameter(-1));
+		assertThat(manager.getValidationMessage().toString(), containsString("ERROR: unknown kernel type\n"));
 	}
 	
-	
+	@Test
+	public void checkKernelTypeShouldAddInfoMessageWhenKernelRecognised(){
+		ParameterValidationManager manager = new ParameterValidationManager(new StringBuilder()); 
+		new KernelChecker(manager).checkKernelType(1);
+		assertThat(manager.getValidationMessage().toString(), equalTo("kernel type: 1\n"));
+	}
 
-	private SvmParameter createSvmParameter() {
+	@Test
+	public void checkParameterShouldAddInfoMessageWhenKernelRecognised(){
+		ParameterValidationManager manager = new ParameterValidationManager(new StringBuilder()); 
+		new KernelChecker(manager).checkParameter(createSvmParameter(1));
+		assertThat(manager.getValidationMessage().toString(), containsString("kernel type: 1\n"));
+	}
+
+	private SvmParameter createSvmParameter(int kernelType) {
 		SvmParameter params = new SvmParameter();
-		params.kernel_type = 1;
+		params.kernel_type = kernelType;
 		return params;
 	}
 }

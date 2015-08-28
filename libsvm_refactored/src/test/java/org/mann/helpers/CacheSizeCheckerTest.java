@@ -26,10 +26,10 @@ public class CacheSizeCheckerTest {
 	}
 	
 	@Test
-	public void checkParameterShouldReturnCacheSizeWhenValid(){
+	public void checkParameterShouldReturnErrorMessageWhenInValid(){
 		ParameterValidationManager manager = new ParameterValidationManager(new StringBuilder()); 
 		new CacheSizeChecker(manager).checkParameter(createSvmParameter());
-		assertThat(manager.getValidationMessage().toString(), containsString("Cache size: 1.0\n"));
+		assertThat(manager.getValidationMessage().toString(), containsString("ERROR: cache size <= 0\n"));
 	}
 	
 	@Test

@@ -1,13 +1,10 @@
 package org.mann.helpers;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.mann.helpers.ParameterValidationManager;
-import org.mann.helpers.SvmTypeChecker;
 import org.mann.libsvm.SvmParameter;
 import org.mann.libsvm.SvmParameter.SvmType;
 
@@ -26,12 +23,16 @@ public class SvmTypeCheckerTest {
 	}
 
 	@Test
-	public void checkParameterShouldReturnParameterValidationManager() {
-		checker.checkParameter(new SvmParameter());
+	public void checkParameterShouldAddErrorMessageWhenSvmTypeIsInvalid() {
+		checker.checkParameter(createSvmParameter());
 		assertThat(checker.getManager().getValidationMessage().toString(), equalTo("ERROR: unknown svm type\n"));
 	}
 
-	
+	@Test
+	public void checkParameterShouldAddValidMessageWhenSvmTypeIsValid() {
+		checker.checkParameter(createSvmParameter());
+		assertThat(checker.getManager().getValidationMessage().toString(), equalTo("Svm type: NU_SVC\n"));
+	}
 
 	private SvmParameter createSvmParameter() {
 		SvmParameter params = new SvmParameter();
