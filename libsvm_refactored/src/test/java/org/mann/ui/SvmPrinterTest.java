@@ -10,8 +10,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mann.helpers.HelpMessages;
-import org.mann.ui.SvmPrinterFactory;
-import org.mann.ui.SvmPrinterFactory.PrintMode;
+
+import ui.SvmPrinterFactory;
+import ui.SvmPrinterFactory.PrintMode;
 
 public class SvmPrinterTest {
 

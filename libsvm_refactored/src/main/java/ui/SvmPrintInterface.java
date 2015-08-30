@@ -1,4 +1,4 @@
-package org.mann.ui;
+package ui;
 
 public interface SvmPrintInterface {
 	

@@ -1,6 +1,5 @@
 package org.mann.libsvm;
 
-import org.mann.libsvm.SvmParameter.SvmType;
 
 public class SvmParameter implements Cloneable,java.io.Serializable
 {

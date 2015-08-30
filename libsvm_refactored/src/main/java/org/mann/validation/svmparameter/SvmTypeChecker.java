@@ -1,5 +1,6 @@
-package org.mann.helpers;
+package org.mann.validation.svmparameter;
 
+import org.mann.helpers.Checker;
 import org.mann.libsvm.SvmParameter;
 import org.mann.libsvm.svm;
 import org.mann.libsvm.SvmParameter.SvmType;
@@ -15,7 +16,7 @@ public class SvmTypeChecker implements Checker{
 	}
 
 	public Checker checkParameter(SvmParameter params) {
-		manager.getValidationMessage().append("Svm Type: " + params.svmType + "\n");
+		manager.getValidationMessage().append("Svm type: " + params.svmType + "\n");
 		return manager.runCheckAndGetResponse("Kernel", manager, params);
 	}
 

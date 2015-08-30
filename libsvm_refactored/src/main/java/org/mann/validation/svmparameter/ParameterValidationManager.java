@@ -1,5 +1,6 @@
-package org.mann.helpers;
+package org.mann.validation.svmparameter;
 
+import org.mann.helpers.Checker;
 import org.mann.libsvm.SvmParameter;
 
 public class ParameterValidationManager {
@@ -16,6 +17,9 @@ public class ParameterValidationManager {
 	public Checker runCheckAndGetResponse(String checkType, ParameterValidationManager manager, SvmParameter params) {
 		Checker checker = null;
 		switch(checkType){
+			case "Svm Type":
+				checker = new SvmTypeChecker(this);
+				break;
 			case "Kernel":
 				checker = new KernelChecker(this);
 				break;
@@ -46,11 +50,8 @@ public class ParameterValidationManager {
 			case "Probability":
 				checker =  new ProbabilityChecker(this);
 				break;
-			case "Feasibility of Nu":
-				checker =  new NuChecker(this);
-				break;
 			default:
-				throw new IllegalArgumentException("Check type " + checkType + " Not recognised");
+				throw new IllegalArgumentException("Check type '" + checkType + "' Not recognised");
 		}
 		return checker.checkParameter(params);
 	}

@@ -11,19 +11,20 @@ import java.util.Map;
 import java.util.Random;
 import java.util.StringTokenizer;
 
-import org.mann.helpers.CChecker;
-import org.mann.helpers.CacheSizeChecker;
-import org.mann.helpers.DegreeChecker;
-import org.mann.helpers.EpsChecker;
-import org.mann.helpers.GammaChecker;
-import org.mann.helpers.KernelChecker;
-import org.mann.helpers.NuChecker;
-import org.mann.helpers.PChecker;
-import org.mann.helpers.ProbabilityChecker;
-import org.mann.helpers.ShrinkingChecker;
-import org.mann.helpers.SvmTypeChecker;
 import org.mann.libsvm.SvmParameter.SvmType;
-import org.mann.ui.SvmPrintInterface;
+import org.mann.validation.svmparameter.CChecker;
+import org.mann.validation.svmparameter.CacheSizeChecker;
+import org.mann.validation.svmparameter.DegreeChecker;
+import org.mann.validation.svmparameter.EpsChecker;
+import org.mann.validation.svmparameter.GammaChecker;
+import org.mann.validation.svmparameter.KernelChecker;
+import org.mann.validation.svmparameter.NuChecker;
+import org.mann.validation.svmparameter.PChecker;
+import org.mann.validation.svmparameter.ProbabilityChecker;
+import org.mann.validation.svmparameter.ShrinkingChecker;
+import org.mann.validation.svmparameter.SvmTypeChecker;
+
+import ui.SvmPrintInterface;
 
 //
 // Kernel Cache

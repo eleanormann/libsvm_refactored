@@ -1,7 +1,7 @@
 .SUFFIXES: .class .java
-FILES = libsvm/svm.class libsvm/svm_model.class libsvm/svm_node.class \
-		libsvm/svm_parameter.class libsvm/svm_problem.class \
-		libsvm/svm_print_interface.class \
+FILES = org.mann.libsvm/svm.class org.mann.libsvm/svm_model.class org.mann.libsvm/svm_node.class \
+		org.mann.libsvm/svm_parameter.class org.mann.libsvm/svm_problem.class \
+		org.mann.libsvm/svm_print_interface.class \
 		svm_train.class svm_predict.class svm_toy.class svm_scale.class
 
 #JAVAC = jikes
@@ -10,16 +10,16 @@ JAVAC = javac
 # JAVAC_FLAGS =
 
 all: $(FILES)
-	jar cvf libsvm.jar *.class libsvm/*.class
+	jar cvf org.mann.libsvm.jar *.class org.mann.libsvm/*.class
 
 .java.class:
 	$(JAVAC) $(JAVAC_FLAGS) $<
 
-libsvm/svm.java: libsvm/svm.m4
-	m4 libsvm/svm.m4 > libsvm/svm.java
+org.mann.libsvm/svm.java: org.mann.libsvm/svm.m4
+	m4 org.mann.libsvm/svm.m4 > org.mann.libsvm/svm.java
 
 clean:
-	rm -f libsvm/*.class *.class *.jar libsvm/*~ *~ libsvm/svm.java
+	rm -f org.mann.libsvm/*.class *.class *.jar org.mann.libsvm/*~ *~ org.mann.libsvm/svm.java
 
 dist: clean all
-	rm *.class libsvm/*.class
+	rm *.class org.mann.libsvm/*.class

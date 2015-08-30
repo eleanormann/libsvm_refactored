@@ -1,7 +1,8 @@
-package org.mann.helpers;
+package org.mann.validation.svmparameter;
 
 import java.util.Arrays;
 
+import org.mann.helpers.Checker;
 import org.mann.libsvm.SvmParameter;
 import org.mann.libsvm.svm;
 import org.mann.libsvm.svm_problem;

@@ -1,4 +1,4 @@
-package org.mann.helpers;
+package org.mann.validation.svmparameter;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -22,9 +22,9 @@ public class ParameterValidationManagerTest {
 	
 	@Test
 	public void checkValidationMessageIsComplete(){
-		String expectedMessage = "Svm type: NU_SVC\nkernel type: 1\nGamma = 1.0\nDegree = 1\nCache size = 1.0\n"
+		String expectedMessage = "Svm type: NU_SVC\nkernel type: 1\nGamma = 1.0\nDegree = 1\nCache size: 1.0\n"
 				+ "Eps = 1.0\nC = 1.0\nNu = 1.0\np = 1.0\nShrinking = 1\nProbability = 1\n";
-		manager.runCheckAndGetResponse("SvmType", manager, createSvmParameter());
+		manager.runCheckAndGetResponse("Svm Type", manager, createSvmParameter());
 		assertThat(manager.getValidationMessage().toString(), equalTo(expectedMessage));
 	}
 	
@@ -35,7 +35,7 @@ public class ParameterValidationManagerTest {
 	
 	@Test
 	public void parameterCheckerShouldReturnSvmTypeWhenRequested() {
-		checkValidationMessageContainsString("SvmType", "Svm Type: NU_SVC");
+		checkValidationMessageContainsString("Svm Type", "Svm type: NU_SVC");
 	}
 
 	@Test
@@ -88,10 +88,9 @@ public class ParameterValidationManagerTest {
 		checkValidationMessageContainsString("Probability","Probability = 1\n");
 	}
 	
-	@Test
-	public void parameterCheckerShouldReturnFeasibilityOfNuWhenRequested() {
-		//TODO fix this so it fails if nu is not set
-		checkValidationMessageContainsString("Feasibility of Nu","Nu = 0.0: feasibility checked and is OK");
+	@Test(expected=IllegalArgumentException.class)
+	public void parameterCheckerShouldReturnExceptionWhenCheckTypeNotRecognised() {
+		manager.runCheckAndGetResponse("Feasibility of Nu", manager, createSvmParameter());
 	}
 	
 	private void checkValidationMessageContainsString(String checkType, String expectedMessage) {

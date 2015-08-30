@@ -10,9 +10,10 @@ import java.io.IOException;
 import java.util.StringTokenizer;
 
 import org.mann.libsvm.SvmParameter.SvmType;
-import org.mann.ui.SvmPrintInterface;
-import org.mann.ui.SvmPrinterFactory;
-import org.mann.ui.SvmPrinterFactory.PrintMode;
+
+import ui.SvmPrintInterface;
+import ui.SvmPrinterFactory;
+import ui.SvmPrinterFactory.PrintMode;
 
 class svm_predict {
 

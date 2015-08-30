@@ -1,13 +1,12 @@
-package org.mann.helpers;
+package org.mann.validation.svmparameter;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
-import org.mann.helpers.DegreeChecker;
-import org.mann.helpers.ParameterValidationManager;
 import org.mann.libsvm.SvmParameter;
+import org.mann.validation.svmparameter.DegreeChecker;
 
 public class DegreeCheckerTest {
 

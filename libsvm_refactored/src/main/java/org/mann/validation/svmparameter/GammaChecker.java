@@ -1,8 +1,9 @@
-package org.mann.helpers;
+package org.mann.validation.svmparameter;
 
 import static org.junit.Assert.*;
 
 import org.junit.Test;
+import org.mann.helpers.Checker;
 import org.mann.libsvm.SvmParameter;
 import org.mann.libsvm.svm;
 

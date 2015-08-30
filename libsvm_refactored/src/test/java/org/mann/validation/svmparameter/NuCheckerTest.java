@@ -1,16 +1,15 @@
-package org.mann.helpers;
+package org.mann.validation.svmparameter;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
-import org.mann.helpers.NuChecker;
-import org.mann.helpers.ParameterValidationManager;
 import org.mann.libsvm.SvmNode;
 import org.mann.libsvm.SvmParameter;
 import org.mann.libsvm.svm_problem;
 import org.mann.libsvm.SvmParameter.SvmType;
+import org.mann.validation.svmparameter.NuChecker;
 
 public class NuCheckerTest {
 

@@ -77,7 +77,7 @@ public class SvmTrainOutputMessagesTest {
 			
 			@Mock public void svm_save_model(String model_file_name, SvmModel model) throws IOException {}
 		};
-		
+			 
 		svm_train.main(new String[]{"invalid filename"});
 		assertEquals("invalid filename (No such file or directory)", errContent.toString().trim());
 		assertEquals(HelpMessages.TRAIN_HELP_MESSAGE_ON_BAD_INPUT, outContent.toString().trim());

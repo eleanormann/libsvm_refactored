@@ -9,9 +9,10 @@ import java.util.Vector;
 
 import org.mann.helpers.HelpMessages;
 import org.mann.libsvm.SvmParameter.SvmType;
-import org.mann.ui.SvmPrintInterface;
-import org.mann.ui.SvmPrinterFactory;
-import org.mann.ui.SvmPrinterFactory.PrintMode;
+
+import ui.SvmPrintInterface;
+import ui.SvmPrinterFactory;
+import ui.SvmPrinterFactory.PrintMode;
 
 class svm_train {
 
@@ -32,7 +33,7 @@ class svm_train {
 		read_problem();
 		error_msg = svm.svm_check_parameter(prob, param);
 
-		if (error_msg != null) {
+		if (error_msg != null && error_msg.contains("ERROR")) {
 			System.err.print("ERROR: " + error_msg + "\n");
 			System.exit(1);
 		}
