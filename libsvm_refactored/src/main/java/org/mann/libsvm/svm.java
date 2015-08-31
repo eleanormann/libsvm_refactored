@@ -2560,9 +2560,7 @@ public class svm {
 
 	public String checkSvmParameter(svm_problem prob, SvmParameter param) {
 		ParameterValidationManager paramValManager = new ParameterValidationManager(new StringBuilder());
-		//TODO: nu checking is a bit ugly, consider changing
-		paramValManager.checkNuThenRunCheckAndGetResponse("Nu", paramValManager, param, prob);
-		paramValManager.runCheckAndGetResponse("Svm Type", paramValManager, param);
+		paramValManager.checkNuThenRunCheckAndGetResponse("Svm Type", paramValManager, param, prob);
 		return paramValManager.getValidationMessage().toString();
 	}
 	

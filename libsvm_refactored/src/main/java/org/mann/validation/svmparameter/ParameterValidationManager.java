@@ -17,7 +17,8 @@ public class ParameterValidationManager {
 	
 	public void checkNuThenRunCheckAndGetResponse(String checkType, ParameterValidationManager manager, SvmParameter params,
 			svm_problem prob) {
-		new NuChecker(this).runFeasibilityCheckThenCheckParameter(prob, params);
+		new NuChecker(this).checkFeasibilityOfNu(prob, params);
+		runCheckAndGetResponse(checkType, this, params);
 	}
 	
 	public Checker runCheckAndGetResponse(String checkType, ParameterValidationManager manager, SvmParameter params) {

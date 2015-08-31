@@ -15,7 +15,7 @@ public class NuChecker implements Checker {
 		this.manager = parameterValidationManager;
 	}
 	
-	public void checkNu(double nu) {
+	protected void checkNu(double nu) {
 		if (nu <= 0 || nu > 1){
 			manager.getValidationMessage().append( "ERROR: nu <= 0 or nu > 1\n");			
 		}else{
