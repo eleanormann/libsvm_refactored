@@ -31,7 +31,7 @@ class svm_train {
 			return;
 		}
 		read_problem();
-		error_msg = svm.svm_check_parameter(prob, param);
+		error_msg = new svm().checkSvmParameter(prob, param);
 
 		if (error_msg != null && error_msg.contains("ERROR")) {
 			System.err.print("ERROR: " + error_msg + "\n");

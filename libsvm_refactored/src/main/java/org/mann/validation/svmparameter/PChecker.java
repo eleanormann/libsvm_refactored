@@ -1,8 +1,8 @@
 package org.mann.validation.svmparameter;
 
-import org.mann.helpers.Checker;
 import org.mann.libsvm.SvmParameter;
-import org.mann.libsvm.svm;
+import org.mann.libsvm.SvmParameter.SvmType;
+import org.mann.validation.Checker;
 
 public class PChecker implements Checker {
 
@@ -10,10 +10,6 @@ public class PChecker implements Checker {
 
 	public PChecker(ParameterValidationManager parameterValidationManager) {
 		this.manager = parameterValidationManager;
-	}
-
-	public PChecker() {
-		// TODO Auto-generated constructor stub
 	}
 
 	public void checkP(double p) {
@@ -25,7 +21,9 @@ public class PChecker implements Checker {
 	}
 
 	public Checker checkParameter(SvmParameter params) {
-		checkP(params.p);
+		if(params.svmType == SvmType.EPSILON_SVR){
+			checkP(params.p);			
+		}
 		return manager.runCheckAndGetResponse("Shrinking", manager, params);
 	}
 

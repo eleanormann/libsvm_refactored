@@ -1,12 +1,9 @@
 package org.mann.validation.svmparameter;
 
-import org.mann.helpers.Checker;
 import org.mann.libsvm.SvmParameter;
-import org.mann.libsvm.svm;
+import org.mann.validation.Checker;
 public class KernelChecker implements Checker {
 	private ParameterValidationManager manager;
-	
-	public KernelChecker(){};
 	
 	public KernelChecker(ParameterValidationManager parameterValidationManager){
 		this.manager = parameterValidationManager;

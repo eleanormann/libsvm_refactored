@@ -26,8 +26,9 @@ public class NuCheckerTest {
 		SvmParameter param = new SvmParameter();
 		//.88 is the largest nu (to 2 dp) that is feasible for these data
 		param.nu = .89;
+		param.svmType = SvmType.NU_SVC;
 		ParameterValidationManager managerForErrorTest = new ParameterValidationManager(new StringBuilder()); 
-		new NuChecker(managerForErrorTest).checkFeasibilityOfNu(SvmParameter.NU_SVC, dataset, param);
+		new NuChecker(managerForErrorTest).checkFeasibilityOfNu(dataset, param);
 		assertThat(managerForErrorTest.getValidationMessage().toString(), equalTo("ERROR: "+param.nu +" is not a feasible nu for these data"));	
 	}
 	
@@ -37,16 +38,18 @@ public class NuCheckerTest {
 		svm_problem dataset = createSvmProblem();
 		SvmParameter param = new SvmParameter();
 		param.nu = .88;
-		 new NuChecker(managerForSuccessTest).checkFeasibilityOfNu(SvmParameter.NU_SVC, dataset, param);
-		assertThat(managerForSuccessTest.getValidationMessage().toString(), equalTo("Nu = " + param.nu + ": feasibility checked and is OK"));
+		param.svmType = SvmType.NU_SVC;
+		 new NuChecker(managerForSuccessTest).checkFeasibilityOfNu(dataset, param);
+		assertThat(managerForSuccessTest.getValidationMessage().toString(), equalTo("Nu = " + param.nu + ": feasibility checked and is OK\n"));
 	}
 	
 	@Test
-	public void checkParameterShouldReturnErrorWhenNuLessThanZeroOrGreaterThanOne(){
+	public void checkParameterShouldReturnErrorWhenNuLessThanZeroOrGreaterThanOneAndEligibleSvmType(){
 		ParameterValidationManager manager = new ParameterValidationManager(new StringBuilder()); 
-		new NuChecker(manager).checkParameter(createSvmParameter());
+		new NuChecker(manager).checkParameter(createSvmParameter(1, SvmType.NU_SVR));
 		assertThat(manager.getValidationMessage().toString(), containsString("Nu = 1.0"));
 	}
+
 
 	@Test
 	public void extendArrayLengthShouldReturnCopyWithDoubleLength(){
@@ -56,6 +59,15 @@ public class NuCheckerTest {
 		assertThat(originalArray, equalTo(expectedArray));
 	}
 	
+	
+	@Test
+	public void checkFeasibiltyOfNuThenCheckParameterShouldCheckFeasibilityOfNuWhenSvmTypeNuSvc(){
+		ParameterValidationManager manager = new ParameterValidationManager(new StringBuilder()); 
+		SvmParameter param = createSvmParameter(.88, SvmType.NU_SVC);
+		new NuChecker(manager).runFeasibilityCheckThenCheckParameter(createSvmProblem(), param);
+		assertThat(manager.getValidationMessage().toString(), equalTo("Nu = " + param.nu + ": feasibility checked and is OK\n"));
+		
+	}
 	private svm_problem createSvmProblem() {
 		svm_problem dataset = new svm_problem();
 		dataset.y = new double[]{1,1,1,1,0,0,0,1,0};
@@ -65,12 +77,11 @@ public class NuCheckerTest {
 		dataset.length = dataset.y.length;
 		return dataset;
 	}
-
-
-	private SvmParameter createSvmParameter() {
-		SvmParameter params = new SvmParameter();
-		params.svmType = SvmType.NU_SVC;
-		params.nu = 1.0;
-		return params;
+	
+	private SvmParameter createSvmParameter(double nu, SvmType svmType) {
+		SvmParameter param = new SvmParameter();
+		param.svmType = svmType;
+		param.nu = nu;
+		return param;
 	}
 }

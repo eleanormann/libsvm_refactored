@@ -1,17 +1,23 @@
 package org.mann.validation.svmparameter;
 
-import org.mann.helpers.Checker;
 import org.mann.libsvm.SvmParameter;
+import org.mann.libsvm.svm_problem;
+import org.mann.validation.Checker;
 
 public class ParameterValidationManager {
 	private StringBuilder validationMessage;
 	
-	ParameterValidationManager(StringBuilder validationMessage){
+	public ParameterValidationManager(StringBuilder validationMessage){
 		this.validationMessage = validationMessage;
 	}
 
 	public StringBuilder getValidationMessage() {
 		return validationMessage;
+	}
+	
+	public void checkNuThenRunCheckAndGetResponse(String checkType, ParameterValidationManager manager, SvmParameter params,
+			svm_problem prob) {
+		new NuChecker(this).runFeasibilityCheckThenCheckParameter(prob, params);
 	}
 	
 	public Checker runCheckAndGetResponse(String checkType, ParameterValidationManager manager, SvmParameter params) {

@@ -1,8 +1,8 @@
 package org.mann.validation.svmparameter;
 
-import org.mann.helpers.Checker;
 import org.mann.libsvm.SvmParameter;
 import org.mann.libsvm.SvmParameter.SvmType;
+import org.mann.validation.Checker;
 
 public class ProbabilityChecker implements Checker {
 

@@ -1,17 +1,11 @@
 package org.mann.validation.svmparameter;
 
-import static org.junit.Assert.*;
-
-import org.junit.Test;
-import org.mann.helpers.Checker;
 import org.mann.libsvm.SvmParameter;
-import org.mann.libsvm.svm;
+import org.mann.validation.Checker;
 
 public class GammaChecker implements Checker {
 private ParameterValidationManager manager;
-	
-	public GammaChecker(){};
-	
+
 	public GammaChecker(ParameterValidationManager parameterValidationManager) {
 		this.manager = parameterValidationManager;
 	}

@@ -6,23 +6,11 @@ import java.io.DataOutputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Map;
 import java.util.Random;
 import java.util.StringTokenizer;
 
 import org.mann.libsvm.SvmParameter.SvmType;
-import org.mann.validation.svmparameter.CChecker;
-import org.mann.validation.svmparameter.CacheSizeChecker;
-import org.mann.validation.svmparameter.DegreeChecker;
-import org.mann.validation.svmparameter.EpsChecker;
-import org.mann.validation.svmparameter.GammaChecker;
-import org.mann.validation.svmparameter.KernelChecker;
-import org.mann.validation.svmparameter.NuChecker;
-import org.mann.validation.svmparameter.PChecker;
-import org.mann.validation.svmparameter.ProbabilityChecker;
-import org.mann.validation.svmparameter.ShrinkingChecker;
-import org.mann.validation.svmparameter.SvmTypeChecker;
+import org.mann.validation.svmparameter.ParameterValidationManager;
 
 import ui.SvmPrintInterface;
 
@@ -2570,46 +2558,12 @@ public class svm {
 		return model;
 	}
 
-	public static String svm_check_parameter(svm_problem prob,
-			SvmParameter param) {
-		int svm_type = param.getIntEquivalentOfSvmType(param.svmType);
-		StringBuilder validationMsg = new StringBuilder();
-		
-//		validationMsg.append(new SvmTypeChecker().checkSvmType(svm_type));
-//		validationMsg.append(new KernelChecker().checkKernelType(param.kernel_type));
-//		validationMsg.append(new GammaChecker().checkGamma(param.gamma));
-//		validationMsg.append(new DegreeChecker().checkDegreeOfPolynomialKernel(param.degree));
-//		
-//		// cache_size,eps,C,nu,p,shrinking
-//		validationMsg.append(new CacheSizeChecker().checkCacheSize(param.cache_size));
-//		validationMsg.append(new EpsChecker().checkEps(param.eps));
-//		
-//		if (svm_type == SvmParameter.C_SVC
-//				|| svm_type == SvmParameter.EPSILON_SVR
-//				|| svm_type == SvmParameter.NU_SVR)
-//			
-//			validationMsg.append(new CChecker().checkC(param.C));
-//
-//		if (svm_type == SvmParameter.NU_SVC
-//				|| svm_type == SvmParameter.ONE_CLASS
-//				|| svm_type == SvmParameter.NU_SVR){
-//			
-//			validationMsg.append(new NuChecker().checkNu(param.nu));
-//		}
-//			
-//		if (svm_type == SvmParameter.EPSILON_SVR){
-//			validationMsg.append(new PChecker().checkP(param.p));
-//		}
-//		
-//		validationMsg.append(new ShrinkingChecker().checkShrinking(param.shrinking));
-//
-//		validationMsg.append(new ProbabilityChecker().checkProbability(param.probability, param.svmType));
-//
-//		// check whether nu-svc is feasible
-//		validationMsg.append(new NuChecker().checkFeasibilityOfNu(svm_type, prob, param));
-
-
-		return validationMsg.toString();
+	public String checkSvmParameter(svm_problem prob, SvmParameter param) {
+		ParameterValidationManager paramValManager = new ParameterValidationManager(new StringBuilder());
+		//TODO: nu checking is a bit ugly, consider changing
+		paramValManager.checkNuThenRunCheckAndGetResponse("Nu", paramValManager, param, prob);
+		paramValManager.runCheckAndGetResponse("Svm Type", paramValManager, param);
+		return paramValManager.getValidationMessage().toString();
 	}
 	
 	public static int svm_check_probability_model(SvmModel model) {

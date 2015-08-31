@@ -1,8 +1,7 @@
 package org.mann.validation.svmparameter;
 
-import org.mann.helpers.Checker;
 import org.mann.libsvm.SvmParameter;
-import org.mann.libsvm.svm;
+import org.mann.validation.Checker;
 
 public class EpsChecker implements Checker {
 
@@ -10,10 +9,6 @@ public class EpsChecker implements Checker {
 
 	public EpsChecker(ParameterValidationManager parameterValidationManager) {
 		this.manager = parameterValidationManager;
-	}
-
-	public EpsChecker() {
-		// TODO Auto-generated constructor stub
 	}
 
 	public void checkEps(double eps) {

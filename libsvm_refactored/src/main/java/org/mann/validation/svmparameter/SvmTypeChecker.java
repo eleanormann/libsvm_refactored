@@ -1,22 +1,22 @@
 package org.mann.validation.svmparameter;
 
-import org.mann.helpers.Checker;
 import org.mann.libsvm.SvmParameter;
-import org.mann.libsvm.svm;
-import org.mann.libsvm.SvmParameter.SvmType;
+import org.mann.validation.Checker;
 
 public class SvmTypeChecker implements Checker{
 
 	private ParameterValidationManager manager;
-	
-	public SvmTypeChecker(){};
-	
+
 	public SvmTypeChecker(ParameterValidationManager parameterValidationManager){
 		this.manager = parameterValidationManager;
 	}
 
 	public Checker checkParameter(SvmParameter params) {
-		manager.getValidationMessage().append("Svm type: " + params.svmType + "\n");
+		if(params.svmType == null){
+			manager.getValidationMessage().append("ERROR: Svm type not set\n");
+		}else{
+			manager.getValidationMessage().append("Svm type: " + params.svmType + "\n");			
+		}
 		return manager.runCheckAndGetResponse("Kernel", manager, params);
 	}
 

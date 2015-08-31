@@ -1,13 +1,11 @@
 package org.mann.validation.svmparameter;
 
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 import org.mann.libsvm.SvmParameter;
-import org.mann.libsvm.SvmParameter.SvmType;
-import org.mann.validation.svmparameter.EpsChecker;
 
 public class EpsCheckerTest {
 

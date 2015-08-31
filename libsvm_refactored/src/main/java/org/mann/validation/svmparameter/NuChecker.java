@@ -2,23 +2,19 @@ package org.mann.validation.svmparameter;
 
 import java.util.Arrays;
 
-import org.mann.helpers.Checker;
 import org.mann.libsvm.SvmParameter;
-import org.mann.libsvm.svm;
+import org.mann.libsvm.SvmParameter.SvmType;
 import org.mann.libsvm.svm_problem;
+import org.mann.validation.Checker;
 
 public class NuChecker implements Checker {
 
 	private ParameterValidationManager manager;
 
 	public NuChecker(ParameterValidationManager parameterValidationManager) {
-	this.manager = parameterValidationManager;
+		this.manager = parameterValidationManager;
 	}
-
-	public NuChecker() {
-		// TODO Auto-generated constructor stub
-	}
-
+	
 	public void checkNu(double nu) {
 		if (nu <= 0 || nu > 1){
 			manager.getValidationMessage().append( "ERROR: nu <= 0 or nu > 1\n");			
@@ -27,8 +23,8 @@ public class NuChecker implements Checker {
 		}
 	}
 
-	public void checkFeasibilityOfNu(int svm_type, svm_problem prob, SvmParameter param) {
-		if (svm_type == SvmParameter.NU_SVC) {
+	public void checkFeasibilityOfNu(svm_problem prob, SvmParameter param) {
+		if (param.svmType == SvmType.NU_SVC) {
 			int problemLength = prob.length;
 			int arrayLength = 16;
 			int currentIndexInProblem = 0;
@@ -67,8 +63,8 @@ public class NuChecker implements Checker {
 					}	
 				}
 			}
+			manager.getValidationMessage().append( "Nu = " + param.nu + ": feasibility checked and is OK\n");
 		}
-		manager.getValidationMessage().append( "Nu = " + param.nu + ": feasibility checked and is OK");
 	}
 
 	public static int[] extendArrayLength(int[] originalArray) {
@@ -78,8 +74,14 @@ public class NuChecker implements Checker {
 	}
 
 	public Checker checkParameter(SvmParameter params) {
-		checkNu(params.nu);
+		if (params.svmType == SvmType.ONE_CLASS || params.svmType == SvmType.NU_SVR) {
+			checkNu(params.nu);	
+		}
 		return manager.runCheckAndGetResponse("P", manager, params);
+	}
+
+	public void runFeasibilityCheckThenCheckParameter(svm_problem prob, SvmParameter params) {
+		checkFeasibilityOfNu(prob, params);
 	}
 
 }

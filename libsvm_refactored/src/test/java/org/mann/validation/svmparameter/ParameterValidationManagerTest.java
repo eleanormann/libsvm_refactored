@@ -6,11 +6,9 @@ import static org.junit.Assert.assertThat;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.mann.libsvm.SvmNode;
 import org.mann.libsvm.SvmParameter;
 import org.mann.libsvm.SvmParameter.SvmType;
 import org.mann.libsvm.svm;
-import org.mann.libsvm.svm_problem;
 
 public class ParameterValidationManagerTest {
 	private ParameterValidationManager manager; 
@@ -22,95 +20,86 @@ public class ParameterValidationManagerTest {
 	
 	@Test
 	public void checkValidationMessageIsComplete(){
-		String expectedMessage = "Svm type: NU_SVC\nkernel type: 1\nGamma = 1.0\nDegree = 1\nCache size: 1.0\n"
-				+ "Eps = 1.0\nC = 1.0\nNu = 1.0\np = 1.0\nShrinking = 1\nProbability = 1\n";
-		manager.runCheckAndGetResponse("Svm Type", manager, createSvmParameter());
+		String expectedMessage = "Svm type: NU_SVR\nkernel type: 1\nGamma = 1.0\nDegree = 1\nCache size: 1.0\n"
+				+ "Eps = 1.0\nC = 1.0\nNu = 1.0\nShrinking = 1\nProbability = 1\n";
+		manager.runCheckAndGetResponse("Svm Type", manager, createSvmParameter(SvmType.NU_SVR));
 		assertThat(manager.getValidationMessage().toString(), equalTo(expectedMessage));
 	}
 	
-	@Test(expected = NullPointerException.class)
+	@Test
 	public void checkSvmParameterShouldReturnExceptionWhenSvmTypeNotSet(){
-		svm.svm_check_parameter(null, new SvmParameter());
+		String expectedMessage = new svm().checkSvmParameter(null, new SvmParameter());
+		assertThat(expectedMessage, containsString("ERROR: Svm type not set"));
 	}
 	
 	@Test
 	public void parameterCheckerShouldReturnSvmTypeWhenRequested() {
-		checkValidationMessageContainsString("Svm Type", "Svm type: NU_SVC");
+		checkValidationMessageContainsString("Svm Type", "Svm type: NU_SVC", SvmType.NU_SVC);
 	}
 
 	@Test
 	public void parameterCheckerShouldReturnKernelTypeWhenRequested() {
-		checkValidationMessageContainsString("Kernel", "kernel type: 1\n");
+		checkValidationMessageContainsString("Kernel", "kernel type: 1\n", null);
 	}
 	
 	@Test
 	public void parameterCheckerShouldReturnGammaWhenRequested() {
-		checkValidationMessageContainsString("Gamma", "Gamma = 1.0\n");
+		checkValidationMessageContainsString("Gamma", "Gamma = 1.0\n", null);
 	}
 	
 	@Test
 	public void parameterCheckerShouldReturnDegreeWhenRequested() {
-		checkValidationMessageContainsString("Degree", "Degree = 1\n");
+		checkValidationMessageContainsString("Degree", "Degree = 1\n", null);
 	}
 	
 	@Test
 	public void parameterCheckerShouldReturnCacheSizeWhenRequested() {
-		checkValidationMessageContainsString("Cache", "Cache size: 1.0\n");
+		checkValidationMessageContainsString("Cache", "Cache size: 1.0\n", null);
 	}
 	
 	@Test
 	public void parameterCheckerShouldReturnEpsWhenRequested() {
-		checkValidationMessageContainsString("Eps", "Eps = 1.0\n");
+		checkValidationMessageContainsString("Eps", "Eps = 1.0\n", null);
 	}
 	
 	@Test
 	public void parameterCheckerShouldReturnCWhenRequested() {
-		checkValidationMessageContainsString("C", "C = 1.0\n");
+		checkValidationMessageContainsString("C", "C = 1.0\n", SvmType.C_SVC);
 	}
 	
 	@Test
 	public void parameterCheckerShouldReturnNuWhenRequested() {
-		checkValidationMessageContainsString("Nu", "Nu = 1.0\n");
+		checkValidationMessageContainsString("Nu", "Nu = 1.0\n", SvmType.ONE_CLASS);
 	}
 	
 	@Test
 	public void parameterCheckerShouldReturnPWhenRequested() {
-		checkValidationMessageContainsString("P", "p = 1.0\n");
+		checkValidationMessageContainsString("P", "p = 1.0\n", SvmType.EPSILON_SVR);
 	}
 	
 	@Test
 	public void parameterCheckerShouldReturnShrinkingWhenRequested() {
-		checkValidationMessageContainsString("Shrinking", "Shrinking = 1\n");
+		checkValidationMessageContainsString("Shrinking", "Shrinking = 1\n", null);
 	}
 	
 	@Test
 	public void parameterCheckerShouldReturnProbabilityWhenRequested() {
-		checkValidationMessageContainsString("Probability","Probability = 1\n");
+		checkValidationMessageContainsString("Probability","Probability = 1\n", null);
 	}
 	
 	@Test(expected=IllegalArgumentException.class)
 	public void parameterCheckerShouldReturnExceptionWhenCheckTypeNotRecognised() {
-		manager.runCheckAndGetResponse("Feasibility of Nu", manager, createSvmParameter());
+		manager.runCheckAndGetResponse("Feasibility of Nu", manager, createSvmParameter(SvmType.C_SVC));
 	}
 	
-	private void checkValidationMessageContainsString(String checkType, String expectedMessage) {
-		manager.runCheckAndGetResponse(checkType, manager, createSvmParameter());
+	private void checkValidationMessageContainsString(String checkType, String expectedMessage, SvmType svmType) {
+		manager.runCheckAndGetResponse(checkType, manager, createSvmParameter(svmType));
 		assertThat(manager.getValidationMessage().toString(), containsString(expectedMessage));
 	}
 	
-	private svm_problem createSvmProblem() {
-		svm_problem dataset = new svm_problem();
-		dataset.y = new double[]{1,1,1,1,0,0,0,1,0};
-		dataset.x = new SvmNode[][] {
-				{ new SvmNode(1, 5), new SvmNode(2, 6), new SvmNode(3, 4), new SvmNode(4, 4), new SvmNode(-1, 0) },
-				{ new SvmNode(5, 10), new SvmNode(6, 9), new SvmNode(7, 8), new SvmNode(8, 10), new SvmNode(9, 9) }};
-		dataset.length = dataset.y.length;
-		return dataset;
-	}
-	
-	private SvmParameter createSvmParameter() {
+	private SvmParameter createSvmParameter(SvmType svmType) {
 		SvmParameter params = new SvmParameter();
-		params.svmType = SvmType.NU_SVC;
+		params.svmType = svmType;
 		params.kernel_type = 1;
 		params.C = 1;
 		params.cache_size = 1;

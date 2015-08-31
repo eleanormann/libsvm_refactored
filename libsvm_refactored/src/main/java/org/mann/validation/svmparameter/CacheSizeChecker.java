@@ -1,7 +1,7 @@
 package org.mann.validation.svmparameter;
 
-import org.mann.helpers.Checker;
 import org.mann.libsvm.SvmParameter;
+import org.mann.validation.Checker;
 
 
 public class CacheSizeChecker implements Checker {
@@ -11,11 +11,7 @@ public class CacheSizeChecker implements Checker {
 	public CacheSizeChecker(ParameterValidationManager parameterValidationManager) {
 		this.manager = parameterValidationManager;
 	}
-
-	public CacheSizeChecker() {
-		// TODO Auto-generated constructor stub
-	}
-
+	
 	public void checkCacheSize(double cache_size) {
 		if (cache_size <= 0) {
 			manager.getValidationMessage().append("ERROR: cache size <= 0\n");
