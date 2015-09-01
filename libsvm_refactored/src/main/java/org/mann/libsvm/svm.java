@@ -10,9 +10,8 @@ import java.util.Random;
 import java.util.StringTokenizer;
 
 import org.mann.libsvm.SvmParameter.SvmType;
+import org.mann.ui.SvmPrintInterface;
 import org.mann.validation.svmparameter.ParameterValidationManager;
-
-import ui.SvmPrintInterface;
 
 //
 // Kernel Cache
@@ -2336,9 +2335,6 @@ public class svm {
 			return svm_predict(model, x);
 	}
 
-	static final String svm_type_table[] = { "c_svc", "nu_svc", "one_class",
-			"epsilon_svr", "nu_svr", };
-
 	static final String kernel_type_table[] = { "linear", "polynomial", "rbf",
 			"sigmoid", "precomputed" };
 
@@ -2349,7 +2345,7 @@ public class svm {
 
 		SvmParameter param = model.getParam();
 
-		fp.writeBytes("svm_type " + svm_type_table[param.getIntEquivalentOfSvmType(param.svmType)] + "\n");
+		fp.writeBytes("svm_type " + param.svmType.toString().toLowerCase() + "\n");
 		fp.writeBytes("kernel_type " + kernel_type_table[param.kernel_type]
 				+ "\n");
 
@@ -2425,7 +2421,7 @@ public class svm {
 		fp.close();
 	}
 
-	private static boolean read_model_header(BufferedReader fp, SvmModel model) {
+	protected static boolean read_model_header(BufferedReader fp, SvmModel model) {
 		SvmParameter param = new SvmParameter();
 		model.setParam(param);
 		try {
@@ -2434,15 +2430,12 @@ public class svm {
 				String arg = cmd.substring(cmd.indexOf(' ') + 1);
 
 				if (cmd.startsWith("svm_type")) {
-					int i;
-					for (i = 0; i < svm_type_table.length; i++) {
-						if (arg.indexOf(svm_type_table[i]) != -1) {
-							param.svmType = param.getSvmTypeFromSvmParameter(i);
-							break;
-						}
-					}
-					if (i == svm_type_table.length) {
-						System.err.print("unknown svm type.\n");
+					try{
+						param.svmType = SvmType.valueOf(arg.toUpperCase());
+						break;
+					}catch(IllegalArgumentException e){
+						//TODO: handle exception
+						System.err.print("Unknown svm type.\n");
 						return false;
 					}
 				} else if (cmd.startsWith("kernel_type")) {

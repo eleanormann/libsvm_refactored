@@ -1,4 +1,4 @@
-package ui;
+package org.mann.ui;
 
 import org.mann.helpers.HelpMessages;
 
