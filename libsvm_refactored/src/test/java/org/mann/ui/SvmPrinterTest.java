@@ -1,7 +1,6 @@
 package org.mann.ui;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -10,9 +9,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mann.helpers.HelpMessages;
-
-import ui.SvmPrinterFactory;
-import ui.SvmPrinterFactory.PrintMode;
+import org.mann.ui.SvmPrinterFactory;
+import org.mann.ui.SvmPrinterFactory.PrintMode;
 
 public class SvmPrinterTest {
 
