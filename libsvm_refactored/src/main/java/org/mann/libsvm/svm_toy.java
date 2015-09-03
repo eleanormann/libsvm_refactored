@@ -1,12 +1,33 @@
 package org.mann.libsvm;
 
-import java.applet.*;
-import java.awt.*;
-import java.util.*;
-import java.awt.event.*;
-import java.io.*;
+import java.applet.Applet;
+import java.awt.AWTEvent;
+import java.awt.BorderLayout;
+import java.awt.Button;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FileDialog;
+import java.awt.Frame;
+import java.awt.Graphics;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Image;
+import java.awt.Panel;
+import java.awt.TextField;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.StringTokenizer;
+import java.util.Vector;
 
-import org.mann.libsvm.*;
 import org.mann.libsvm.SvmParameter.SvmType;
 
 public class svm_toy extends Applet {
@@ -377,20 +398,19 @@ public class svm_toy extends Applet {
 		FileDialog dialog = new FileDialog(new Frame(),"Save",FileDialog.SAVE);
 		dialog.setVisible(true);
 		String filename = dialog.getDirectory() + dialog.getFile();
-		if (filename == null) return;
 		try {
 			DataOutputStream fp = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(filename)));
 
-			int svm_type = SvmParameter.C_SVC;
+			SvmType svm_type = SvmType.C_SVC;/*SvmParameter.C_SVC;*/
 			int svm_type_idx = args.indexOf("-s ");
 			if(svm_type_idx != -1)
 			{
 				StringTokenizer svm_str_st = new StringTokenizer(args.substring(svm_type_idx+2).trim());
-				svm_type = atoi(svm_str_st.nextToken());
+				svm_type = SvmType.values()[atoi(svm_str_st.nextToken())];
 			}
 
 			int n = point_list.size();
-			if(svm_type == SvmParameter.EPSILON_SVR || svm_type == SvmParameter.NU_SVR)
+			if(svm_type == SvmType.EPSILON_SVR/*SvmParameter.EPSILON_SVR*/ || svm_type == SvmType.NU_SVR/*SvmParameter.NU_SVR*/)
 			{
 				for(int i=0;i<n;i++)
 				{
@@ -415,7 +435,6 @@ public class svm_toy extends Applet {
 		FileDialog dialog = new FileDialog(new Frame(),"Load",FileDialog.LOAD);
 		dialog.setVisible(true);
 		String filename = dialog.getDirectory() + dialog.getFile();
-		if (filename == null) return;
 		clear_all();
 		try {
 			BufferedReader fp = new BufferedReader(new FileReader(filename));
