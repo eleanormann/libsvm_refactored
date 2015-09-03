@@ -201,7 +201,7 @@ public class svm_toy extends Applet {
 			switch(argv[i-1].charAt(1))
 			{
 				case 's':
-					param.svmType = param.getSvmTypeFromSvmParameter(atoi(argv[i]));
+					param.svmType = SvmType.values()[(atoi(argv[i]))];
 					break;
 				case 't':
 					param.kernel_type = atoi(argv[i]);

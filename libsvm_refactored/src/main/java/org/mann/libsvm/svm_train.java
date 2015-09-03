@@ -9,10 +9,9 @@ import java.util.Vector;
 
 import org.mann.helpers.HelpMessages;
 import org.mann.libsvm.SvmParameter.SvmType;
-
-import ui.SvmPrintInterface;
-import ui.SvmPrinterFactory;
-import ui.SvmPrinterFactory.PrintMode;
+import org.mann.ui.SvmPrintInterface;
+import org.mann.ui.SvmPrinterFactory;
+import org.mann.ui.SvmPrinterFactory.PrintMode;
 
 class svm_train {
 
@@ -125,7 +124,7 @@ class svm_train {
 			}
 			switch (argv[i - 1].charAt(1)) {
 			case 's':
-				param.svmType = param.getSvmTypeFromSvmParameter(Integer.parseInt(argv[i]));
+				param.svmType = SvmType.values()[Integer.parseInt(argv[i])];
 				break;
 			case 't':
 				param.kernel_type = Integer.parseInt(argv[i]);
