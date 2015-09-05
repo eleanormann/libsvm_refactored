@@ -21,7 +21,7 @@ public class PChecker implements Checker {
 	}
 
 	public Checker checkParameter(SvmParameter params) {
-		if(params.svmType == SvmType.EPSILON_SVR){
+		if(params.svmType == SvmType.epsilon_svr){
 			checkP(params.p);			
 		}
 		return manager.runCheckAndGetResponse("Shrinking", manager, params);

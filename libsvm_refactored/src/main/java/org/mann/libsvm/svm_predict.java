@@ -10,10 +10,9 @@ import java.io.IOException;
 import java.util.StringTokenizer;
 
 import org.mann.libsvm.SvmParameter.SvmType;
-
-import ui.SvmPrintInterface;
-import ui.SvmPrinterFactory;
-import ui.SvmPrinterFactory.PrintMode;
+import org.mann.ui.SvmPrintInterface;
+import org.mann.ui.SvmPrinterFactory;
+import org.mann.ui.SvmPrinterFactory.PrintMode;
 
 class svm_predict {
 
@@ -39,7 +38,7 @@ class svm_predict {
 		double[] prob_estimates = null;
 
 		if (predict_probability == 1) {
-			if (svmType == SvmType.EPSILON_SVR || svmType == SvmType.NU_SVR) {
+			if (svmType == SvmType.epsilon_svr || svmType == SvmType.nu_svr) {
 				svm_predict.info("Prob. model for test data: target value = predicted value + z,\nz: "
 						+ "Laplace distribution e^(-|z|/sigma)/(2sigma),sigma=" + svm.svm_get_svr_probability(model) + "\n");
 			} else {
@@ -69,7 +68,7 @@ class svm_predict {
 			}
 
 			double v;
-			if (predict_probability == 1 && (svmType == SvmType.C_SVC || svmType == SvmType.NU_SVC)) {
+			if (predict_probability == 1 && (svmType == SvmType.c_svc || svmType == SvmType.nu_svc)) {
 				v = svm.svm_predict_probability(model, x, prob_estimates);
 				output.writeBytes(v + " ");
 				for (int j = 0; j < nr_class; j++)
@@ -90,7 +89,7 @@ class svm_predict {
 			sumvy += v * target;
 			++total;
 		}
-		if (svmType == SvmType.EPSILON_SVR || svmType == SvmType.NU_SVR) {
+		if (svmType == SvmType.epsilon_svr || svmType == SvmType.nu_svr) {
 			svm_predict.info("Mean squared error = " + error / total + " (regression)\n");
 			svm_predict.info("Squared correlation coefficient = "
 					+ ((total * sumvy - sumv * sumy) * (total * sumvy - sumv * sumy))

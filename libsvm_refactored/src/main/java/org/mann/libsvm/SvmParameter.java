@@ -5,7 +5,7 @@ public class SvmParameter implements Cloneable,java.io.Serializable
 {
 	
 	public enum SvmType{
-		C_SVC, NU_SVC, ONE_CLASS, EPSILON_SVR, NU_SVR
+		c_svc, nu_svc, one_class, epsilon_svr, nu_svr
 	}
 	
 	public enum KernelType {
@@ -20,7 +20,7 @@ public class SvmParameter implements Cloneable,java.io.Serializable
 	public static final int PRECOMPUTED = 4;
 
 	public SvmType svmType;
-	public int kernel_type;
+	public KernelType kernelType;
 	public int degree;	// for poly
 	public double gamma;	// for poly/rbf/sigmoid
 	public double coef0;	// for poly/sigmoid

@@ -9,20 +9,12 @@ public class KernelChecker implements Checker {
 		this.manager = parameterValidationManager;
 	}
 	
-	public void checkKernelType(int kernelType) {
-		if (kernelType != SvmParameter.LINEAR 
-				&& kernelType != SvmParameter.POLY 
-				&& kernelType != SvmParameter.RBF
-				&& kernelType != SvmParameter.SIGMOID 
-				&& kernelType != SvmParameter.PRECOMPUTED) {
-			manager.getValidationMessage().append("ERROR: unknown kernel type\n");
-		} else {
-			manager.getValidationMessage().append( "kernel type: " + kernelType + "\n");
-		}
-	}
-
 	public Checker checkParameter(SvmParameter params) {
-		checkKernelType(params.kernel_type);
+		if(params.kernelType==null){
+			manager.getValidationMessage().append( "ERROR: kernel type not set\n");
+		}else{ 			
+			manager.getValidationMessage().append( "Kernel type: " + params.kernelType + "\n");
+		}
 		return manager.runCheckAndGetResponse("Gamma", manager, params);
 	}
 }

@@ -36,42 +36,42 @@ public class CCheckerTest {
 	@Test
 	public void checkParmeterShouldAddErrorWhenCEqualToZero(){
 		ParameterValidationManager manager = new ParameterValidationManager(new StringBuilder()); 
-		new CChecker(manager).checkParameter(createSvmParameter(0, SvmType.C_SVC));
+		new CChecker(manager).checkParameter(createSvmParameter(0, SvmType.c_svc));
 		assertThat(manager.getValidationMessage().toString(), containsString("ERROR: C <= 0\n"));
 	}
 	
 	@Test
 	public void checkParmeterShouldAddErrorMessageWhenCLessThanZero(){
 		ParameterValidationManager manager = new ParameterValidationManager(new StringBuilder()); 
-		new CChecker(manager).checkParameter(createSvmParameter(-1, SvmType.C_SVC));
+		new CChecker(manager).checkParameter(createSvmParameter(-1, SvmType.c_svc));
 		assertThat(manager.getValidationMessage().toString(), containsString("ERROR: C <= 0\n"));
 	}
 	
 	@Test
 	public void checkParmeterShouldAddInfoMessageWhenCGreaterThanZeroAndCSvc(){
 		ParameterValidationManager manager = new ParameterValidationManager(new StringBuilder()); 
-		new CChecker(manager).checkParameter(createSvmParameter(1, SvmType.C_SVC));
+		new CChecker(manager).checkParameter(createSvmParameter(1, SvmType.c_svc));
 		assertThat(manager.getValidationMessage().toString(), containsString("C = 1.0\n"));
 	}
 	
 	@Test
 	public void checkParmeterShouldAddInfoMessageWhenCGreaterThanZeroAndEpsilon(){
 		ParameterValidationManager manager = new ParameterValidationManager(new StringBuilder()); 
-		new CChecker(manager).checkParameter(createSvmParameter(1, SvmType.EPSILON_SVR));
+		new CChecker(manager).checkParameter(createSvmParameter(1, SvmType.epsilon_svr));
 		assertThat(manager.getValidationMessage().toString(), containsString("C = 1.0\n"));
 	}
 	
 	@Test
 	public void checkParmeterShouldAddInfoMessageWhenCGreaterThanZeroAndNuSvr(){
 		ParameterValidationManager manager = new ParameterValidationManager(new StringBuilder()); 
-		new CChecker(manager).checkParameter(createSvmParameter(1, SvmType.NU_SVR));
+		new CChecker(manager).checkParameter(createSvmParameter(1, SvmType.nu_svr));
 		assertThat(manager.getValidationMessage().toString(), containsString("C = 1.0\n"));
 	}
 	
 	@Test
 	public void checkParmeterShouldAddErrorWhenSvmTypeIsOneClass(){
 		ParameterValidationManager manager = new ParameterValidationManager(new StringBuilder()); 
-		new CChecker(manager).checkParameter(createSvmParameter(1, SvmType.ONE_CLASS));
+		new CChecker(manager).checkParameter(createSvmParameter(1, SvmType.one_class));
 		assertThat(manager.getValidationMessage().toString(), not(containsString("ERROR: C <= 0\n")));
 		assertThat(manager.getValidationMessage().toString(), not(containsString("C = 1.0\n")));
 	}

@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.Random;
 import java.util.StringTokenizer;
 
+import org.mann.libsvm.SvmParameter.KernelType;
 import org.mann.libsvm.SvmParameter.SvmType;
 import org.mann.ui.SvmPrintInterface;
 import org.mann.validation.svmparameter.ParameterValidationManager;
@@ -167,7 +168,7 @@ abstract class Kernel extends QMatrix {
 	private final double[] x_square;
 
 	// SvmParameter
-	private final int kernel_type;
+	private final KernelType kernelType;
 	private final int degree;
 	private final double gamma;
 	private final double coef0;
@@ -202,17 +203,17 @@ abstract class Kernel extends QMatrix {
 	}
 
 	double kernel_function(int i, int j) {
-		switch (kernel_type) {
-		case SvmParameter.LINEAR:
+		switch (kernelType) {
+		case linear:
 			return dot(x[i], x[j]);
-		case SvmParameter.POLY:
+		case poly:
 			return powi(gamma * dot(x[i], x[j]) + coef0, degree);
-		case SvmParameter.RBF:
+		case rbf:
 			return Math.exp(-gamma
 					* (x_square[i] + x_square[j] - 2 * dot(x[i], x[j])));
-		case SvmParameter.SIGMOID:
+		case sigmoid:
 			return Math.tanh(gamma * dot(x[i], x[j]) + coef0);
-		case SvmParameter.PRECOMPUTED:
+		case precomputed:
 			return x[i][(int) (x[j][0].value)].value;
 		default:
 			return 0; // java
@@ -220,14 +221,14 @@ abstract class Kernel extends QMatrix {
 	}
 
 	Kernel(int l, SvmNode[][] x_, SvmParameter param) {
-		this.kernel_type = param.kernel_type;
+		this.kernelType = param.kernelType;
 		this.degree = param.degree;
 		this.gamma = param.gamma;
 		this.coef0 = param.coef0;
 
 		x = (SvmNode[][]) x_.clone();
 
-		if (kernel_type == SvmParameter.RBF) {
+		if (kernelType == KernelType.rbf) {
 			x_square = new double[l];
 			for (int i = 0; i < l; i++)
 				x_square[i] = dot(x[i], x[i]);
@@ -255,12 +256,12 @@ abstract class Kernel extends QMatrix {
 	}
 
 	static double k_function(SvmNode[] x, SvmNode[] y, SvmParameter param) {
-		switch (param.kernel_type) {
-		case SvmParameter.LINEAR:
+		switch (param.kernelType) {
+		case linear:
 			return dot(x, y);
-		case SvmParameter.POLY:
+		case poly:
 			return powi(param.gamma * dot(x, y) + param.coef0, param.degree);
-		case SvmParameter.RBF: {
+		case rbf: {
 			double sum = 0;
 			int xlen = x.length;
 			int ylen = y.length;
@@ -291,9 +292,9 @@ abstract class Kernel extends QMatrix {
 
 			return Math.exp(-param.gamma * sum);
 		}
-		case SvmParameter.SIGMOID:
+		case sigmoid:
 			return Math.tanh(param.gamma * dot(x, y) + param.coef0);
-		case SvmParameter.PRECOMPUTED:
+		case precomputed:
 			return x[(int) (y[0].value)].value;
 		default:
 			return 0; // java
@@ -1437,19 +1438,19 @@ public class svm {
 		double[] alpha = new double[prob.length];
 		Solver.SolutionInfo si = new Solver.SolutionInfo();
 		switch (param.svmType) {
-		case C_SVC:
+		case c_svc:
 			solve_c_svc(prob, param, alpha, si, Cp, Cn);
 			break;
-		case NU_SVC:
+		case nu_svc:
 			solve_nu_svc(prob, param, alpha, si);
 			break;
-		case ONE_CLASS:
+		case one_class:
 			solve_one_class(prob, param, alpha, si);
 			break;
-		case EPSILON_SVR:
+		case epsilon_svr:
 			solve_epsilon_svr(prob, param, alpha, si);
 			break;
-		case NU_SVR:
+		case nu_svr:
 			solve_nu_svr(prob, param, alpha, si);
 			break;
 		}
@@ -1856,9 +1857,9 @@ public class svm {
 		SvmModel model = new SvmModel();
 		model.setParam(param);
 
-		if (param.svmType == SvmType.ONE_CLASS
-				|| param.svmType == SvmType.EPSILON_SVR
-				|| param.svmType == SvmType.NU_SVR) {
+		if (param.svmType == SvmType.one_class
+				|| param.svmType == SvmType.epsilon_svr
+				|| param.svmType == SvmType.nu_svr) {
 			// regression or one-class-svm
 			model.nr_class = 2;
 			model.label = null;
@@ -1868,7 +1869,7 @@ public class svm {
 			model.sv_coef = new double[1][];
 
 			if (param.probability == 1
-					&& (param.svmType == SvmType.EPSILON_SVR || param.svmType == SvmType.NU_SVR)) {
+					&& (param.svmType == SvmType.epsilon_svr || param.svmType == SvmType.nu_svr)) {
 				model.probA = new double[1];
 				model.probA[0] = svm_svr_probability(prob, param);
 			}
@@ -2086,7 +2087,7 @@ public class svm {
 
 		// stratified cv may not give leave-one-out rate
 		// Each class to l folds -> some folds may have zero elements
-		if ((param.svmType == SvmType.C_SVC || param.svmType == SvmType.NU_SVC)
+		if ((param.svmType == SvmType.c_svc || param.svmType == SvmType.nu_svc)
 				&& nr_fold < l) {
 			int[] tmp_nr_class = new int[1];
 			int[][] tmp_label = new int[1][];
@@ -2174,7 +2175,7 @@ public class svm {
 			}
 			SvmModel submodel = svm_train(subprob, param);
 			if (param.probability == 1
-					&& (param.svmType == SvmType.C_SVC || param.svmType == SvmType.NU_SVC)) {
+					&& (param.svmType == SvmType.c_svc || param.svmType == SvmType.nu_svc)) {
 				double[] prob_estimates = new double[svm_get_nr_class(submodel)];
 				for (j = begin; j < end; j++)
 					target[perm[j]] = svm_predict_probability(submodel,
@@ -2210,8 +2211,8 @@ public class svm {
 	}
 
 	public static double svm_get_svr_probability(SvmModel model) {
-		if ((model.getParam().svmType == SvmType.EPSILON_SVR || model
-				.getParam().svmType == SvmType.NU_SVR) && model.probA != null)
+		if ((model.getParam().svmType == SvmType.epsilon_svr || model
+				.getParam().svmType == SvmType.nu_svr) && model.probA != null)
 			return model.probA[0];
 		else {
 			System.err
@@ -2223,9 +2224,9 @@ public class svm {
 	public static double svm_predict_values(SvmModel model, SvmNode[] x,
 			double[] dec_values) {
 		int i;
-		if (model.getParam().svmType == SvmType.ONE_CLASS
-				|| model.getParam().svmType == SvmType.EPSILON_SVR
-				|| model.getParam().svmType == SvmType.NU_SVR) {
+		if (model.getParam().svmType == SvmType.one_class
+				|| model.getParam().svmType == SvmType.epsilon_svr
+				|| model.getParam().svmType == SvmType.nu_svr) {
 			double[] sv_coef = model.sv_coef[0];
 			double sum = 0;
 			for (i = 0; i < model.l; i++)
@@ -2234,7 +2235,7 @@ public class svm {
 			sum -= model.rho[0];
 			dec_values[0] = sum;
 
-			if (model.getParam().svmType == SvmType.ONE_CLASS)
+			if (model.getParam().svmType == SvmType.one_class)
 				return (sum > 0) ? 1 : -1;
 			else
 				return sum;
@@ -2293,9 +2294,9 @@ public class svm {
 	public static double svm_predict(SvmModel model, SvmNode[] x) {
 		int nr_class = model.nr_class;
 		double[] dec_values;
-		if (model.getParam().svmType == SvmType.ONE_CLASS
-				|| model.getParam().svmType == SvmType.EPSILON_SVR
-				|| model.getParam().svmType == SvmType.NU_SVR)
+		if (model.getParam().svmType == SvmType.one_class
+				|| model.getParam().svmType == SvmType.epsilon_svr
+				|| model.getParam().svmType == SvmType.nu_svr)
 			dec_values = new double[1];
 		else
 			dec_values = new double[nr_class * (nr_class - 1) / 2];
@@ -2305,7 +2306,7 @@ public class svm {
 
 	public static double svm_predict_probability(SvmModel model, SvmNode[] x,
 			double[] prob_estimates) {
-		if ((model.getParam().svmType == SvmType.C_SVC || model.getParam().svmType == SvmType.NU_SVC)
+		if ((model.getParam().svmType == SvmType.c_svc || model.getParam().svmType == SvmType.nu_svc)
 				&& model.probA != null && model.probB != null) {
 			int i;
 			int nr_class = model.nr_class;
@@ -2335,9 +2336,6 @@ public class svm {
 			return svm_predict(model, x);
 	}
 
-	static final String kernel_type_table[] = { "linear", "polynomial", "rbf",
-			"sigmoid", "precomputed" };
-
 	public static void svm_save_model(String model_file_name, SvmModel model)
 			throws IOException {
 		DataOutputStream fp = new DataOutputStream(new BufferedOutputStream(
@@ -2345,20 +2343,19 @@ public class svm {
 
 		SvmParameter param = model.getParam();
 
-		fp.writeBytes("svm_type " + param.svmType.toString().toLowerCase() + "\n");
-		fp.writeBytes("kernel_type " + kernel_type_table[param.kernel_type]
-				+ "\n");
+		fp.writeBytes("svm_type " + param.svmType.toString() + "\n");
+		fp.writeBytes("kernel_type " + param.kernelType.toString() + "\n");
 
-		if (param.kernel_type == SvmParameter.POLY)
+		if (param.kernelType == KernelType.poly)
 			fp.writeBytes("degree " + param.degree + "\n");
 
-		if (param.kernel_type == SvmParameter.POLY
-				|| param.kernel_type == SvmParameter.RBF
-				|| param.kernel_type == SvmParameter.SIGMOID)
+		if (param.kernelType == KernelType.poly
+				|| param.kernelType == KernelType.rbf
+				|| param.kernelType == KernelType.sigmoid)
 			fp.writeBytes("gamma " + param.gamma + "\n");
 
-		if (param.kernel_type == SvmParameter.POLY
-				|| param.kernel_type == SvmParameter.SIGMOID)
+		if (param.kernelType == KernelType.poly
+				|| param.kernelType == KernelType.sigmoid)
 			fp.writeBytes("coef0 " + param.coef0 + "\n");
 
 		int nr_class = model.nr_class;
@@ -2380,8 +2377,7 @@ public class svm {
 			fp.writeBytes("\n");
 		}
 
-		if (model.probA != null) // regression has probA only
-		{
+		if (model.probA != null) { // regression has probA only
 			fp.writeBytes("probA");
 			for (int i = 0; i < nr_class * (nr_class - 1) / 2; i++)
 				fp.writeBytes(" " + model.probA[i]);
@@ -2410,7 +2406,8 @@ public class svm {
 				fp.writeBytes(sv_coef[j][i] + " ");
 
 			SvmNode[] p = SV[i];
-			if (param.kernel_type == SvmParameter.PRECOMPUTED)
+			
+			if (param.kernelType == KernelType.precomputed)
 				fp.writeBytes("0:" + (int) (p[0].value));
 			else
 				for (int j = 0; j < p.length; j++)
@@ -2431,23 +2428,24 @@ public class svm {
 
 				if (cmd.startsWith("svm_type")) {
 					try{
-						param.svmType = SvmType.valueOf(arg.toUpperCase());
-						break;
+						param.svmType = SvmType.valueOf(arg);
+						if(param.svmType == null){
+							throw new IllegalArgumentException();
+						}
 					}catch(IllegalArgumentException e){
 						//TODO: handle exception
 						System.err.print("Unknown svm type.\n");
 						return false;
 					}
 				} else if (cmd.startsWith("kernel_type")) {
-					int i;
-					for (i = 0; i < kernel_type_table.length; i++) {
-						if (arg.indexOf(kernel_type_table[i]) != -1) {
-							param.kernel_type = i;
-							break;
+					try{
+						param.kernelType = KernelType.valueOf(arg);
+						if(param.kernelType == null){
+							throw new IllegalArgumentException();
 						}
-					}
-					if (i == kernel_type_table.length) {
-						System.err.print("unknown kernel function.\n");
+					}catch(IllegalArgumentException e){		
+						//TODO: handle exception
+						System.err.print("Unknown kernel function.\n");
 						return false;
 					}
 				} else if (cmd.startsWith("degree"))
@@ -2558,11 +2556,11 @@ public class svm {
 	}
 	
 	public static int svm_check_probability_model(SvmModel model) {
-		if (((model.getParam().svmType == SvmType.C_SVC || model
-				.getParam().svmType == SvmType.NU_SVC)
+		if (((model.getParam().svmType == SvmType.c_svc || model
+				.getParam().svmType == SvmType.nu_svc)
 				&& model.probA != null && model.probB != null)
-				|| ((model.getParam().svmType == SvmType.EPSILON_SVR || model
-						.getParam().svmType == SvmType.NU_SVR) && model.probA != null))
+				|| ((model.getParam().svmType == SvmType.epsilon_svr || model
+						.getParam().svmType == SvmType.nu_svr) && model.probA != null))
 			return 1;
 		else
 			return 0;

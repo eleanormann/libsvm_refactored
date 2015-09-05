@@ -15,7 +15,7 @@ public class ProbabilityChecker implements Checker {
 	public void checkProbability(int probability, SvmType svmType) {
 		if (probability != 0 && probability != 1){
 			manager.getValidationMessage().append( "ERROR: Probability is neither 0 nor 1\n");	
-		}else if (probability == 1 && svmType == SvmType.ONE_CLASS){
+		}else if (probability == 1 && svmType == SvmType.one_class){
 			manager.getValidationMessage().append( "ERROR: one-class SVM probability output not supported yet");
 		}else{
 			manager.getValidationMessage().append( "Probability = " + probability + "\n");			

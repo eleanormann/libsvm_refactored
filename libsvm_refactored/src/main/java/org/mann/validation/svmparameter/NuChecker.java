@@ -24,7 +24,7 @@ public class NuChecker implements Checker {
 	}
 
 	public void checkFeasibilityOfNu(svm_problem prob, SvmParameter param) {
-		if (param.svmType == SvmType.NU_SVC) {
+		if (param.svmType == SvmType.nu_svc) {
 			int problemLength = prob.length;
 			int arrayLength = 16;
 			int currentIndexInProblem = 0;
@@ -74,7 +74,7 @@ public class NuChecker implements Checker {
 	}
 
 	public Checker checkParameter(SvmParameter params) {
-		if (params.svmType == SvmType.ONE_CLASS || params.svmType == SvmType.NU_SVR) {
+		if (params.svmType == SvmType.one_class || params.svmType == SvmType.nu_svr) {
 			checkNu(params.nu);	
 		}
 		return manager.runCheckAndGetResponse("P", manager, params);

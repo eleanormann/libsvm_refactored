@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
+import org.mann.libsvm.SvmParameter.KernelType;
 import org.mann.libsvm.SvmParameter.SvmType;
 
 public class svm_toy extends Applet {
@@ -189,8 +190,8 @@ public class svm_toy extends Applet {
 		SvmParameter param = new SvmParameter();
 
 		// default values
-		param.svmType = SvmType.C_SVC;
-		param.kernel_type = SvmParameter.RBF;
+		param.svmType = SvmType.c_svc;
+		param.kernelType = KernelType.rbf;
 		param.degree = 3;
 		param.gamma = 0;
 		param.coef0 = 0;
@@ -225,7 +226,7 @@ public class svm_toy extends Applet {
 					param.svmType = SvmType.values()[(atoi(argv[i]))];
 					break;
 				case 't':
-					param.kernel_type = atoi(argv[i]);
+					param.kernelType = KernelType.values()[atoi(argv[i])];
 					break;
 				case 'd':
 					param.degree = atoi(argv[i]);
@@ -284,11 +285,11 @@ public class svm_toy extends Applet {
 		prob.length = point_list.size();
 		prob.y = new double[prob.length];
 
-		if(param.kernel_type == SvmParameter.PRECOMPUTED)
+		if(param.kernelType == KernelType.precomputed)
 		{
 		}
-		else if(param.svmType == SvmType.EPSILON_SVR ||
-			param.svmType == SvmType.NU_SVR)
+		else if(param.svmType == SvmType.epsilon_svr ||
+			param.svmType == SvmType.nu_svr)
 		{
 			if(param.gamma == 0) param.gamma = 1;
 			prob.x = new SvmNode[prob.length][1];
@@ -333,7 +334,7 @@ public class svm_toy extends Applet {
 				buffer_gc.drawLine(i-1,j[i-1],i,j[i]);
 				window_gc.drawLine(i-1,j[i-1],i,j[i]);
 
-				if(param.svmType == SvmType.EPSILON_SVR)
+				if(param.svmType == SvmType.epsilon_svr)
 				{
 					buffer_gc.setColor(colors[2]);
 					window_gc.setColor(colors[2]);
@@ -377,7 +378,7 @@ public class svm_toy extends Applet {
 					x[0].value = (double) i / XLEN;
 					x[1].value = (double) j / YLEN;
 					double d = svm.svm_predict(model, x);
-					if (param.svmType == SvmType.ONE_CLASS && d<0) d=2;
+					if (param.svmType == SvmType.one_class && d<0) d=2;
 					buffer_gc.setColor(colors[(int)d]);
 					window_gc.setColor(colors[(int)d]);
 					buffer_gc.drawLine(i,j,i,j);
@@ -401,7 +402,7 @@ public class svm_toy extends Applet {
 		try {
 			DataOutputStream fp = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(filename)));
 
-			SvmType svm_type = SvmType.C_SVC;/*SvmParameter.C_SVC;*/
+			SvmType svm_type = SvmType.c_svc;/*SvmParameter.C_SVC;*/
 			int svm_type_idx = args.indexOf("-s ");
 			if(svm_type_idx != -1)
 			{
@@ -410,7 +411,7 @@ public class svm_toy extends Applet {
 			}
 
 			int n = point_list.size();
-			if(svm_type == SvmType.EPSILON_SVR/*SvmParameter.EPSILON_SVR*/ || svm_type == SvmType.NU_SVR/*SvmParameter.NU_SVR*/)
+			if(svm_type == SvmType.epsilon_svr || svm_type == SvmType.nu_svr)
 			{
 				for(int i=0;i<n;i++)
 				{

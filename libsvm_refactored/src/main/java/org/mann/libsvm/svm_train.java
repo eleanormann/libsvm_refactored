@@ -8,6 +8,7 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 
 import org.mann.helpers.HelpMessages;
+import org.mann.libsvm.SvmParameter.KernelType;
 import org.mann.libsvm.SvmParameter.SvmType;
 import org.mann.ui.SvmPrintInterface;
 import org.mann.ui.SvmPrinterFactory;
@@ -53,7 +54,7 @@ class svm_train {
 		double[] target = new double[prob.length];
 
 		svm.svm_cross_validation(prob, param, nr_fold, target);
-		if (param.svmType == SvmType.EPSILON_SVR || param.svmType == SvmType.NU_SVR) {
+		if (param.svmType == SvmType.epsilon_svr || param.svmType == SvmType.nu_svr) {
 			for (i = 0; i < prob.length; i++) {
 				double y = prob.y[i];
 				double v = target[i];
@@ -95,8 +96,8 @@ class svm_train {
 
 		param = new SvmParameter();
 		// default values
-		param.svmType = SvmType.C_SVC;
-		param.kernel_type = SvmParameter.RBF;
+		param.svmType = SvmType.c_svc;
+		param.kernelType = KernelType.rbf;
 		param.degree = 3;
 		param.gamma = 0; // 1/num_features
 		param.coef0 = 0;
@@ -127,7 +128,7 @@ class svm_train {
 				param.svmType = SvmType.values()[Integer.parseInt(argv[i])];
 				break;
 			case 't':
-				param.kernel_type = Integer.parseInt(argv[i]);
+				param.kernelType = KernelType.values()[Integer.parseInt(argv[i])];
 				break;
 			case 'd':
 				param.degree = Integer.parseInt(argv[i]);
@@ -261,7 +262,7 @@ class svm_train {
 			if (param.gamma == 0 && max_index > 0)
 				param.gamma = 1.0 / max_index;
 
-			if (param.kernel_type == SvmParameter.PRECOMPUTED)
+			if (param.kernelType == KernelType.precomputed)
 				for (int i = 0; i < prob.length; i++) {
 					if (prob.x[i][0].index != 0) {
 						System.err.print("Wrong kernel matrix: first column must be 0:sample_serial_number\n");

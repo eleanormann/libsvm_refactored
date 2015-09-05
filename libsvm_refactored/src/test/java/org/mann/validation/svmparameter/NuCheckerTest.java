@@ -26,7 +26,7 @@ public class NuCheckerTest {
 		SvmParameter param = new SvmParameter();
 		//.88 is the largest nu (to 2 dp) that is feasible for these data
 		param.nu = .89;
-		param.svmType = SvmType.NU_SVC;
+		param.svmType = SvmType.nu_svc;
 		ParameterValidationManager managerForErrorTest = new ParameterValidationManager(new StringBuilder()); 
 		new NuChecker(managerForErrorTest).checkFeasibilityOfNu(dataset, param);
 		assertThat(managerForErrorTest.getValidationMessage().toString(), equalTo("ERROR: "+param.nu +" is not a feasible nu for these data"));	
@@ -38,7 +38,7 @@ public class NuCheckerTest {
 		svm_problem dataset = createSvmProblem();
 		SvmParameter param = new SvmParameter();
 		param.nu = .88;
-		param.svmType = SvmType.NU_SVC;
+		param.svmType = SvmType.nu_svc;
 		 new NuChecker(managerForSuccessTest).checkFeasibilityOfNu(dataset, param);
 		assertThat(managerForSuccessTest.getValidationMessage().toString(), equalTo("Nu = " + param.nu + ": feasibility checked and is OK\n"));
 	}
@@ -46,7 +46,7 @@ public class NuCheckerTest {
 	@Test
 	public void checkParameterShouldReturnErrorWhenNuLessThanZeroOrGreaterThanOneAndEligibleSvmType(){
 		ParameterValidationManager manager = new ParameterValidationManager(new StringBuilder()); 
-		new NuChecker(manager).checkParameter(createSvmParameter(1, SvmType.NU_SVR));
+		new NuChecker(manager).checkParameter(createSvmParameter(1, SvmType.nu_svr));
 		assertThat(manager.getValidationMessage().toString(), containsString("Nu = 1.0"));
 	}
 
@@ -63,7 +63,7 @@ public class NuCheckerTest {
 	@Test
 	public void checkFeasibiltyOfNuThenCheckParameterShouldCheckFeasibilityOfNuWhenSvmTypeNuSvc(){
 		ParameterValidationManager manager = new ParameterValidationManager(new StringBuilder()); 
-		SvmParameter param = createSvmParameter(.88, SvmType.NU_SVC);
+		SvmParameter param = createSvmParameter(.88, SvmType.nu_svc);
 		new NuChecker(manager).runFeasibilityCheckThenCheckParameter(createSvmProblem(), param);
 		assertThat(manager.getValidationMessage().toString(), equalTo("Nu = " + param.nu + ": feasibility checked and is OK\n"));
 		

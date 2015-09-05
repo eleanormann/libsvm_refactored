@@ -14,28 +14,28 @@ public class ProbabilityCheckerTest {
 	@Test
 	public void checkProbabilityShouldAddErrorMessageWhenNeitherZeroNorOne(){
 		ParameterValidationManager manager = new ParameterValidationManager(new StringBuilder()); 
-		new ProbabilityChecker(manager).checkProbability(-1, SvmType.C_SVC);
+		new ProbabilityChecker(manager).checkProbability(-1, SvmType.c_svc);
 		assertThat(manager.getValidationMessage().toString(), equalTo("ERROR: Probability is neither 0 nor 1\n"));
 	}
 	
 	@Test
 	public void checkProbabilityShouldAddErrorMessageWhenOneAndOneClass(){
 		ParameterValidationManager manager = new ParameterValidationManager(new StringBuilder()); 
-		new ProbabilityChecker(manager).checkProbability(1, SvmType.ONE_CLASS);
+		new ProbabilityChecker(manager).checkProbability(1, SvmType.one_class);
 		assertThat(manager.getValidationMessage().toString(), equalTo("ERROR: one-class SVM probability output not supported yet"));
 	}
 	
 	@Test
 	public void checkProbabilityShouldAddInfoMessageWhenZeroAndOneClass(){
 		ParameterValidationManager manager = new ParameterValidationManager(new StringBuilder()); 
-		new ProbabilityChecker(manager).checkProbability(0, SvmType.ONE_CLASS);
+		new ProbabilityChecker(manager).checkProbability(0, SvmType.one_class);
 		assertThat(manager.getValidationMessage().toString(), equalTo("Probability = 0\n"));
 	}
 
 	@Test
 	public void checkParameterShouldAddInfoMessageWhenZeroAndOneClass(){
 		ParameterValidationManager manager = new ParameterValidationManager(new StringBuilder()); 
-		new ProbabilityChecker(manager).checkParameter(createSvmParameter(0, SvmType.ONE_CLASS));
+		new ProbabilityChecker(manager).checkParameter(createSvmParameter(0, SvmType.one_class));
 		assertThat(manager.getValidationMessage().toString(), containsString("Probability = 0\n"));
 	}
 

@@ -21,7 +21,7 @@ public class CChecker implements Checker {
 	}
 
 	public Checker checkParameter(SvmParameter params) {
-		if (params.svmType == SvmType.C_SVC || params.svmType == SvmType.EPSILON_SVR || params.svmType == SvmType.NU_SVR) {
+		if (params.svmType == SvmType.c_svc || params.svmType == SvmType.epsilon_svr || params.svmType == SvmType.nu_svr) {
 			checkC(params.C);
 		}
 		return manager.runCheckAndGetResponse("Nu", manager, params);

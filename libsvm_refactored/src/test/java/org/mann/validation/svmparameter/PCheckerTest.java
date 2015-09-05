@@ -29,21 +29,21 @@ public class PCheckerTest {
 	@Test
 	public void checkParameterShouldAddInfoMessageWhenPGreaterThanZeroAndSvmTypeIsEpsilon(){
 		ParameterValidationManager manager = new ParameterValidationManager(new StringBuilder()); 
-		new PChecker(manager).checkParameter(createSvmParameter(1, SvmType.EPSILON_SVR));
+		new PChecker(manager).checkParameter(createSvmParameter(1, SvmType.epsilon_svr));
 		assertThat(manager.getValidationMessage().toString(), containsString("p = 1.0\n"));
 	}
 
 	@Test
 	public void checkParameterShouldAddErrorMessageWhenPLessThanZeroAndSvmTypeIsEpsilon(){
 		ParameterValidationManager manager = new ParameterValidationManager(new StringBuilder()); 
-		new PChecker(manager).checkParameter(createSvmParameter(-1, SvmType.EPSILON_SVR));
+		new PChecker(manager).checkParameter(createSvmParameter(-1, SvmType.epsilon_svr));
 		assertThat(manager.getValidationMessage().toString(), containsString("ERROR: p < 0\n"));
 	}
 	
 	@Test
 	public void checkParameterShouldNotAddMessagesWhenSvmTypeIsNotEpsilon(){
 		ParameterValidationManager manager = new ParameterValidationManager(new StringBuilder()); 
-		new PChecker(manager).checkParameter(createSvmParameter(1, SvmType.NU_SVR));
+		new PChecker(manager).checkParameter(createSvmParameter(1, SvmType.nu_svr));
 		assertThat(manager.getValidationMessage().toString(), not(containsString("ERROR: p < 0\n")));
 		assertThat(manager.getValidationMessage().toString(), not(containsString("p = 1\n")));
 	}
@@ -51,7 +51,7 @@ public class PCheckerTest {
 	@Test
 	public void checkParameterShouldAddErrorMessageWhenPLessThanZeroAndSvmTypeIsNotEpsilon(){
 		ParameterValidationManager manager = new ParameterValidationManager(new StringBuilder()); 
-		new PChecker(manager).checkParameter(createSvmParameter(-1, SvmType.NU_SVC));
+		new PChecker(manager).checkParameter(createSvmParameter(-1, SvmType.nu_svc));
 		assertThat(manager.getValidationMessage().toString(), not(containsString("ERROR: p < 0\n")));
 	}
 	

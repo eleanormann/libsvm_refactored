@@ -7,6 +7,7 @@ import static org.junit.Assert.assertThat;
 import org.junit.Before;
 import org.junit.Test;
 import org.mann.libsvm.SvmParameter;
+import org.mann.libsvm.SvmParameter.KernelType;
 import org.mann.libsvm.SvmParameter.SvmType;
 import org.mann.libsvm.svm;
 
@@ -20,9 +21,9 @@ public class ParameterValidationManagerTest {
 	
 	@Test
 	public void checkValidationMessageIsComplete(){
-		String expectedMessage = "Svm type: NU_SVR\nkernel type: 1\nGamma = 1.0\nDegree = 1\nCache size: 1.0\n"
+		String expectedMessage = "Svm type: nu_svr\nKernel type: poly\nGamma = 1.0\nDegree = 1\nCache size: 1.0\n"
 				+ "Eps = 1.0\nC = 1.0\nNu = 1.0\nShrinking = 1\nProbability = 1\n";
-		manager.runCheckAndGetResponse("Svm Type", manager, createSvmParameter(SvmType.NU_SVR));
+		manager.runCheckAndGetResponse("Svm Type", manager, createSvmParameter(SvmType.nu_svr));
 		assertThat(manager.getValidationMessage().toString(), equalTo(expectedMessage));
 	}
 	
@@ -34,12 +35,12 @@ public class ParameterValidationManagerTest {
 	
 	@Test
 	public void parameterCheckerShouldReturnSvmTypeWhenRequested() {
-		checkValidationMessageContainsString("Svm Type", "Svm type: NU_SVC", SvmType.NU_SVC);
+		checkValidationMessageContainsString("Svm Type", "Svm type: nu_svc", SvmType.nu_svc);
 	}
 
 	@Test
 	public void parameterCheckerShouldReturnKernelTypeWhenRequested() {
-		checkValidationMessageContainsString("Kernel", "kernel type: 1\n", null);
+		checkValidationMessageContainsString("Kernel", "Kernel type: poly\n", null);
 	}
 	
 	@Test
@@ -64,17 +65,17 @@ public class ParameterValidationManagerTest {
 	
 	@Test
 	public void parameterCheckerShouldReturnCWhenRequested() {
-		checkValidationMessageContainsString("C", "C = 1.0\n", SvmType.C_SVC);
+		checkValidationMessageContainsString("C", "C = 1.0\n", SvmType.c_svc);
 	}
 	
 	@Test
 	public void parameterCheckerShouldReturnNuWhenRequested() {
-		checkValidationMessageContainsString("Nu", "Nu = 1.0\n", SvmType.ONE_CLASS);
+		checkValidationMessageContainsString("Nu", "Nu = 1.0\n", SvmType.one_class);
 	}
 	
 	@Test
 	public void parameterCheckerShouldReturnPWhenRequested() {
-		checkValidationMessageContainsString("P", "p = 1.0\n", SvmType.EPSILON_SVR);
+		checkValidationMessageContainsString("P", "p = 1.0\n", SvmType.epsilon_svr);
 	}
 	
 	@Test
@@ -89,7 +90,7 @@ public class ParameterValidationManagerTest {
 	
 	@Test(expected=IllegalArgumentException.class)
 	public void parameterCheckerShouldReturnExceptionWhenCheckTypeNotRecognised() {
-		manager.runCheckAndGetResponse("Feasibility of Nu", manager, createSvmParameter(SvmType.C_SVC));
+		manager.runCheckAndGetResponse("Feasibility of Nu", manager, createSvmParameter(SvmType.c_svc));
 	}
 	
 	private void checkValidationMessageContainsString(String checkType, String expectedMessage, SvmType svmType) {
@@ -100,7 +101,7 @@ public class ParameterValidationManagerTest {
 	private SvmParameter createSvmParameter(SvmType svmType) {
 		SvmParameter params = new SvmParameter();
 		params.svmType = svmType;
-		params.kernel_type = 1;
+		params.kernelType = KernelType.poly;
 		params.C = 1;
 		params.cache_size = 1;
 		params.degree = 1;

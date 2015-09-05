@@ -13,13 +13,26 @@ public class SvmTypeCheckerTest {
 	@Test
 	public void checkParameterShouldAddInfoMessageStatingSvmType() {
 		ParameterValidationManager manager = new ParameterValidationManager(new StringBuilder());
-		new SvmTypeChecker(manager).checkParameter(createSvmParameter());
-		assertThat(manager.getValidationMessage().toString(), containsString("Svm type: C_SVC\n"));
+		new SvmTypeChecker(manager).checkParameter(createSvmParameter(SvmType.c_svc));
+		assertThat(manager.getValidationMessage().toString(), containsString("Svm type: c_svc\n"));
 	}
 	
-	public SvmParameter createSvmParameter(){
+	@Test(expected = IllegalArgumentException.class)
+	public void checkParameterShouldAddErrorWhenSvmTypeNotRecognised() {
+		ParameterValidationManager manager = new ParameterValidationManager(new StringBuilder());
+		new SvmTypeChecker(manager).checkParameter(createSvmParameter(SvmType.valueOf("Unknown")));
+	}
+	
+	@Test
+	public void checkParameterShouldThrowExceptionWhenSvmTypeNotRecognised() {
+		ParameterValidationManager manager = new ParameterValidationManager(new StringBuilder());
+		new SvmTypeChecker(manager).checkParameter(createSvmParameter(null));
+		assertThat(manager.getValidationMessage().toString(), containsString("ERROR: Svm type not set\n"));
+	}
+	
+	public SvmParameter createSvmParameter(SvmType svmType){
 		SvmParameter params = new SvmParameter();
-		params.svmType = SvmType.C_SVC;
+		params.svmType = svmType;
 		return params;
 	}
 
