@@ -66,6 +66,7 @@ public class svm_train {
 		double[] target = new double[prob.length];
 
 		svm.svm_cross_validation(prob, param, nr_fold, target);
+		
 		if (param.svmType == SvmType.epsilon_svr || param.svmType == SvmType.nu_svr) {
 			for (i = 0; i < prob.length; i++) {
 				double y = prob.y[i];
@@ -77,15 +78,20 @@ public class svm_train {
 				sumyy += y * y;
 				sumvy += v * y;
 			}
-			System.out.printf(HelpMessages.CROSS_VALIDATION_MSE, total_error / prob.length);
-			System.out.printf(HelpMessages.CROSS_VALIDATION_RSQ,
-					((prob.length * sumvy - sumv * sumy) * (prob.length * sumvy - sumv * sumy))
-							/ ((prob.length * sumvv - sumv * sumv) * (prob.length * sumyy - sumy * sumy)));
+			double meanSqError = total_error / prob.length;
+			double rSquared = ((prob.length * sumvy - sumv * sumy) * (prob.length * sumvy - sumv * sumy))
+					/ ((prob.length * sumvv - sumv * sumv) * (prob.length * sumyy - sumy * sumy));
+			
+			System.out.println(String.format(HelpMessages.CROSS_VALIDATION_MSE, meanSqError));
+			System.out.println(String.format(HelpMessages.CROSS_VALIDATION_RSQ, rSquared));
 		} else {
-			for (i = 0; i < prob.length; i++)
-				if (target[i] == prob.y[i])
-					++total_correct;
-			System.out.printf(HelpMessages.CROSS_VALIDATION_ACCURACY, 100.0 * total_correct / prob.length);
+			for (i = 0; i < prob.length; i++) {
+				if (target[i] == prob.y[i]){
+					++total_correct;					
+				}				
+			}
+			double accuracy = 100.0 * total_correct / prob.length;
+			System.out.println(String.format(HelpMessages.CROSS_VALIDATION_ACCURACY, accuracy));
 		}
 	}
 
