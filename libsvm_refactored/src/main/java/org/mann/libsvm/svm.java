@@ -191,15 +191,15 @@ abstract class Kernel extends QMatrix {
 			} while (false);
 	}
 
-	private static double powi(double base, int times) {
-		double tmp = base, ret = 1.0;
-
-		for (int t = times; t > 0; t /= 2) {
-			if (t % 2 == 1)
-				ret *= tmp;
-			tmp = tmp * tmp;
+	//changed this to be more clear what it does. May need to revert if subs tests should important divergence
+	//or it proves to be problematically slow
+	protected static double powi(double base, int times) {
+		double result =  Math.pow(base, times);
+		if(Double.isInfinite(result)){
+			return 1;
+		}else{
+			return result;
 		}
-		return ret;
 	}
 
 	double kernel_function(int i, int j) {
