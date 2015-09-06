@@ -100,59 +100,59 @@ class svm_predict {
 		} else {
 			
 			double accuracy = (double) correct / total * 100;
-			//TODO: find out how to escape %
 			svm_predict.info(String.format("Accuracy = %s%s (%s/%s) (classification)", accuracy, "%", correct, total));
 		}
 	}
 
-	// TODO: handle IOException properly
-	public static void main(String argv[]) throws IOException {
-		int i = 0;
-		int predict_probability = 0;
-		svmPrintString = SvmPrinterFactory.getPrinter(PrintMode.STANDARD);
 
-		// parse options
-		for (i = 0; i < argv.length; i++) {
-			if (argv[i].charAt(0) != '-') {
-				break;				
-			}
-			++i;
-			switch (argv[i - 1].charAt(1)) {
-			case 'b':
-				predict_probability = Integer.parseInt(argv[i]);
-				break;
-			case 'q':
-				svmPrintString = SvmPrinterFactory.getPrinter(PrintMode.QUIET);
-				i--;
-				break;
-			default:
-				SvmPrinterFactory.getPrinter(PrintMode.PREDICT_BAD_INPUT)
-				.print("Unknown option: " + argv[i - 1] + "\n");
-				return;
-			}
-		}
-		if (i >= argv.length - 2) {
-			SvmPrinterFactory.getPrinter(PrintMode.PREDICT_BAD_INPUT).print("");
-			return;
-		}
+	public static void main(String argv[]) throws IOException {
+		svm_predict predictor = new svm_predict();
+		predictor.run(argv);
+	}
+
+	// TODO: handle IOException properly
+	private void run(String[] argv) throws IOException {
+		BufferedReader input = null;
+		DataOutputStream output = null;
 		try {
-			BufferedReader input = createReader(argv[i]);
-			DataOutputStream output = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(argv[i + 2])));
-			SvmModel model = svm.svm_load_model(argv[i + 1]);
-			
-			//TODO: refactor this logic to avoid repetition
-			if (model == null) {
-				System.err.print("can't open model file " + argv[i + 1] + "\n");
-				input.close();
-				output.close();
+			int i = 0;
+			int predict_probability = 0;
+			svmPrintString = SvmPrinterFactory.getPrinter(PrintMode.STANDARD);
+
+			// parse options
+			for (i = 0; i < argv.length; i++) {
+				if (argv[i].charAt(0) != '-') {
+					break;
+				}
+				++i;
+				switch (argv[i - 1].charAt(1)) {
+				case 'b':
+					predict_probability = Integer.parseInt(argv[i]);
+					break;
+				case 'q':
+					svmPrintString = SvmPrinterFactory.getPrinter(PrintMode.QUIET);
+					i--;
+					break;
+				default:
+					SvmPrinterFactory.getPrinter(PrintMode.PREDICT_BAD_INPUT).print("Unknown option: " + argv[i - 1] + "\n");
+					return;
+				}
+			}
+			if (i >= argv.length - 2) {
+				SvmPrinterFactory.getPrinter(PrintMode.PREDICT_BAD_INPUT).print("");
 				return;
+			}
+
+			input = createReader(argv[i]);
+			output = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(argv[i + 2])));
+			SvmModel model = svm.svm_load_model(argv[i + 1]);
+
+			if (model == null) {
+				throw new IllegalArgumentException("can't open model file " + argv[i + 1]);
 			}
 			if (predict_probability == 1) {
 				if (svm.svm_check_probability_model(model) == 0) {
-					System.err.print("Model does not support probabiliy estimates\n");
-					input.close();
-					output.close();
-					return;
+					throw new IllegalArgumentException("Model does not support probabiliy estimates");
 				}
 			} else {
 				if (svm.svm_check_probability_model(model) != 0) {
@@ -160,12 +160,19 @@ class svm_predict {
 				}
 			}
 			predict(input, output, model, predict_probability);
-			input.close();
-			output.close();
 		} catch (FileNotFoundException e) {
 			SvmPrinterFactory.getPrinter(PrintMode.PREDICT_BAD_INPUT).print(e.toString());
 		} catch (ArrayIndexOutOfBoundsException e) {
 			SvmPrinterFactory.getPrinter(PrintMode.PREDICT_BAD_INPUT).print(e.toString());
+		} catch (IllegalArgumentException e) {
+			SvmPrinterFactory.getPrinter(PrintMode.PREDICT_BAD_INPUT).print(e.toString());
+		} finally {
+			if(input!=null){
+				input.close();
+			}
+			if(output!=null){
+				output.close();	
+			}
 		}
 	}
 

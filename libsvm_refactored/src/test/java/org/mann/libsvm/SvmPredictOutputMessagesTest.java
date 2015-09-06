@@ -1,7 +1,8 @@
 package org.mann.libsvm;
 
+import static org.hamcrest.CoreMatchers.endsWith;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertThat;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
@@ -12,7 +13,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mann.helpers.HelpMessages;
-import org.mann.libsvm.svm_predict;
 
 public class SvmPredictOutputMessagesTest {
 
@@ -40,8 +40,7 @@ public class SvmPredictOutputMessagesTest {
 	@Test
 	public void shouldPrintErrorWhenModelFileCannotBeFound() throws IOException {
 		svm_predict.main(new String[] { "src/main/resources/heart_scale", "dummy", "dummy" });
-		assertTrue("Did not return model error message in svm_predict",
-				errContent.toString().endsWith("can't open model file dummy\n"));
+		assertThat(errContent.toString(), endsWith("can't open model file dummy"));
 	}
 
 	@Test
@@ -58,6 +57,5 @@ public class SvmPredictOutputMessagesTest {
 				errContent.toString());
 		assertEquals(HelpMessages.PREDICT_HELP_MESSAGE_ON_BAD_INPUT +"\n", outContent.toString());
 	}
-	
 
 }

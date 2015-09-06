@@ -283,8 +283,6 @@ public class svm_train {
 						throw new IllegalArgumentException("Wrong input format: sample_serial_number out of range");
 					}
 				}
-
-			fp.close();
 		} catch (FileNotFoundException ex) {
 			SvmPrinterFactory.getPrinter(PrintMode.TRAIN_BAD_INPUT).print(ex.getMessage());
 			return;
