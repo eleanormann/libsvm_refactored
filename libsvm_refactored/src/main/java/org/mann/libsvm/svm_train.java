@@ -25,6 +25,18 @@ public class svm_train {
 	private int cross_validation;
 	private int nr_fold;
 
+	protected SvmParameter getSvmParameter(){
+		return param;
+	}
+	
+	protected svm_problem getSvmProblem(){
+		return prob;
+	}
+	
+	protected SvmModel getSvmModel(){
+		return model;
+	}
+	
 	protected void run(String argv[]) throws IOException {
 		boolean hasBadInput = parse_command_line(argv);
 		if(hasBadInput){
@@ -223,8 +235,9 @@ public class svm_train {
 	// read in a problem (in svmlight format)
 
 	protected void read_problem() throws IOException {
+		BufferedReader fp = null;
 		try {
-			BufferedReader fp = new BufferedReader(new FileReader(input_file_name));
+			fp = new BufferedReader(new FileReader(input_file_name));
 
 			Vector<Double> vy = new Vector<Double>();
 			Vector<SvmNode[]> vx = new Vector<SvmNode[]>();
@@ -265,12 +278,14 @@ public class svm_train {
 			if (param.kernelType == KernelType.precomputed)
 				for (int i = 0; i < prob.length; i++) {
 					if (prob.x[i][0].index != 0) {
-						System.err.print("Wrong kernel matrix: first column must be 0:sample_serial_number\n");
-						System.exit(1);
+						//TODO: put this check in the validation section
+						//Expires 6th October 2015
+						throw new IllegalArgumentException("Wrong kernel matrix: first column must be 0:sample_serial_number");
 					}
 					if ((int) prob.x[i][0].value <= 0 || (int) prob.x[i][0].value > max_index) {
-						System.err.print("Wrong input format: sample_serial_number out of range\n");
-						System.exit(1);
+						//TODO: put this check in the validation section
+						//Expires 6th October 2015
+						throw new IllegalArgumentException("Wrong input format: sample_serial_number out of range");
 					}
 				}
 
@@ -278,6 +293,10 @@ public class svm_train {
 		} catch (FileNotFoundException ex) {
 			SvmPrinterFactory.getPrinter(PrintMode.TRAIN_BAD_INPUT).print(ex.getMessage());
 			return;
+		}finally{
+			if(fp!=null){
+				fp.close();				
+			}
 		}
 	}
 
