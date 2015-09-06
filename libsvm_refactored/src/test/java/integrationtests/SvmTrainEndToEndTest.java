@@ -34,7 +34,7 @@ public class SvmTrainEndToEndTest {
 				+ "obj = -1300.2536635959898, rho = 0.28709349878580875\n"
 				+ "nSV = 2448, nBSV = 1183\n"
 				+ "Total nSV = 2448\n";
-		svm_train.main(new String[]{"src/test/resources/hfmTrainingData.train"});
+		svm_train.main(new String[]{"src/test/resources/testdata/hfmTrainingData.train"});
 		assertEquals(expected, outContent.toString());
 	}
 

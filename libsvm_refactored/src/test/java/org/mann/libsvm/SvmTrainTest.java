@@ -20,6 +20,7 @@ import org.mann.helpers.HelpMessages;
 import org.mann.libsvm.SvmParameter.KernelType;
 
 public class SvmTrainTest {
+	private static final String BASE_PATH = "src/test/resources/testdata/";
 	private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
 	private final ByteArrayOutputStream errContent = new ByteArrayOutputStream();
 	
@@ -42,7 +43,7 @@ public class SvmTrainTest {
 		svm_train train = new svm_train();
 		
 		//Act
-		train.run(new String[]{"src/test/resources/fakeTrainingData.train"});
+		train.run(new String[]{BASE_PATH + "fakeTrainingData.train"});
 		
 		//Assert
 		assertThat(train.getSvmParameter().kernelType, equalTo(KernelType.rbf));
@@ -57,7 +58,7 @@ public class SvmTrainTest {
 		svm_train train = new svm_train();
 
 		// Act
-		train.run(new String[] {"-t", "4", "src/test/resources/fakeTrainingDataWithPrecomputedKernel.train" });
+		train.run(new String[] {"-t", "4", BASE_PATH + "fakeTrainingDataWithPrecomputedKernel.train" });
 
 		//Assert
 		assertThat(train.getSvmParameter().kernelType, equalTo(KernelType.precomputed));
@@ -81,7 +82,24 @@ public class SvmTrainTest {
 		svm_train train = new svm_train();
 
 		// Act
-		train.run(new String[] {"-t", "4", "src/test/resources/fakeTrainingData.train" });
+		train.run(new String[] {"-t", "4", BASE_PATH +"fakeTrainingData.train" });
+
+		//Assert
+		assertThat(train.getSvmParameter().kernelType, equalTo(KernelType.precomputed));
+		assertThat(errContent.toString(), equalTo("Wrong kernel matrix: first column must be 0:sample_serial_number"));
+		assertThat(outContent.toString(), equalTo(HelpMessages.TRAIN_HELP_MESSAGE_ON_BAD_INPUT + "\n"));
+		
+	}
+	
+	@Test(expected = IllegalArgumentException.class)
+	public void readProblemShouldThrowExceptionWhenKernelIsPrecomputedButOutOfRange() throws IOException {
+		// Arrange
+		createSvmMock();
+		svm_train train = new svm_train();
+		
+
+		// Act
+		train.run(new String[] {"-t", "4",BASE_PATH + "fakeTrainingDataWithKernelOutOfRange.train" });
 
 		//Assert
 		assertThat(train.getSvmParameter().kernelType, equalTo(KernelType.precomputed));
