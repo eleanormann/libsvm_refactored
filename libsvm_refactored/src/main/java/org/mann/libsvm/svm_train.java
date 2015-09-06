@@ -38,23 +38,23 @@ public class svm_train {
 	}
 	
 	protected void run(String argv[]) throws IOException {
-		boolean hasBadInput = parse_command_line(argv);
-		if(hasBadInput){
-			return;
-		}
-		read_problem();
-		error_msg = new svm().checkSvmParameter(prob, param);
-
-		if (error_msg != null && error_msg.contains("ERROR")) {
-			System.err.print("ERROR: " + error_msg + "\n");
-			System.exit(1);
-		}
-
-		if (cross_validation != 0) {
-			do_cross_validation();
-		} else {
-			model = svm.svm_train(prob, param);
-			svm.svm_save_model(model_file_name, model);
+		try{
+			parse_command_line(argv);
+			read_problem();
+			
+			error_msg = new svm().checkSvmParameter(prob, param);
+			if (error_msg != null && error_msg.contains("ERROR")) {
+				throw new IllegalArgumentException(error_msg);
+			}
+			
+			if (cross_validation != 0) {
+				do_cross_validation();
+			} else {
+				model = svm.svm_train(prob, param);
+				svm.svm_save_model(model_file_name, model);
+			}
+		}catch(IllegalArgumentException e){
+			SvmPrinterFactory.getPrinter(PrintMode.TRAIN_BAD_INPUT).print(e.getMessage());
 		}
 	}
 	
@@ -101,8 +101,7 @@ public class svm_train {
 		return (d);
 	}
 
-	private boolean parse_command_line(String argv[]) {
-		boolean hasBadInput = false; 
+	private void parse_command_line(String argv[]) {
 		int i;
 		SvmPrintInterface print_func = null; // default printing to stdout
 
@@ -131,9 +130,7 @@ public class svm_train {
 				break;		
 			}
 			if (++i >= argv.length){
-				SvmPrinterFactory.getPrinter(PrintMode.TRAIN_BAD_INPUT).print("option on its own is not valid input");
-				hasBadInput = true;
-				return hasBadInput;
+				throw new IllegalArgumentException("ERROR: option on its own is not valid input");
 			}
 			switch (argv[i - 1].charAt(1)) {
 			case 's':
@@ -180,10 +177,7 @@ public class svm_train {
 				cross_validation = 1;
 				nr_fold = Integer.parseInt(argv[i]);
 				if (nr_fold < 2) {
-					SvmPrinterFactory.getPrinter(PrintMode.TRAIN_BAD_INPUT)
-					.print("n-fold cross validation: n must >= 2");
-					hasBadInput = true;
-					return hasBadInput;
+					throw new IllegalArgumentException("ERROR: n-fold cross validation: n must >= 2");
 				}
 				break;
 			case 'w':
@@ -204,10 +198,7 @@ public class svm_train {
 				param.weight[param.nr_weight - 1] = atof(argv[i]);
 				break;
 			default:
-				SvmPrinterFactory.getPrinter(PrintMode.TRAIN_BAD_INPUT)
-				.print("Unknown option: " + argv[i - 1]);
-				hasBadInput = true;
-				return hasBadInput;
+				throw new IllegalArgumentException("ERROR: Unknown option: " + argv[i - 1]);
 			}
 		}
 
@@ -216,8 +207,7 @@ public class svm_train {
 		// determine filenames
 
 		if (i >= argv.length){
-			SvmPrinterFactory.getPrinter(PrintMode.TRAIN_BAD_INPUT).print("No file has been specified");
-			return true;
+			throw new IllegalArgumentException("ERROR: No file has been specified");
 		}
 		
 		input_file_name = argv[i];
@@ -229,7 +219,6 @@ public class svm_train {
 			++p; // whew...
 			model_file_name = argv[i].substring(p) + ".model";
 		}
-		return hasBadInput;
 	}
 
 	// read in a problem (in svmlight format)

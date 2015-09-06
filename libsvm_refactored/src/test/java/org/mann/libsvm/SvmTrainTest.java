@@ -75,7 +75,7 @@ public class SvmTrainTest {
 		assertThat(train.getSvmProblem().x[5][0].value, equalTo(1.0));
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void readProblemShouldThrowExceptionWhenKernelIsSetAsPrecomputedButNotIncludedInTrainingData() throws IOException {
 		// Arrange
 		createSvmMock();
@@ -91,21 +91,19 @@ public class SvmTrainTest {
 		
 	}
 	
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void readProblemShouldThrowExceptionWhenKernelIsPrecomputedButOutOfRange() throws IOException {
 		// Arrange
 		createSvmMock();
 		svm_train train = new svm_train();
-		
 
 		// Act
 		train.run(new String[] {"-t", "4",BASE_PATH + "fakeTrainingDataWithKernelOutOfRange.train" });
 
 		//Assert
 		assertThat(train.getSvmParameter().kernelType, equalTo(KernelType.precomputed));
-		assertThat(errContent.toString(), equalTo("Wrong kernel matrix: first column must be 0:sample_serial_number"));
+		assertThat(errContent.toString(), equalTo("Wrong input format: sample_serial_number out of range"));
 		assertThat(outContent.toString(), equalTo(HelpMessages.TRAIN_HELP_MESSAGE_ON_BAD_INPUT + "\n"));
-		
 	}
 	
 	private void assertThatSvmProblemDataValuesSetCorrectly(svm_train train, int index) {

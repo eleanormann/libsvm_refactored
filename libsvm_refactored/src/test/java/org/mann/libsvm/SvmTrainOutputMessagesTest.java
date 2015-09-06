@@ -42,28 +42,28 @@ public class SvmTrainOutputMessagesTest {
 	@Test
 	public void parseCommandLineShouldPrintBadInputMessageWhenNoFilenameInputWithGoodOptions() throws IOException {
 		svm_train.main(new String[] { "-v", "3" });
-		assertEquals("No file has been specified", errContent.toString());
+		assertEquals("ERROR: No file has been specified", errContent.toString());
 		assertEquals(HelpMessages.TRAIN_HELP_MESSAGE_ON_BAD_INPUT + "\n", outContent.toString());
 	}
 
 	@Test
 	public void parseCommandLineShouldPrintBadInputMessageWhenOptionOnItsOwnPassed() throws IOException {
 		svm_train.main(new String[] {"-q"});
-		assertEquals("option on its own is not valid input", errContent.toString());
+		assertEquals("ERROR: option on its own is not valid input", errContent.toString());
 		assertEquals(HelpMessages.TRAIN_HELP_MESSAGE_ON_BAD_INPUT + "\n", outContent.toString());
 	}
 	
 	@Test
 	public void parseCommandLineShouldPrintBadInputMessageWhenNFoldLessThanTwo() throws IOException {
 		svm_train.main(new String[] {"-v", "1"});
-		assertEquals("n-fold cross validation: n must >= 2", errContent.toString());
+		assertEquals("ERROR: n-fold cross validation: n must >= 2", errContent.toString());
 		assertEquals(HelpMessages.TRAIN_HELP_MESSAGE_ON_BAD_INPUT + "\n", outContent.toString());
 	}
 	
 	@Test
 	public void parseCommandLineShouldPrintBadInputMessageWhenOptionNotRecognised() throws IOException{
 		svm_train.main(new String[] {"-u", "0"});
-		assertEquals("Unknown option: -u", errContent.toString());
+		assertEquals("ERROR: Unknown option: -u", errContent.toString());
 		assertEquals(HelpMessages.TRAIN_HELP_MESSAGE_ON_BAD_INPUT+"\n", outContent.toString());
 	}
 	
