@@ -14,7 +14,7 @@ import org.mann.ui.SvmPrintInterface;
 import org.mann.ui.SvmPrinterFactory;
 import org.mann.ui.SvmPrinterFactory.PrintMode;
 
-class svm_train {
+public class svm_train {
 
 	private SvmParameter param; // set by parse_command_line
 	private svm_problem prob; // set by read_problem
@@ -25,7 +25,7 @@ class svm_train {
 	private int cross_validation;
 	private int nr_fold;
 
-	private void run(String argv[]) throws IOException {
+	protected void run(String argv[]) throws IOException {
 		boolean hasBadInput = parse_command_line(argv);
 		if(hasBadInput){
 			return;

@@ -26,7 +26,7 @@ class svm_predict {
 		return Double.valueOf(s).doubleValue();
 	}
 
-	private static void predict(BufferedReader input, DataOutputStream output, SvmModel model, int predict_probability)
+	protected static void predict(BufferedReader input, DataOutputStream output, SvmModel model, int predict_probability)
 			throws IOException {
 		int correct = 0;
 		int total = 0;
@@ -40,7 +40,7 @@ class svm_predict {
 		if (predict_probability == 1) {
 			if (svmType == SvmType.epsilon_svr || svmType == SvmType.nu_svr) {
 				svm_predict.info("Prob. model for test data: target value = predicted value + z,\nz: "
-						+ "Laplace distribution e^(-|z|/sigma)/(2sigma),sigma=" + svm.svm_get_svr_probability(model) + "\n");
+						+ "Laplace distribution e^(-|z|/sigma)/(2sigma),sigma=" + svm.svm_get_svr_probability(model));
 			} else {
 				int[] labels = new int[nr_class];
 				svm.svm_get_labels(model, labels);
@@ -90,13 +90,18 @@ class svm_predict {
 			++total;
 		}
 		if (svmType == SvmType.epsilon_svr || svmType == SvmType.nu_svr) {
-			svm_predict.info("Mean squared error = " + error / total + " (regression)\n");
-			svm_predict.info("Squared correlation coefficient = "
-					+ ((total * sumvy - sumv * sumy) * (total * sumvy - sumv * sumy))
-					/ ((total * sumvv - sumv * sumv) * (total * sumyy - sumy * sumy)) + " (regression)\n");
+			
+			double meanSqError = error / total;
+			double rSquared = ((total * sumvy - sumv * sumy) * (total * sumvy - sumv * sumy))
+			/ ((total * sumvv - sumv * sumv) * (total * sumyy - sumy * sumy));
+			
+			svm_predict.info(String.format("Mean squared error = %s (regression)", meanSqError));
+			svm_predict.info(String.format("Squared correlation coefficient = %s (regression)", rSquared));
 		} else {
-			svm_predict.info("Accuracy = " + (double) correct / total * 100 + "% (" + correct + "/" + total
-					+ ") (classification)\n");
+			
+			double accuracy = (double) correct / total * 100;
+			//TODO: find out how to escape %
+			svm_predict.info(String.format("Accuracy = %s%s (%s/%s) (classification)", accuracy, "%", correct, total));
 		}
 	}
 

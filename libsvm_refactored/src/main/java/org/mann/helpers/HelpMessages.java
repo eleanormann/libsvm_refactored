@@ -34,11 +34,11 @@ public class HelpMessages {
 			+"-b probability_estimates: whether to predict probability estimates, 0 or 1 (default 0); one-class SVM not supported yet\n"
 			+"-q : quiet mode (no outputs)";
 	
-	public static final String CROSS_VALIDATION_MSE = "Cross Validation Mean squared error = %s\n";
+	public static final String CROSS_VALIDATION_MSE = "Cross Validation Mean squared error = %s";
 
-	public static final String CROSS_VALIDATION_RSQ = "Cross Validation Squared correlation coefficient = %s\n";
+	public static final String CROSS_VALIDATION_RSQ = "Cross Validation Squared correlation coefficient = %s";
 
-	public static final String CROSS_VALIDATION_ACCURACY = "Cross Validation Accuracy = %s%\n";
+	public static final String CROSS_VALIDATION_ACCURACY = "Cross Validation Accuracy = %s%";
 	
 	public static void exitWithHelp(boolean isTrain) {
 		System.err.print(isTrain ? TRAIN_HELP_MESSAGE_ON_BAD_INPUT : PREDICT_HELP_MESSAGE_ON_BAD_INPUT);

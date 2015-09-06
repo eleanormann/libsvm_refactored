@@ -42,29 +42,29 @@ public class SvmTrainOutputMessagesTest {
 	@Test
 	public void parseCommandLineShouldPrintBadInputMessageWhenNoFilenameInputWithGoodOptions() throws IOException {
 		svm_train.main(new String[] { "-v", "3" });
-		assertEquals("No file has been specified", errContent.toString().trim());
-		assertEquals(HelpMessages.TRAIN_HELP_MESSAGE_ON_BAD_INPUT, outContent.toString().trim());
+		assertEquals("No file has been specified", errContent.toString());
+		assertEquals(HelpMessages.TRAIN_HELP_MESSAGE_ON_BAD_INPUT + "\n", outContent.toString());
 	}
 
 	@Test
 	public void parseCommandLineShouldPrintBadInputMessageWhenOptionOnItsOwnPassed() throws IOException {
 		svm_train.main(new String[] {"-q"});
-		assertEquals("option on its own is not valid input", errContent.toString().trim());
-		assertEquals(HelpMessages.TRAIN_HELP_MESSAGE_ON_BAD_INPUT, outContent.toString().trim());
+		assertEquals("option on its own is not valid input", errContent.toString());
+		assertEquals(HelpMessages.TRAIN_HELP_MESSAGE_ON_BAD_INPUT + "\n", outContent.toString());
 	}
 	
 	@Test
 	public void parseCommandLineShouldPrintBadInputMessageWhenNFoldLessThanTwo() throws IOException {
 		svm_train.main(new String[] {"-v", "1"});
-		assertEquals("n-fold cross validation: n must >= 2", errContent.toString().trim());
-		assertEquals(HelpMessages.TRAIN_HELP_MESSAGE_ON_BAD_INPUT, outContent.toString().trim());
+		assertEquals("n-fold cross validation: n must >= 2", errContent.toString());
+		assertEquals(HelpMessages.TRAIN_HELP_MESSAGE_ON_BAD_INPUT + "\n", outContent.toString());
 	}
 	
 	@Test
 	public void parseCommandLineShouldPrintBadInputMessageWhenOptionNotRecognised() throws IOException{
 		svm_train.main(new String[] {"-u", "0"});
-		assertEquals("Unknown option: -u", errContent.toString().trim());
-		assertEquals(HelpMessages.TRAIN_HELP_MESSAGE_ON_BAD_INPUT, outContent.toString().trim());
+		assertEquals("Unknown option: -u", errContent.toString());
+		assertEquals(HelpMessages.TRAIN_HELP_MESSAGE_ON_BAD_INPUT+"\n", outContent.toString());
 	}
 	
 	@Test
@@ -79,7 +79,7 @@ public class SvmTrainOutputMessagesTest {
 		};
 			 
 		svm_train.main(new String[]{"invalid filename"});
-		assertEquals("invalid filename (No such file or directory)", errContent.toString().trim());
-		assertEquals(HelpMessages.TRAIN_HELP_MESSAGE_ON_BAD_INPUT, outContent.toString().trim());
+		assertEquals("invalid filename (No such file or directory)", errContent.toString());
+		assertEquals(HelpMessages.TRAIN_HELP_MESSAGE_ON_BAD_INPUT+ "\n", outContent.toString());
 	}
 }

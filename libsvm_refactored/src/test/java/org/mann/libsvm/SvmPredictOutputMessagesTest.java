@@ -34,7 +34,7 @@ public class SvmPredictOutputMessagesTest {
 	@Test
 	public void mainShouldPrintBadInputMessageTooFewParametersPassed() throws IOException {
 		svm_predict.main(new String[] { "Only one parameter" });
-		assertEquals(HelpMessages.PREDICT_HELP_MESSAGE_ON_BAD_INPUT, outContent.toString().trim());
+		assertEquals(HelpMessages.PREDICT_HELP_MESSAGE_ON_BAD_INPUT +"\n", outContent.toString());
 	}
 
 	@Test
@@ -48,7 +48,7 @@ public class SvmPredictOutputMessagesTest {
 	public void mainShouldPrintUnknownOptionMessageAndBadInputMessageWhenUnknownOptionAdded() throws IOException {
 		svm_predict.main(new String[] { "-u" });
 		assertEquals("Unknown option: -u\n", errContent.toString());
-		assertEquals(HelpMessages.PREDICT_HELP_MESSAGE_ON_BAD_INPUT, outContent.toString().trim());
+		assertEquals(HelpMessages.PREDICT_HELP_MESSAGE_ON_BAD_INPUT +"\n", outContent.toString());
 	}
 
 	@Test
@@ -56,7 +56,7 @@ public class SvmPredictOutputMessagesTest {
 		svm_predict.main(new String[] { "badinput.train", "anyString", "anyString" });
 		assertEquals(new FileNotFoundException().toString() + ": badinput.train (No such file or directory)",
 				errContent.toString());
-		assertEquals(HelpMessages.PREDICT_HELP_MESSAGE_ON_BAD_INPUT, outContent.toString().trim());
+		assertEquals(HelpMessages.PREDICT_HELP_MESSAGE_ON_BAD_INPUT +"\n", outContent.toString());
 	}
 	
 

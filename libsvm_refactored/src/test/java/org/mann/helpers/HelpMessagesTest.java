@@ -11,7 +11,7 @@ public class HelpMessagesTest {
 	@Test
 	public void crossValMseMessageShouldReturnParameterisedMessage() {
 		String crossValMseMsg = String.format(HelpMessages.CROSS_VALIDATION_MSE, "0.034");
-		assertThat(crossValMseMsg, equalTo("Cross Validation Mean squared error = 0.034\n"));
+		assertThat(crossValMseMsg, equalTo("Cross Validation Mean squared error = 0.034"));
 	}
 
 	//unit test exitWithHelp

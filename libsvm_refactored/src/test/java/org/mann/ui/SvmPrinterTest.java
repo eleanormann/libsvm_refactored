@@ -45,7 +45,9 @@ public class SvmPrinterTest {
 	@Test
 	public void standardModeShouldPrintParameterString() {
 		SvmPrinterFactory.getPrinter(PrintMode.STANDARD).print("anything");
-		assertEquals("anything", outContent.toString().trim());
+		SvmPrinterFactory.getPrinter(PrintMode.STANDARD).print("on");
+		SvmPrinterFactory.getPrinter(PrintMode.STANDARD).print("new line");
+		assertEquals("anything\non\nnew line", outContent.toString().trim());
 	}
 	
 	@Test

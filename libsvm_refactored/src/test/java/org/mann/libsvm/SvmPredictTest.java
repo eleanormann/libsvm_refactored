@@ -2,6 +2,7 @@ package org.mann.libsvm;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -17,6 +18,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mann.libsvm.SvmModel;
+import org.mann.libsvm.SvmParameter.SvmType;
 import org.mann.libsvm.svm;
 import org.mann.libsvm.svm_predict;
 
@@ -42,9 +44,29 @@ public class SvmPredictTest {
 	public void mainShouldReachPredictMethodWhenInputIsValid() throws IOException{
 		setupMocksSoMethodReachesPredictCall();
 		svm_predict.main(new String[] {"input file", "model file", "output file"});
-		assertEquals("Reached predict method when input passed the validation checks", outContent.toString().trim());
+		assertEquals("Accuracy = NaN% (0/0) (classification)\n", outContent.toString());
+	}
+	
+	@Test
+	public void predictShouldPrintWhenSvmTypeIsEpsilon() throws IOException{
+		DataOutputStream output = mock(DataOutputStream.class);
+		BufferedReader input = mock(BufferedReader.class);
+		when(input.readLine()).thenReturn(null);
+		SvmModel model = mockSvmModel(SvmType.epsilon_svr); 
+		svm_predict.predict(input, output, model, 0);
+		assertEquals("Mean squared error = NaN (regression)\nSquared correlation coefficient = NaN (regression)\n", outContent.toString());
 	}
 
+	@Test
+	public void predictShouldPrintWhenSvmTypeIsCSvc() throws IOException{
+		DataOutputStream output = mock(DataOutputStream.class);
+		BufferedReader input = mock(BufferedReader.class);
+		when(input.readLine()).thenReturn(null);
+		SvmModel model = mockSvmModel(SvmType.c_svc); 
+		svm_predict.predict(input, output, model, 0);
+		assertEquals("Accuracy = NaN% (0/0) (classification)\n", outContent.toString());
+	}
+	
 	private void setupMocksSoMethodReachesPredictCall() {
 		final BufferedReader input = mock(BufferedReader.class);
 		new MockUp<svm_predict>(){
@@ -52,14 +74,11 @@ public class SvmPredictTest {
 			private BufferedReader createReader(String filename) throws FileNotFoundException {
 				return input;
 			}
-			
-			@Mock
-			private void predict(BufferedReader input, DataOutputStream output, SvmModel model, int predict_probability)
-					throws IOException {
-				System.out.println("Reached predict method when input passed the validation checks");
-			}
 		};
-		
+		mockSvmModel(null);
+	}
+
+	private SvmModel mockSvmModel(final SvmType type) {
 		final SvmModel model = mock(SvmModel.class);
 		new MockUp<svm>(){
 
@@ -72,7 +91,13 @@ public class SvmPredictTest {
 			public int svm_check_probability_model(SvmModel model){
 				return 0;
 			}
+			
+			@Mock
+			public SvmType getSvmTypeFromModel(SvmModel model){
+				return type;
+			}
 
 		};
+		return model;
 	}
 }
