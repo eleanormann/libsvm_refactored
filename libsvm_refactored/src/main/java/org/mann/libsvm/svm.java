@@ -11,296 +11,14 @@ import java.util.StringTokenizer;
 
 import org.mann.libsvm.SvmParameter.KernelType;
 import org.mann.libsvm.SvmParameter.SvmType;
+import org.mann.libsvm.kernel.Kernel;
+import org.mann.libsvm.kernel.ONE_CLASS_Q;
+import org.mann.libsvm.kernel.QMatrix;
+import org.mann.libsvm.kernel.SVC_Q;
+import org.mann.libsvm.kernel.SVR_Q;
 import org.mann.ui.SvmPrintInterface;
 import org.mann.validation.svmparameter.ParameterValidationManager;
 
-//
-// Kernel Cache
-//
-// l is the number of total data items
-// size is the cache size limit in bytes
-//
-class Cache {
-	private final int l;
-	private long size;
-
-	private final class head_t {
-		head_t prev, next; // a cicular list
-		float[] data;
-		int len; // data[0,len) is cached in this entry
-	}
-
-	private final head_t[] head;
-	private head_t lru_head;
-
-	Cache(int l_, long size_) {
-		l = l_;
-		size = size_;
-		head = new head_t[l];
-		for (int i = 0; i < l; i++)
-			head[i] = new head_t();
-		size /= 4;
-		size -= l * (16 / 4); // sizeof(head_t) == 16
-		size = Math.max(size, 2 * (long) l); // cache must be large enough for
-												// two columns
-		lru_head = new head_t();
-		lru_head.next = lru_head.prev = lru_head;
-	}
-
-	private void lru_delete(head_t h) {
-		// delete from current location
-		h.prev.next = h.next;
-		h.next.prev = h.prev;
-	}
-
-	private void lru_insert(head_t h) {
-		// insert to last position
-		h.next = lru_head;
-		h.prev = lru_head.prev;
-		h.prev.next = h;
-		h.next.prev = h;
-	}
-
-	// request data [0,len)
-	// return some position p where [p,len) need to be filled
-	// (p >= len if nothing needs to be filled)
-	// java: simulate pointer using single-element array
-	int get_data(int index, float[][] data, int len) {
-		head_t h = head[index];
-		if (h.len > 0)
-			lru_delete(h);
-		int more = len - h.len;
-
-		if (more > 0) {
-			// free old space
-			while (size < more) {
-				head_t old = lru_head.next;
-				lru_delete(old);
-				size += old.len;
-				old.data = null;
-				old.len = 0;
-			}
-
-			// allocate new space
-			float[] new_data = new float[len];
-			if (h.data != null)
-				System.arraycopy(h.data, 0, new_data, 0, h.len);
-			h.data = new_data;
-			size -= more;
-			do {
-				int _ = h.len;
-				h.len = len;
-				len = _;
-			} while (false);
-		}
-
-		lru_insert(h);
-		data[0] = h.data;
-		return len;
-	}
-
-	void swap_index(int i, int j) {
-		if (i == j)
-			return;
-
-		if (head[i].len > 0)
-			lru_delete(head[i]);
-		if (head[j].len > 0)
-			lru_delete(head[j]);
-		do {
-			float[] _ = head[i].data;
-			head[i].data = head[j].data;
-			head[j].data = _;
-		} while (false);
-		do {
-			int _ = head[i].len;
-			head[i].len = head[j].len;
-			head[j].len = _;
-		} while (false);
-		if (head[i].len > 0)
-			lru_insert(head[i]);
-		if (head[j].len > 0)
-			lru_insert(head[j]);
-
-		if (i > j)
-			do {
-				int _ = i;
-				i = j;
-				j = _;
-			} while (false);
-		for (head_t h = lru_head.next; h != lru_head; h = h.next) {
-			if (h.len > i) {
-				if (h.len > j)
-					do {
-						float _ = h.data[i];
-						h.data[i] = h.data[j];
-						h.data[j] = _;
-					} while (false);
-				else {
-					// give up
-					lru_delete(h);
-					size += h.len;
-					h.data = null;
-					h.len = 0;
-				}
-			}
-		}
-	}
-}
-
-//
-// Kernel evaluation
-//
-// the static method k_function is for doing single kernel evaluation
-// the constructor of Kernel prepares to calculate the l*l kernel matrix
-// the member function get_Q is for getting one column from the Q Matrix
-//
-abstract class QMatrix {
-	abstract float[] get_Q(int column, int len);
-
-	abstract double[] get_QD();
-
-	abstract void swap_index(int i, int j);
-};
-
-abstract class Kernel extends QMatrix {
-	private SvmNode[][] x;
-	private final double[] x_square;
-
-	// SvmParameter
-	private final KernelType kernelType;
-	private final int degree;
-	private final double gamma;
-	private final double coef0;
-
-	abstract float[] get_Q(int column, int len);
-
-	abstract double[] get_QD();
-
-	void swap_index(int i, int j) {
-		do {
-			SvmNode[] _ = x[i];
-			x[i] = x[j];
-			x[j] = _;
-		} while (false);
-		if (x_square != null)
-			do {
-				double _ = x_square[i];
-				x_square[i] = x_square[j];
-				x_square[j] = _;
-			} while (false);
-	}
-
-	//changed this to be more clear what it does. May need to revert if subs tests should important divergence
-	//or it proves to be problematically slow
-	protected static double powi(double base, int times) {
-		double result =  Math.pow(base, times);
-		if(Double.isInfinite(result)){
-			return 1;
-		}else{
-			return result;
-		}
-	}
-
-	double kernel_function(int i, int j) {
-		switch (kernelType) {
-		case linear:
-			return dot(x[i], x[j]);
-		case poly:
-			return powi(gamma * dot(x[i], x[j]) + coef0, degree);
-		case rbf:
-			return Math.exp(-gamma
-					* (x_square[i] + x_square[j] - 2 * dot(x[i], x[j])));
-		case sigmoid:
-			return Math.tanh(gamma * dot(x[i], x[j]) + coef0);
-		case precomputed:
-			return x[i][(int) (x[j][0].value)].value;
-		default:
-			return 0; // java
-		}
-	}
-
-	Kernel(int l, SvmNode[][] x_, SvmParameter param) {
-		this.kernelType = param.kernelType;
-		this.degree = param.degree;
-		this.gamma = param.gamma;
-		this.coef0 = param.coef0;
-
-		x = (SvmNode[][]) x_.clone();
-
-		if (kernelType == KernelType.rbf) {
-			x_square = new double[l];
-			for (int i = 0; i < l; i++)
-				x_square[i] = dot(x[i], x[i]);
-		} else
-			x_square = null;
-	}
-
-	static double dot(SvmNode[] x, SvmNode[] y) {
-		double sum = 0;
-		int xlen = x.length;
-		int ylen = y.length;
-		int i = 0;
-		int j = 0;
-		while (i < xlen && j < ylen) {
-			if (x[i].index == y[j].index)
-				sum += x[i++].value * y[j++].value;
-			else {
-				if (x[i].index > y[j].index)
-					++j;
-				else
-					++i;
-			}
-		}
-		return sum;
-	}
-
-	static double k_function(SvmNode[] x, SvmNode[] y, SvmParameter param) {
-		switch (param.kernelType) {
-		case linear:
-			return dot(x, y);
-		case poly:
-			return powi(param.gamma * dot(x, y) + param.coef0, param.degree);
-		case rbf: {
-			double sum = 0;
-			int xlen = x.length;
-			int ylen = y.length;
-			int i = 0;
-			int j = 0;
-			while (i < xlen && j < ylen) {
-				if (x[i].index == y[j].index) {
-					double d = x[i++].value - y[j++].value;
-					sum += d * d;
-				} else if (x[i].index > y[j].index) {
-					sum += y[j].value * y[j].value;
-					++j;
-				} else {
-					sum += x[i].value * x[i].value;
-					++i;
-				}
-			}
-
-			while (i < xlen) {
-				sum += x[i].value * x[i].value;
-				++i;
-			}
-
-			while (j < ylen) {
-				sum += y[j].value * y[j].value;
-				++j;
-			}
-
-			return Math.exp(-param.gamma * sum);
-		}
-		case sigmoid:
-			return Math.tanh(param.gamma * dot(x, y) + param.coef0);
-		case precomputed:
-			return x[(int) (y[0].value)].value;
-		default:
-			return 0; // java
-		}
-	}
-}
 
 // An SMO algorithm in Fan et al., JMLR 6(2005), p. 1889--1918
 // Solves:
@@ -339,7 +57,7 @@ class Solver {
 	int l;
 	boolean unshrink; // XXX
 
-	static final double INF = java.lang.Double.POSITIVE_INFINITY;
+	static final double INF = Double.POSITIVE_INFINITY;
 
 	double get_C(int i) {
 		return (y[i] > 0) ? Cp : Cn;
@@ -696,11 +414,11 @@ class Solver {
 		// (if quadratic coefficeint <= 0, replace it with tau)
 		// -y_j*grad(f)_j < -y_i*grad(f)_i, j in I_low(\alpha)
 
-		double Gmax = -INF;
-		double Gmax2 = -INF;
+		double Gmax = Double.NEGATIVE_INFINITY;
+		double Gmax2 = Double.NEGATIVE_INFINITY;
 		int Gmax_idx = -1;
 		int Gmin_idx = -1;
-		double obj_diff_min = INF;
+		double obj_diff_min = Double.POSITIVE_INFINITY;
 
 		for (int t = 0; t < active_size; t++)
 			if (y[t] == +1) {
@@ -789,8 +507,8 @@ class Solver {
 
 	void do_shrinking() {
 		int i;
-		double Gmax1 = -INF; // max { -y_i * grad(f)_i | i in I_up(\alpha) }
-		double Gmax2 = -INF; // max { y_i * grad(f)_i | i in I_low(\alpha) }
+		double Gmax1 = Double.NEGATIVE_INFINITY; // max { -y_i * grad(f)_i | i in I_up(\alpha) }
+		double Gmax2 = Double.NEGATIVE_INFINITY; // max { y_i * grad(f)_i | i in I_low(\alpha) }
 
 		// find maximal violating pair first
 		for (i = 0; i < active_size; i++) {
@@ -837,20 +555,22 @@ class Solver {
 	double calculate_rho() {
 		double r;
 		int nr_free = 0;
-		double ub = INF, lb = -INF, sum_free = 0;
+		double upperBound = Double.POSITIVE_INFINITY;
+		double lowerBound = Double.NEGATIVE_INFINITY;
+		double sum_free = 0;
 		for (int i = 0; i < active_size; i++) {
 			double yG = y[i] * G[i];
 
 			if (is_lower_bound(i)) {
 				if (y[i] > 0)
-					ub = Math.min(ub, yG);
+					upperBound = Math.min(upperBound, yG);
 				else
-					lb = Math.max(lb, yG);
+					lowerBound = Math.max(lowerBound, yG);
 			} else if (is_upper_bound(i)) {
 				if (y[i] < 0)
-					ub = Math.min(ub, yG);
+					upperBound = Math.min(upperBound, yG);
 				else
-					lb = Math.max(lb, yG);
+					lowerBound = Math.max(lowerBound, yG);
 			} else {
 				++nr_free;
 				sum_free += yG;
@@ -860,7 +580,7 @@ class Solver {
 		if (nr_free > 0)
 			r = sum_free / nr_free;
 		else
-			r = (ub + lb) / 2;
+			r = (upperBound + lowerBound) / 2;
 
 		return r;
 	}
@@ -889,16 +609,16 @@ final class Solver_NU extends Solver {
 		// (if quadratic coefficeint <= 0, replace it with tau)
 		// -y_j*grad(f)_j < -y_i*grad(f)_i, j in I_low(\alpha)
 
-		double Gmaxp = -INF;
-		double Gmaxp2 = -INF;
+		double Gmaxp = Double.NEGATIVE_INFINITY;
+		double Gmaxp2 = Double.NEGATIVE_INFINITY;
 		int Gmaxp_idx = -1;
 
-		double Gmaxn = -INF;
-		double Gmaxn2 = -INF;
+		double Gmaxn = Double.NEGATIVE_INFINITY;
+		double Gmaxn2 = Double.NEGATIVE_INFINITY;
 		int Gmaxn_idx = -1;
 
 		int Gmin_idx = -1;
-		double obj_diff_min = INF;
+		double obj_diff_min = Double.POSITIVE_INFINITY;
 
 		for (int t = 0; t < active_size; t++)
 			if (y[t] == +1) {
@@ -995,13 +715,13 @@ final class Solver_NU extends Solver {
 	}
 
 	void do_shrinking() {
-		double Gmax1 = -INF; // max { -y_i * grad(f)_i | y_i = +1, i in
+		double Gmax1 = Double.NEGATIVE_INFINITY; // max { -y_i * grad(f)_i | y_i = +1, i in
 								// I_up(\alpha) }
-		double Gmax2 = -INF; // max { y_i * grad(f)_i | y_i = +1, i in
+		double Gmax2 = Double.NEGATIVE_INFINITY; // max { y_i * grad(f)_i | y_i = +1, i in
 								// I_low(\alpha) }
-		double Gmax3 = -INF; // max { -y_i * grad(f)_i | y_i = -1, i in
+		double Gmax3 = Double.NEGATIVE_INFINITY; // max { -y_i * grad(f)_i | y_i = -1, i in
 								// I_up(\alpha) }
-		double Gmax4 = -INF; // max { y_i * grad(f)_i | y_i = -1, i in
+		double Gmax4 = Double.NEGATIVE_INFINITY; // max { y_i * grad(f)_i | y_i = -1, i in
 								// I_low(\alpha) }
 
 		// find maximal violating pair first
@@ -1045,26 +765,28 @@ final class Solver_NU extends Solver {
 
 	double calculate_rho() {
 		int nr_free1 = 0, nr_free2 = 0;
-		double ub1 = INF, ub2 = INF;
-		double lb1 = -INF, lb2 = -INF;
+		double upperBound1 = Double.POSITIVE_INFINITY; 
+		double uppperBound2 = Double.POSITIVE_INFINITY;
+		double lowerBound1 = Double.NEGATIVE_INFINITY;
+		double lowerBound2 = Double.NEGATIVE_INFINITY;
 		double sum_free1 = 0, sum_free2 = 0;
 
 		for (int i = 0; i < active_size; i++) {
 			if (y[i] == +1) {
-				if (is_lower_bound(i))
-					ub1 = Math.min(ub1, G[i]);
-				else if (is_upper_bound(i))
-					lb1 = Math.max(lb1, G[i]);
-				else {
+				if (is_lower_bound(i)){
+					upperBound1 = Math.min(upperBound1, G[i]);					
+				}else if (is_upper_bound(i)){
+					lowerBound1 = Math.max(lowerBound1, G[i]);					
+				}else {
 					++nr_free1;
 					sum_free1 += G[i];
 				}
 			} else {
-				if (is_lower_bound(i))
-					ub2 = Math.min(ub2, G[i]);
-				else if (is_upper_bound(i))
-					lb2 = Math.max(lb2, G[i]);
-				else {
+				if (is_lower_bound(i)) {
+					uppperBound2 = Math.min(uppperBound2, G[i]);					
+				} else if (is_upper_bound(i)) {
+					lowerBound2 = Math.max(lowerBound2, G[i]);					
+				} else {
 					++nr_free2;
 					sum_free2 += G[i];
 				}
@@ -1072,172 +794,27 @@ final class Solver_NU extends Solver {
 		}
 
 		double r1, r2;
-		if (nr_free1 > 0)
-			r1 = sum_free1 / nr_free1;
-		else
-			r1 = (ub1 + lb1) / 2;
-
-		if (nr_free2 > 0)
-			r2 = sum_free2 / nr_free2;
-		else
-			r2 = (ub2 + lb2) / 2;
+		
+		if (nr_free1 > 0){
+			r1 = sum_free1 / nr_free1;			
+		} else{			
+			r1 = (upperBound1 + lowerBound1) / 2;
+		}
+		
+		if (nr_free2 > 0){
+			r2 = sum_free2 / nr_free2;			
+		} else {
+			r2 = (uppperBound2 + lowerBound2) / 2;			
+		}
 
 		si.r = (r1 + r2) / 2;
 		return (r1 - r2) / 2;
 	}
 }
 
-//
-// Q matrices for various formulations
-//
-class SVC_Q extends Kernel {
-	private final byte[] y;
-	private final Cache cache;
-	private final double[] QD;
 
-	SVC_Q(svm_problem prob, SvmParameter param, byte[] y_) {
-		super(prob.length, prob.x, param);
-		y = (byte[]) y_.clone();
-		cache = new Cache(prob.length, (long) (param.cache_size * (1 << 20)));
-		QD = new double[prob.length];
-		for (int i = 0; i < prob.length; i++)
-			QD[i] = kernel_function(i, i);
-	}
 
-	float[] get_Q(int i, int len) {
-		float[][] data = new float[1][];
-		int start, j;
-		if ((start = cache.get_data(i, data, len)) < len) {
-			for (j = start; j < len; j++)
-				data[0][j] = (float) (y[i] * y[j] * kernel_function(i, j));
-		}
-		return data[0];
-	}
 
-	double[] get_QD() {
-		return QD;
-	}
-
-	void swap_index(int i, int j) {
-		cache.swap_index(i, j);
-		super.swap_index(i, j);
-		do {
-			byte _ = y[i];
-			y[i] = y[j];
-			y[j] = _;
-		} while (false);
-		do {
-			double _ = QD[i];
-			QD[i] = QD[j];
-			QD[j] = _;
-		} while (false);
-	}
-}
-
-class ONE_CLASS_Q extends Kernel {
-	private final Cache cache;
-	private final double[] QD;
-
-	ONE_CLASS_Q(svm_problem prob, SvmParameter param) {
-		super(prob.length, prob.x, param);
-		cache = new Cache(prob.length, (long) (param.cache_size * (1 << 20)));
-		QD = new double[prob.length];
-		for (int i = 0; i < prob.length; i++)
-			QD[i] = kernel_function(i, i);
-	}
-
-	float[] get_Q(int i, int len) {
-		float[][] data = new float[1][];
-		int start, j;
-		if ((start = cache.get_data(i, data, len)) < len) {
-			for (j = start; j < len; j++)
-				data[0][j] = (float) kernel_function(i, j);
-		}
-		return data[0];
-	}
-
-	double[] get_QD() {
-		return QD;
-	}
-
-	void swap_index(int i, int j) {
-		cache.swap_index(i, j);
-		super.swap_index(i, j);
-		do {
-			double _ = QD[i];
-			QD[i] = QD[j];
-			QD[j] = _;
-		} while (false);
-	}
-}
-
-class SVR_Q extends Kernel {
-	private final int l;
-	private final Cache cache;
-	private final byte[] sign;
-	private final int[] index;
-	private int next_buffer;
-	private float[][] buffer;
-	private final double[] QD;
-
-	SVR_Q(svm_problem prob, SvmParameter param) {
-		super(prob.length, prob.x, param);
-		l = prob.length;
-		cache = new Cache(l, (long) (param.cache_size * (1 << 20)));
-		QD = new double[2 * l];
-		sign = new byte[2 * l];
-		index = new int[2 * l];
-		for (int k = 0; k < l; k++) {
-			sign[k] = 1;
-			sign[k + l] = -1;
-			index[k] = k;
-			index[k + l] = k;
-			QD[k] = kernel_function(k, k);
-			QD[k + l] = QD[k];
-		}
-		buffer = new float[2][2 * l];
-		next_buffer = 0;
-	}
-
-	void swap_index(int i, int j) {
-		do {
-			byte _ = sign[i];
-			sign[i] = sign[j];
-			sign[j] = _;
-		} while (false);
-		do {
-			int _ = index[i];
-			index[i] = index[j];
-			index[j] = _;
-		} while (false);
-		do {
-			double _ = QD[i];
-			QD[i] = QD[j];
-			QD[j] = _;
-		} while (false);
-	}
-
-	float[] get_Q(int i, int len) {
-		float[][] data = new float[1][];
-		int j, real_i = index[i];
-		if (cache.get_data(real_i, data, l) < l) {
-			for (j = 0; j < l; j++)
-				data[0][j] = (float) kernel_function(real_i, j);
-		}
-
-		// reorder and copy
-		float buf[] = buffer[next_buffer];
-		next_buffer = 1 - next_buffer;
-		byte si = sign[i];
-		for (j = 0; j < len; j++)
-			buf[j] = (float) si * sign[j] * data[0][index[j]];
-		return buf;
-	}
-
-	double[] get_QD() {
-		return QD;
-	}
-}
 
 public class svm {
 	//

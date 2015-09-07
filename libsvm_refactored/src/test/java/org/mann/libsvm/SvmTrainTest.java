@@ -142,22 +142,7 @@ public class SvmTrainTest {
 		};
 	}
 
-	
-	private void createExpectedSvmProblem() {
-		SvmNode[][] expectedProblemX = new SvmNode[][]{
-			{new SvmNode(1, 0.3), new SvmNode(2, 0.2)},
-			{new SvmNode(1, 0.5), new SvmNode(2, 0.1)},
-			{new SvmNode(1, 0.6), new SvmNode(2, 0.001)},
-			{new SvmNode(1, 0.001), new SvmNode(2, 0.4)},
-			{new SvmNode(1, 0.1), new SvmNode(2, 0.7)},
-			{new SvmNode(1, 0.55), new SvmNode(2,0.023)},
-			{new SvmNode(1, 0.04), new SvmNode(2,0.3)},
-			{new SvmNode(1, 0.43), new SvmNode(2,0.1)},
-			{new SvmNode(1, 0.2)},
-			{new SvmNode(1, 0.9)},
-			{new SvmNode(2, 0.6)}	
-		};
-	}
+
 	
 
 }
