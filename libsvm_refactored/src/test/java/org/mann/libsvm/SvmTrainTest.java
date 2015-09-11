@@ -18,12 +18,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mann.helpers.HelpMessages;
 import org.mann.libsvm.SvmParameter.KernelType;
+import org.mann.ui.ResultCollector;
 
 public class SvmTrainTest {
 	private static final String BASE_PATH = "src/test/resources/testdata/";
 	private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
 	private final ByteArrayOutputStream errContent = new ByteArrayOutputStream();
-	
+
 	@Before
 	public void setUpStreams() {
 		System.setOut(new PrintStream(outContent));
@@ -35,17 +36,17 @@ public class SvmTrainTest {
 		System.setOut(null);
 		System.setErr(null);
 	}
-	
+
 	@Test
-	public void readProblemShouldSetDataWhenKernelRbf() throws IOException{
-		//Arrange
+	public void readProblemShouldSetDataWhenKernelRbf() throws IOException {
+		// Arrange
 		createSvmMock();
 		svm_train train = new svm_train();
-		
-		//Act
-		train.run(new String[]{BASE_PATH + "fakeTrainingData.train"});
-		
-		//Assert
+
+		// Act
+		train.run(new String[] { BASE_PATH + "fakeTrainingData.train" }, new ResultCollector());
+
+		// Assert
 		assertThat(train.getSvmParameter().kernelType, equalTo(KernelType.rbf));
 		assertThat(train.getSvmProblem().length, equalTo(11));
 		assertThatSvmProblemDataValuesSetCorrectly(train, 0);
@@ -58,14 +59,15 @@ public class SvmTrainTest {
 		svm_train train = new svm_train();
 
 		// Act
-		train.run(new String[] {"-t", "4", BASE_PATH + "fakeTrainingDataWithPrecomputedKernel.train" });
+		train.run(new String[] { "-t", "4", BASE_PATH + "fakeTrainingDataWithPrecomputedKernel.train" }, new ResultCollector());
 
-		//Assert
+		// Assert
 		assertThat(train.getSvmParameter().kernelType, equalTo(KernelType.precomputed));
+		assertThat(train.getSvmParameter().gamma, equalTo(1.0 / 2)); 													
 		assertThatPrecomputedKernelSetCorrectly(train);
 		assertThatSvmProblemDataValuesSetCorrectly(train, 1);
 	}
-	
+
 	private void assertThatPrecomputedKernelSetCorrectly(svm_train train) {
 		assertThat(train.getSvmProblem().x[0][0].index, equalTo(0));
 		assertThat(train.getSvmProblem().x[1][0].index, equalTo(0));
@@ -82,15 +84,15 @@ public class SvmTrainTest {
 		svm_train train = new svm_train();
 
 		// Act
-		train.run(new String[] {"-t", "4", BASE_PATH +"fakeTrainingData.train" });
+		ResultCollector result = new ResultCollector();
+		train.run(new String[] { "-t", "4", BASE_PATH + "fakeTrainingData.train" }, result);
 
-		//Assert
+		// Assert
 		assertThat(train.getSvmParameter().kernelType, equalTo(KernelType.precomputed));
-		assertThat(errContent.toString(), equalTo("Wrong kernel matrix: first column must be 0:sample_serial_number"));
-		assertThat(outContent.toString(), equalTo(HelpMessages.TRAIN_HELP_MESSAGE_ON_BAD_INPUT + "\n"));
-		
+		assertThat(result.getResult(), equalTo("ERROR: java.lang.IllegalArgumentException: Wrong kernel matrix: first column must be 0:sample_serial_number\n"
+				+ HelpMessages.TRAIN_HELP_MESSAGE_ON_BAD_INPUT + "\n"));
 	}
-	
+
 	@Test
 	public void readProblemShouldThrowExceptionWhenKernelIsPrecomputedButOutOfRange() throws IOException {
 		// Arrange
@@ -98,51 +100,48 @@ public class SvmTrainTest {
 		svm_train train = new svm_train();
 
 		// Act
-		train.run(new String[] {"-t", "4",BASE_PATH + "fakeTrainingDataWithKernelOutOfRange.train" });
+		ResultCollector result = new ResultCollector();
+		train.run(new String[] { "-t", "4", BASE_PATH + "fakeTrainingDataWithKernelOutOfRange.train" }, result);
 
-		//Assert
+		// Assert
 		assertThat(train.getSvmParameter().kernelType, equalTo(KernelType.precomputed));
-		assertThat(errContent.toString(), equalTo("Wrong input format: sample_serial_number out of range"));
-		assertThat(outContent.toString(), equalTo(HelpMessages.TRAIN_HELP_MESSAGE_ON_BAD_INPUT + "\n"));
+		assertThat(result.getResult(), equalTo("ERROR: java.lang.IllegalArgumentException: Wrong input format: sample_serial_number out of range\n"
+				+ HelpMessages.TRAIN_HELP_MESSAGE_ON_BAD_INPUT + "\n"));
 	}
-	
+
 	private void assertThatSvmProblemDataValuesSetCorrectly(svm_train train, int index) {
 		assertThat(train.getSvmProblem().x[0][index].index, equalTo(1));
 		assertThat(train.getSvmProblem().x[1][index].index, equalTo(1));
 		assertThat(train.getSvmProblem().x[2][index].index, equalTo(1));
-		assertThat(train.getSvmProblem().x[3][index+1].index, equalTo(2));
-		assertThat(train.getSvmProblem().x[4][index+1].index, equalTo(2));
-		assertThat(train.getSvmProblem().x[5][index+1].index, equalTo(2));
+		assertThat(train.getSvmProblem().x[3][index + 1].index, equalTo(2));
+		assertThat(train.getSvmProblem().x[4][index + 1].index, equalTo(2));
+		assertThat(train.getSvmProblem().x[5][index + 1].index, equalTo(2));
 		assertThat(train.getSvmProblem().x[6][index].value, equalTo(0.04));
 		assertThat(train.getSvmProblem().x[7][index].value, equalTo(0.43));
 		assertThat(train.getSvmProblem().x[8][index].value, equalTo(0.2));
 		assertThat(train.getSvmProblem().x[9][index].value, equalTo(0.9));
 		assertThat(train.getSvmProblem().x[10][index].value, equalTo(0.6));
-		assertThat(train.getSvmProblem().x[0][index+1].value, equalTo(0.2));
-		assertThat(train.getSvmProblem().x[1][index+1].value, equalTo(0.1));
+		assertThat(train.getSvmProblem().x[0][index + 1].value, equalTo(0.2));
+		assertThat(train.getSvmProblem().x[1][index + 1].value, equalTo(0.1));
 	}
 
 	private void createSvmMock() {
-		new MockUp<svm>(){
+		new MockUp<svm>() {
 			@Mock
 			public String checkSvmParameter(svm_problem prob, SvmParameter param) {
 				return "a string";
 			}
-			
+
 			@Mock
 			public SvmModel svm_train(svm_problem prob, SvmParameter param) {
 				return new SvmModel();
 			}
-			
+
 			@Mock
-			public void svm_save_model(String model_file_name, SvmModel model)
-					throws IOException {
+			public void svm_save_model(String model_file_name, SvmModel model) throws IOException {
 				return;
 			}
 		};
 	}
-
-
-	
 
 }

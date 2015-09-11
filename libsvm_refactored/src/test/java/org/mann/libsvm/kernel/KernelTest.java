@@ -49,7 +49,7 @@ public class KernelTest {
 	public void kernelFunctionShouldReturnDotWhenLinear(){
 		SvmParameter param = new SvmParameter();
 		param.kernelType = KernelType.linear;
-		SvmNode[][] trainingData = new SvmNode[][]{
+		SvmNode[][] trainingData = new SvmNode[][]{ //repetition but keeping this here so I can see the data used
 				{ new SvmNode(1, 2), new SvmNode(2, 3), new SvmNode(3, 5) },
 				{ new SvmNode(2, 3), new SvmNode(3, 4)}
 		};
@@ -57,6 +57,33 @@ public class KernelTest {
 		assertThat(kernel.kernel_function(0, 1), equalTo(29.0));
 	}
 	
+	@Test 
+	public void kernelFunctionShouldReturnCorrectValueWhenPoly(){
+		SvmParameter defaultParam = new SvmParameter();
+		defaultParam.setDefaultValues();
+		defaultParam.kernelType = KernelType.poly;
+		SvmNode[][] trainingData = new SvmNode[][]{
+				{ new SvmNode(1, 2), new SvmNode(2, 3), new SvmNode(3, 5)},
+				{ new SvmNode(2, 3), new SvmNode(3, 4)}
+		};
+		Kernel kernel = new Kernel(2, trainingData, defaultParam);
+		//powi(0 * dot(trainingData[0], trainingData[1]) +coef, 3) 
+		assertThat(kernel.kernel_function(0, 1), equalTo(0.0)); 
+	}
+		
+	@Test 
+	public void kernelFunctionShouldReturnCorrectValueWhenRbf(){
+		SvmParameter defaultParam = new SvmParameter();
+		defaultParam.setDefaultValues();
+		defaultParam.kernelType = KernelType.rbf;
+		SvmNode[][] trainingData = new SvmNode[][]{
+				{ new SvmNode(1, 2), new SvmNode(2, 3), new SvmNode(3, 5) },
+				{ new SvmNode(2, 3), new SvmNode(3, 4)}
+		};
+		Kernel kernel = new Kernel(2, trainingData, defaultParam);
+		//Math.exp(-0 * (x_square[i] + x_square[j] - 2 * dot(x[i], x[j])));
+		assertThat(kernel.kernel_function(0, 1), equalTo(1.0)); //TODO: calculate this by hand
+	}
 	
 	//Moved the Kernel.powi method here to keep a record of legacy code removed since 
 	//I'm just starting to refactor actual calculations and I am scared
@@ -66,7 +93,6 @@ public class KernelTest {
 		int randomTimes = (int)Math.random();
 		assertThat(powi(randomBase, randomTimes), equalTo(Math.pow(randomBase, randomTimes)));
 	}
-
 	
 	/*Still need to check the following:
 	 * If the first argument is finite and less than zero
@@ -123,7 +149,7 @@ If both arguments are integers, then the result is exactly equal to the mathemat
 		};
 	}
 	
-	//I realise this is a bit dodg but I don't know what else to do right now
+	//Using this method just tests that any change I make does not change the calculation output
 	private double[] calculateExpectedXSquare(SvmNode[][] x) {
 		double[] xSquare = new double[x.length];
 		for (int i = 0; i < x.length; i++){

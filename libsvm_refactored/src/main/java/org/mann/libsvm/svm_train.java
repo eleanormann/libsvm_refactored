@@ -10,6 +10,7 @@ import java.util.Vector;
 import org.mann.helpers.HelpMessages;
 import org.mann.libsvm.SvmParameter.KernelType;
 import org.mann.libsvm.SvmParameter.SvmType;
+import org.mann.ui.ResultCollector;
 import org.mann.ui.SvmPrintInterface;
 import org.mann.ui.SvmPrinterFactory;
 import org.mann.ui.SvmPrinterFactory.PrintMode;
@@ -37,7 +38,7 @@ public class svm_train {
 		return model;
 	}
 	
-	protected void run(String argv[]) throws IOException {
+	public void run(String argv[], ResultCollector result) throws IOException {
 		try{
 			parse_command_line(argv);
 			read_problem();
@@ -53,8 +54,9 @@ public class svm_train {
 				model = svm.svm_train(prob, param);
 				svm.svm_save_model(model_file_name, model);
 			}
-		}catch(IllegalArgumentException e){
-			SvmPrinterFactory.getPrinter(PrintMode.TRAIN_BAD_INPUT).print(e.getMessage());
+		}catch(Exception e){
+			result.addError(e);
+			//SvmPrinterFactory.getPrinter(PrintMode.TRAIN_BAD_INPUT).print(e.getMessage());
 		}
 	}
 	
@@ -113,21 +115,7 @@ public class svm_train {
 
 		param = new SvmParameter();
 		// default values
-		param.svmType = SvmType.c_svc;
-		param.kernelType = KernelType.rbf;
-		param.degree = 3;
-		param.gamma = 0; // 1/num_features
-		param.coef0 = 0;
-		param.nu = 0.5;
-		param.cache_size = 100;
-		param.C = 1;
-		param.eps = 1e-3;
-		param.p = 0.1;
-		param.shrinking = 1;
-		param.probability = 0;
-		param.nr_weight = 0;
-		param.weight_label = new int[0];
-		param.weight = new double[0];
+		param.setDefaultValues();
 		cross_validation = 0;
 
 		// parse options
@@ -230,10 +218,8 @@ public class svm_train {
 	// read in a problem (in svmlight format)
 
 	protected void read_problem() throws IOException {
-		BufferedReader fp = null;
-		try {
-			fp = new BufferedReader(new FileReader(input_file_name));
 
+		try (BufferedReader fp = new BufferedReader(new FileReader(input_file_name))) {
 			Vector<Double> vy = new Vector<Double>();
 			Vector<SvmNode[]> vx = new Vector<SvmNode[]>();
 			int max_index = 0;
@@ -253,8 +239,9 @@ public class svm_train {
 					x[j].index = Integer.parseInt(st.nextToken());
 					x[j].value = atof(st.nextToken());
 				}
-				if (m > 0)
+				if (m > 0) {
 					max_index = Math.max(max_index, x[m - 1].index);
+				}
 				vx.addElement(x);
 			}
 
@@ -270,31 +257,26 @@ public class svm_train {
 			if (param.gamma == 0 && max_index > 0)
 				param.gamma = 1.0 / max_index;
 
-			if (param.kernelType == KernelType.precomputed)
+			if (param.kernelType == KernelType.precomputed) {
+
 				for (int i = 0; i < prob.length; i++) {
 					if (prob.x[i][0].index != 0) {
-						//TODO: put this check in the validation section
-						//Expires 6th October 2015
+						// TODO: put this check in the validation section
+						// Expires 6th October 2015
 						throw new IllegalArgumentException("Wrong kernel matrix: first column must be 0:sample_serial_number");
 					}
 					if ((int) prob.x[i][0].value <= 0 || (int) prob.x[i][0].value > max_index) {
-						//TODO: put this check in the validation section
-						//Expires 6th October 2015
+						// TODO: put this check in the validation section
+						// Expires 6th October 2015
 						throw new IllegalArgumentException("Wrong input format: sample_serial_number out of range");
 					}
 				}
-		} catch (FileNotFoundException ex) {
-			SvmPrinterFactory.getPrinter(PrintMode.TRAIN_BAD_INPUT).print(ex.getMessage());
-			return;
-		}finally{
-			if(fp!=null){
-				fp.close();				
 			}
 		}
 	}
 
 	public static void main(String argv[]) throws IOException {
 		svm_train t = new svm_train();
-		t.run(argv);
+		t.run(argv, new ResultCollector());
 	}
 }
