@@ -2126,11 +2126,7 @@ public class svm {
 		return model;
 	}
 
-	public String checkSvmParameter(svm_problem prob, SvmParameter param) {
-		ParameterValidationManager paramValManager = new ParameterValidationManager(new StringBuilder());
-		paramValManager.checkNuThenRunCheckAndGetResponse("Svm Type", paramValManager, param, prob);
-		return paramValManager.getValidationMessage().toString();
-	}
+	
 	
 	public static int svm_check_probability_model(SvmModel model) {
 		if (((model.getParam().svmType == SvmType.c_svc || model

@@ -14,6 +14,7 @@ import org.mann.ui.ResultCollector;
 import org.mann.ui.SvmPrintInterface;
 import org.mann.ui.SvmPrinterFactory;
 import org.mann.ui.SvmPrinterFactory.PrintMode;
+import org.mann.validation.svmparameter.ParameterValidationManager;
 
 public class svm_train {
 
@@ -43,7 +44,7 @@ public class svm_train {
 			parse_command_line(argv);
 			read_problem();
 			
-			error_msg = new svm().checkSvmParameter(prob, param);
+			error_msg = checkSvmParameter(prob, param);
 			if (error_msg != null && error_msg.contains("ERROR")) {
 				throw new IllegalArgumentException(error_msg);
 			}
@@ -56,7 +57,6 @@ public class svm_train {
 			}
 		}catch(Exception e){
 			result.addError(e);
-			//SvmPrinterFactory.getPrinter(PrintMode.TRAIN_BAD_INPUT).print(e.getMessage());
 		}
 	}
 	
@@ -109,7 +109,7 @@ public class svm_train {
 		return (d);
 	}
 
-	private void parse_command_line(String argv[]) {
+	protected void parse_command_line(String argv[]) {
 		int i;
 		SvmPrintInterface print_func = null; // default printing to stdout
 
@@ -275,6 +275,12 @@ public class svm_train {
 		}
 	}
 
+	public String checkSvmParameter(svm_problem prob, SvmParameter param) {
+		ParameterValidationManager paramValManager = new ParameterValidationManager(new StringBuilder());
+		paramValManager.checkNuThenRunCheckAndGetResponse("Svm Type", paramValManager, param, prob);
+		return paramValManager.getValidationMessage().toString();
+	}
+	
 	public static void main(String argv[]) throws IOException {
 		svm_train t = new svm_train();
 		t.run(argv, new ResultCollector());

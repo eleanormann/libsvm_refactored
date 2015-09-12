@@ -37,5 +37,5 @@ public class SvmTrainEndToEndTest {
 		svm_train.main(new String[]{"src/test/resources/testdata/hfmTrainingData.train"});
 		assertEquals(expected, outContent.toString());
 	}
-
+	
 }

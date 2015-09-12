@@ -1,46 +1,32 @@
 package org.mann.libsvm;
 
-import static org.junit.Assert.*;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
-
-import mockit.Mock;
-import mockit.MockUp;
-import mockit.Mocked;
-import mockit.integration.junit4.JMockit;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doNothing;
 
-import org.junit.After;
-import org.junit.Before;
+import java.io.IOException;
+
+import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.rules.ExpectedException;
 import org.mann.helpers.HelpMessages;
 import org.mann.libsvm.SvmParameter.KernelType;
+import org.mann.libsvm.SvmParameter.SvmType;
 import org.mann.ui.ResultCollector;
 
 public class SvmTrainTest {
 	private static final String BASE_PATH = "src/test/resources/testdata/";
-	private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
-	private final ByteArrayOutputStream errContent = new ByteArrayOutputStream();
 
-	@Before
-	public void setUpStreams() {
-		System.setOut(new PrintStream(outContent));
-		System.setErr(new PrintStream(errContent));
-	}
-
-	@After
-	public void cleanUpStreams() {
-		System.setOut(null);
-		System.setErr(null);
-	}
-
+	@Rule
+	public ExpectedException thrown = ExpectedException.none();
+	
 	@Test
 	public void readProblemShouldSetDataWhenKernelRbf() throws IOException {
 		// Arrange
-		createSvmMock();
 		svm_train train = new svm_train();
 
 		// Act
@@ -55,7 +41,6 @@ public class SvmTrainTest {
 	@Test
 	public void readProblemShouldSetDatacorrectlyWhenKernelIsPrecomputed() throws IOException {
 		// Arrange
-		createSvmMock();
 		svm_train train = new svm_train();
 
 		// Act
@@ -80,7 +65,6 @@ public class SvmTrainTest {
 	@Test
 	public void readProblemShouldThrowExceptionWhenKernelIsSetAsPrecomputedButNotIncludedInTrainingData() throws IOException {
 		// Arrange
-		createSvmMock();
 		svm_train train = new svm_train();
 
 		// Act
@@ -96,11 +80,10 @@ public class SvmTrainTest {
 	@Test
 	public void readProblemShouldThrowExceptionWhenKernelIsPrecomputedButOutOfRange() throws IOException {
 		// Arrange
-		createSvmMock();
 		svm_train train = new svm_train();
+		ResultCollector result = new ResultCollector();
 
 		// Act
-		ResultCollector result = new ResultCollector();
 		train.run(new String[] { "-t", "4", BASE_PATH + "fakeTrainingDataWithKernelOutOfRange.train" }, result);
 
 		// Assert
@@ -108,7 +91,44 @@ public class SvmTrainTest {
 		assertThat(result.getResult(), equalTo("ERROR: java.lang.IllegalArgumentException: Wrong input format: sample_serial_number out of range\n"
 				+ HelpMessages.TRAIN_HELP_MESSAGE_ON_BAD_INPUT + "\n"));
 	}
+	
+	@Test
+	public void checkSvmParameterShouldReturnExceptionWhenSvmTypeNotSet(){;
+		String message = new svm_train().checkSvmParameter(null, new SvmParameter());
+		assertThat(message, containsString("ERROR: Svm type not set\n"));
+	}
+	
+	@Test
+	public void svmTrainShouldCheckTrainParameters() throws IOException{
+		svm_train train = mock(svm_train.class);
+		doNothing().when(train).parse_command_line(any(String[].class));
+		doNothing().when(train).read_problem();
+		when(train.checkSvmParameter(any(svm_problem.class), any(SvmParameter.class))).thenCallRealMethod();
+		ResultCollector result = new ResultCollector();
+		
+		train.run(new String[]{}, result);
+		assertThat(result.getResult(), equalTo("ERROR: Svm type not set\n"));
+		
+	}
 
+	@Test
+	public void svmCheckParameterShouldReturnValidationMessageWithNuFeasibilityWhenNuSvc(){
+		svm_train train  = new svm_train();
+		String expectedMessage = "Nu = 1.0: feasibility checked and is OK\nSvm type: nu_svc\nKernel type: linear\nGamma = 1.0\nDegree = 1\nCache size: 1.0\n"
+				+ "Eps = 1.0\nShrinking = 1\nProbability = 1\n";
+		String validationMessage = train.checkSvmParameter(new svm_problem(), createSvmParameter(SvmType.nu_svc));
+		assertThat(validationMessage, equalTo(expectedMessage));
+	}
+
+	@Test
+	public void svmCheckParameterShouldReturnValidationMessageWithNuWhenNuSvr(){
+		svm_train train  = new svm_train();
+		String expectedMessage = "Svm type: nu_svr\nKernel type: linear\nGamma = 1.0\nDegree = 1\nCache size: 1.0\n"
+				+ "Eps = 1.0\nC = 1.0\nNu = 1.0\nShrinking = 1\nProbability = 1\n";
+		String validationMessage = train.checkSvmParameter(new svm_problem(), createSvmParameter(SvmType.nu_svr));
+		assertThat(validationMessage, equalTo(expectedMessage));
+	}
+	
 	private void assertThatSvmProblemDataValuesSetCorrectly(svm_train train, int index) {
 		assertThat(train.getSvmProblem().x[0][index].index, equalTo(1));
 		assertThat(train.getSvmProblem().x[1][index].index, equalTo(1));
@@ -125,23 +145,20 @@ public class SvmTrainTest {
 		assertThat(train.getSvmProblem().x[1][index + 1].value, equalTo(0.1));
 	}
 
-	private void createSvmMock() {
-		new MockUp<svm>() {
-			@Mock
-			public String checkSvmParameter(svm_problem prob, SvmParameter param) {
-				return "a string";
-			}
-
-			@Mock
-			public SvmModel svm_train(svm_problem prob, SvmParameter param) {
-				return new SvmModel();
-			}
-
-			@Mock
-			public void svm_save_model(String model_file_name, SvmModel model) throws IOException {
-				return;
-			}
-		};
+	private SvmParameter createSvmParameter(SvmType svmType) {
+		SvmParameter params = new SvmParameter();
+		params.svmType = svmType;
+		params.kernelType = KernelType.linear;
+		params.C = 1;
+		params.cache_size = 1;
+		params.degree = 1;
+		params.eps = 1;
+		params.gamma = 1;
+		params.nu = 1;
+		params.nr_weight = 1;
+		params.p = 1;
+		params.probability = 1;
+		params.shrinking=1;
+		return params;
 	}
-
 }

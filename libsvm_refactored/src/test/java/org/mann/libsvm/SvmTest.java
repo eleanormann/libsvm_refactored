@@ -171,21 +171,7 @@ public class SvmTest {
 		assertThat(isSuccessfulRead, equalTo(false));	
 	}
 	
-	@Test
-	public void svmCheckParameterShouldReturnValidationMessageWithNuFeasibilityWhenNuSvc(){
-		String expectedMessage = "Nu = 1.0: feasibility checked and is OK\nSvm type: nu_svc\nKernel type: linear\nGamma = 1.0\nDegree = 1\nCache size: 1.0\n"
-				+ "Eps = 1.0\nShrinking = 1\nProbability = 1\n";
-		String validationMessage = new svm().checkSvmParameter(new svm_problem(), createSvmParameter(SvmType.nu_svc));
-		assertThat(validationMessage, equalTo(expectedMessage));
-	}
-
-	@Test
-	public void svmCheckParameterShouldReturnValidationMessageWithNuWhenNuSvr(){
-		String expectedMessage = "Svm type: nu_svr\nKernel type: linear\nGamma = 1.0\nDegree = 1\nCache size: 1.0\n"
-				+ "Eps = 1.0\nC = 1.0\nNu = 1.0\nShrinking = 1\nProbability = 1\n";
-		String validationMessage = new svm().checkSvmParameter(new svm_problem(), createSvmParameter(SvmType.nu_svr));
-		assertThat(validationMessage, equalTo(expectedMessage));
-	}
+	
 	private SvmModel createModel(SvmType svmType, KernelType kernelType) {
 		SvmModel model = new SvmModel();
 		SvmParameter param = new SvmParameter();
@@ -200,20 +186,5 @@ public class SvmTest {
 		return model;
 	}
 
-	private SvmParameter createSvmParameter(SvmType svmType) {
-		SvmParameter params = new SvmParameter();
-		params.svmType = svmType;
-		params.kernelType = KernelType.linear;
-		params.C = 1;
-		params.cache_size = 1;
-		params.degree = 1;
-		params.eps = 1;
-		params.gamma = 1;
-		params.nu = 1;
-		params.nr_weight = 1;
-		params.p = 1;
-		params.probability = 1;
-		params.shrinking=1;
-		return params;
-	}
+	
 }
