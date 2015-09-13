@@ -1,6 +1,9 @@
 package org.mann.libsvm;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.equalTo;
 
 import java.io.IOException;
 
@@ -13,7 +16,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mann.helpers.HelpMessages;
 import org.mann.ui.ResultCollector;
-import org.mann.ui.SvmTrainRunner;
 
 @RunWith(JMockit.class)
 public class SvmTrainOutputMessagesTest {
@@ -27,35 +29,32 @@ public class SvmTrainOutputMessagesTest {
 	}
 
 	@Test
-	public void parseCommandLineShouldPrintBadInputMessageWhenNoFilenameInputWithGoodOptions() throws IOException {
+	public void parseCommandLineShouldAddErrorMessageWhenNoFilenameInputWithGoodOptions() throws IOException {
 		train.run(new String[] { "-v", "3" }, result);
-		assertEquals("ERROR: java.lang.IllegalArgumentException: ERROR: No file has been specified\n"
-				+ HelpMessages.TRAIN_HELP_MESSAGE_ON_BAD_INPUT + "\n", result.getResult());
+		assertThat(result.getResult(), containsString("ERROR: No file has been specified\n"));
 	}
 
 	@Test
-	public void parseCommandLineShouldPrintBadInputMessageWhenOptionOnItsOwnPassed() throws IOException {
+	public void parseCommandLineShouldAddErrorMessageWhenOptionOnItsOwnPassed() throws IOException {
 		train.run(new String[] { "-q" }, result);
-		assertEquals("ERROR: java.lang.IllegalArgumentException: ERROR: option on its own is not valid input\n"
-				+ HelpMessages.TRAIN_HELP_MESSAGE_ON_BAD_INPUT + "\n", result.getResult());
+		assertThat(result.getResult(), containsString("ERROR: option on its own is not valid input\n"));
+//		assertThat(result.getResult(), containsString(HelpMessages.TRAIN_HELP_MESSAGE_ON_BAD_INPUT + "\n"));
 	}
 
 	@Test
-	public void parseCommandLineShouldPrintBadInputMessageWhenNFoldLessThanTwo() throws IOException {
+	public void parseCommandLineShouldAddErrorMessageWhenNFoldLessThanTwo() throws IOException {
 		new svm_train().run(new String[] { "-v", "1" }, result);
-		assertEquals("ERROR: java.lang.IllegalArgumentException: ERROR: n-fold cross validation: n must >= 2\n"
-				+ HelpMessages.TRAIN_HELP_MESSAGE_ON_BAD_INPUT + "\n", result.getResult());
+		assertThat(result.getResult(), containsString("ERROR: n-fold cross validation: n must >= 2\n"));
 	}
 
 	@Test
-	public void parseCommandLineShouldPrintBadInputMessageWhenOptionNotRecognised() throws IOException {
+	public void parseCommandLineShouldAddExceptionMessageWhenOptionNotRecognised() throws IOException {
 		train.run(new String[] { "-u", "0" }, result);
-		assertEquals("ERROR: java.lang.IllegalArgumentException: ERROR: Unknown option: -u\n"
-				+ HelpMessages.TRAIN_HELP_MESSAGE_ON_BAD_INPUT + "\n", result.getResult());
+		assertThat(result.getResult(), containsString("ERROR: java.lang.IllegalArgumentException: Unknown option: -u\n"));
 	}
 
 	@Test
-	public void readProblemShouldPrintBadInputWhenInvalidFilePassed() throws IOException {
+	public void readProblemShouldAddErrorMessageWhenInvalidFilePassed() throws IOException {
 
 		new MockUp<svm>() {
 			@Mock
@@ -69,7 +68,6 @@ public class SvmTrainOutputMessagesTest {
 		};
 
 		train.run(new String[] { "invalid filename" }, result);
-		assertEquals("ERROR: java.io.FileNotFoundException: invalid filename (No such file or directory)\n"
-				+ HelpMessages.TRAIN_HELP_MESSAGE_ON_BAD_INPUT + "\n", result.getResult());
+		assertThat(result.getResult(), containsString("ERROR: java.io.FileNotFoundException: invalid filename (No such file or directory)\n"));
 	}
 }

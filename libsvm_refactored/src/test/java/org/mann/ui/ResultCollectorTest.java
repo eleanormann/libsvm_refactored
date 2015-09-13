@@ -3,24 +3,39 @@ package org.mann.ui;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.mann.helpers.HelpMessages;
 
 public class ResultCollectorTest {
+	private ResultCollector collector;
+
+	@Before
+	public void createResultCollector() {
+		collector = new ResultCollector();
+	}
 
 	@Test
-	public void resultCollectorShouldAddErrorAndException() {
-		ResultCollector collector = new ResultCollector();
-		Throwable error = new IllegalArgumentException("Param not recognised");
-		collector.addError(error);
-		assertThat(collector.getResult(), equalTo("ERROR: java.lang.IllegalArgumentException: Param not recognised\n"
-				+ HelpMessages.TRAIN_HELP_MESSAGE_ON_BAD_INPUT + "\n"));
+	public void resultCollectorShouldAddError() {
+		collector.addError("");
+		assertThat(collector.getResult(), equalTo("ERROR: \n"));
 	}
 
 	@Test
 	public void resultCollectorShouldAddHelpMessage() {
-		ResultCollector collector = new ResultCollector();
 		collector.addHelpMessage();
 		assertThat(collector.getResult(), equalTo(HelpMessages.TRAIN_HELP_MESSAGE_ON_BAD_INPUT + "\n"));
+	}
+
+	@Test
+	public void resultCollectorShouldAddExceptionMessage() {
+		Throwable exception = new Exception();
+		collector.addException(exception);
+		assertThat(collector.getResult(), equalTo("ERROR: java.lang.Exception\n"));
+	}
+	
+	@Test
+	public void resultCollectorShouldEndProcess(){
+		
 	}
 }

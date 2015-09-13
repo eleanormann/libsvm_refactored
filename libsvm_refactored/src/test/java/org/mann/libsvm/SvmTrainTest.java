@@ -6,7 +6,7 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
 
@@ -21,9 +21,6 @@ import org.mann.ui.ResultCollector;
 public class SvmTrainTest {
 	private static final String BASE_PATH = "src/test/resources/testdata/";
 
-	@Rule
-	public ExpectedException thrown = ExpectedException.none();
-	
 	@Test
 	public void readProblemShouldSetDataWhenKernelRbf() throws IOException {
 		// Arrange
@@ -73,8 +70,7 @@ public class SvmTrainTest {
 
 		// Assert
 		assertThat(train.getSvmParameter().kernelType, equalTo(KernelType.precomputed));
-		assertThat(result.getResult(), equalTo("ERROR: java.lang.IllegalArgumentException: Wrong kernel matrix: first column must be 0:sample_serial_number\n"
-				+ HelpMessages.TRAIN_HELP_MESSAGE_ON_BAD_INPUT + "\n"));
+		assertThat(result.getResult(), containsString("ERROR: Wrong kernel matrix: first column must be 0:sample_serial_number\n"));
 	}
 
 	@Test
@@ -88,27 +84,13 @@ public class SvmTrainTest {
 
 		// Assert
 		assertThat(train.getSvmParameter().kernelType, equalTo(KernelType.precomputed));
-		assertThat(result.getResult(), equalTo("ERROR: java.lang.IllegalArgumentException: Wrong input format: sample_serial_number out of range\n"
-				+ HelpMessages.TRAIN_HELP_MESSAGE_ON_BAD_INPUT + "\n"));
+		assertThat(result.getResult(), containsString("ERROR: Wrong input format: sample_serial_number out of range\n"));
 	}
-	
+
 	@Test
 	public void checkSvmParameterShouldReturnExceptionWhenSvmTypeNotSet(){;
 		String message = new svm_train().checkSvmParameter(null, new SvmParameter());
 		assertThat(message, containsString("ERROR: Svm type not set\n"));
-	}
-	
-	@Test
-	public void svmTrainShouldCheckTrainParameters() throws IOException{
-		svm_train train = mock(svm_train.class);
-		doNothing().when(train).parse_command_line(any(String[].class));
-		doNothing().when(train).read_problem();
-		when(train.checkSvmParameter(any(svm_problem.class), any(SvmParameter.class))).thenCallRealMethod();
-		ResultCollector result = new ResultCollector();
-		
-		train.run(new String[]{}, result);
-		assertThat(result.getResult(), equalTo("ERROR: Svm type not set\n"));
-		
 	}
 
 	@Test

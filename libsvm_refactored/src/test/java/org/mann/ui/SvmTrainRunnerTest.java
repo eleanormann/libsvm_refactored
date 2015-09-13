@@ -36,6 +36,6 @@ public class SvmTrainRunnerTest {
 		runner.run(new svm_train(), null);
 		
 		String result = runner.getResultCollector().getResult();
-		assertThat(result, equalTo("ERROR: java.lang.NullPointerException\n" + HelpMessages.TRAIN_HELP_MESSAGE_ON_BAD_INPUT + "\n"));
+		assertThat(result, equalTo("ERROR: java.lang.NullPointerException\n"));
 	}
 }

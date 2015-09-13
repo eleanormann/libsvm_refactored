@@ -7,6 +7,12 @@ import java.io.IOException;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.mann.helpers.HelpMessages;
 import org.mann.libsvm.SvmParameter.KernelType;
 import org.mann.libsvm.SvmParameter.SvmType;
@@ -41,13 +47,16 @@ public class svm_train {
 	
 	public void run(String argv[], ResultCollector result) throws IOException {
 		try{
-			parse_command_line(argv);
-			read_problem();
+			parse_command_line(argv, result);
+			read_problem(result);
 			
+			//TODO: these two collecting parameters don't integrate
+			//Expires 12th October
 			error_msg = checkSvmParameter(prob, param);
-			if (error_msg != null && error_msg.contains("ERROR")) {
-				throw new IllegalArgumentException(error_msg);
+			if(error_msg == null || error_msg.contains("ERROR")){
+				result.addError(error_msg);
 			}
+			
 			
 			if (cross_validation != 0) {
 				do_cross_validation();
@@ -56,7 +65,7 @@ public class svm_train {
 				svm.svm_save_model(model_file_name, model);
 			}
 		}catch(Exception e){
-			result.addError(e);
+			result.addException(e);
 		}
 	}
 	
@@ -109,7 +118,7 @@ public class svm_train {
 		return (d);
 	}
 
-	protected void parse_command_line(String argv[]) {
+	protected void parse_command_line(String argv[], ResultCollector result) {
 		int i;
 		SvmPrintInterface print_func = null; // default printing to stdout
 
@@ -124,7 +133,7 @@ public class svm_train {
 				break;		
 			}
 			if (++i >= argv.length){
-				throw new IllegalArgumentException("ERROR: option on its own is not valid input");
+				result.addError("option on its own is not valid input");
 			}
 			switch (argv[i - 1].charAt(1)) {
 			case 's':
@@ -171,7 +180,7 @@ public class svm_train {
 				cross_validation = 1;
 				nr_fold = Integer.parseInt(argv[i]);
 				if (nr_fold < 2) {
-					throw new IllegalArgumentException("ERROR: n-fold cross validation: n must >= 2");
+					result.addError("n-fold cross validation: n must >= 2");
 				}
 				break;
 			case 'w':
@@ -192,7 +201,7 @@ public class svm_train {
 				param.weight[param.nr_weight - 1] = atof(argv[i]);
 				break;
 			default:
-				throw new IllegalArgumentException("ERROR: Unknown option: " + argv[i - 1]);
+				throw new IllegalArgumentException("Unknown option: " + argv[i - 1]);
 			}
 		}
 
@@ -201,7 +210,7 @@ public class svm_train {
 		// determine filenames
 
 		if (i >= argv.length){
-			throw new IllegalArgumentException("ERROR: No file has been specified");
+			result.addError("No file has been specified");
 		}
 		
 		input_file_name = argv[i];
@@ -217,7 +226,7 @@ public class svm_train {
 
 	// read in a problem (in svmlight format)
 
-	protected void read_problem() throws IOException {
+	protected void read_problem(ResultCollector result) throws IOException {
 
 		try (BufferedReader fp = new BufferedReader(new FileReader(input_file_name))) {
 			Vector<Double> vy = new Vector<Double>();
@@ -263,12 +272,14 @@ public class svm_train {
 					if (prob.x[i][0].index != 0) {
 						// TODO: put this check in the validation section
 						// Expires 6th October 2015
-						throw new IllegalArgumentException("Wrong kernel matrix: first column must be 0:sample_serial_number");
+						result.addError("Wrong kernel matrix: first column must be 0:sample_serial_number");
+						return;
 					}
 					if ((int) prob.x[i][0].value <= 0 || (int) prob.x[i][0].value > max_index) {
 						// TODO: put this check in the validation section
 						// Expires 6th October 2015
-						throw new IllegalArgumentException("Wrong input format: sample_serial_number out of range");
+						result.addError("Wrong input format: sample_serial_number out of range");
+						return;
 					}
 				}
 			}
@@ -285,4 +296,6 @@ public class svm_train {
 		svm_train t = new svm_train();
 		t.run(argv, new ResultCollector());
 	}
+
+	
 }
