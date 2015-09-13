@@ -22,6 +22,11 @@ public class SvmTrainTest {
 	private static final String BASE_PATH = "src/test/resources/testdata/";
 
 	@Test
+	public void parseCommandLineShouldParseCommandLine(){
+		
+	}
+	
+	@Test
 	public void readProblemShouldSetDataWhenKernelRbf() throws IOException {
 		// Arrange
 		svm_train train = new svm_train();
@@ -97,7 +102,7 @@ public class SvmTrainTest {
 	public void svmCheckParameterShouldReturnValidationMessageWithNuFeasibilityWhenNuSvc(){
 		svm_train train  = new svm_train();
 		String expectedMessage = "Nu = 1.0: feasibility checked and is OK\nSvm type: nu_svc\nKernel type: linear\nGamma = 1.0\nDegree = 1\nCache size: 1.0\n"
-				+ "Eps = 1.0\nShrinking = 1\nProbability = 1\n";
+				+ "Epsilon (tolerance) = 1.0\nShrinking = 1\nProbability = 1\n";
 		String validationMessage = train.checkSvmParameter(new svm_problem(), createSvmParameter(SvmType.nu_svc));
 		assertThat(validationMessage, equalTo(expectedMessage));
 	}
@@ -106,7 +111,7 @@ public class SvmTrainTest {
 	public void svmCheckParameterShouldReturnValidationMessageWithNuWhenNuSvr(){
 		svm_train train  = new svm_train();
 		String expectedMessage = "Svm type: nu_svr\nKernel type: linear\nGamma = 1.0\nDegree = 1\nCache size: 1.0\n"
-				+ "Eps = 1.0\nC = 1.0\nNu = 1.0\nShrinking = 1\nProbability = 1\n";
+				+ "Epsilon (tolerance) = 1.0\nC = 1.0\nNu = 1.0\nShrinking = 1\nProbability = 1\n";
 		String validationMessage = train.checkSvmParameter(new svm_problem(), createSvmParameter(SvmType.nu_svr));
 		assertThat(validationMessage, equalTo(expectedMessage));
 	}
@@ -131,14 +136,14 @@ public class SvmTrainTest {
 		SvmParameter params = new SvmParameter();
 		params.svmType = svmType;
 		params.kernelType = KernelType.linear;
-		params.C = 1;
+		params.costC = 1;
 		params.cache_size = 1;
 		params.degree = 1;
-		params.eps = 1;
+		params.epsilonTolerance = 1;
 		params.gamma = 1;
 		params.nu = 1;
 		params.nr_weight = 1;
-		params.p = 1;
+		params.epsilonLossFunction = 1;
 		params.probability = 1;
 		params.shrinking=1;
 		return params;

@@ -855,7 +855,7 @@ public class svm {
 
 		Solver s = new Solver();
 		s.Solve(l, new SVC_Q(prob, param, y), minus_ones, y, alpha, Cp, Cn,
-				param.eps, si, param.shrinking);
+				param.epsilonTolerance, si, param.shrinking);
 
 		double sum_alpha = 0;
 		for (i = 0; i < l; i++)
@@ -901,7 +901,7 @@ public class svm {
 
 		Solver_NU s = new Solver_NU();
 		s.Solve(l, new SVC_Q(prob, param, y), zeros, y, alpha, 1.0, 1.0,
-				param.eps, si, param.shrinking);
+				param.epsilonTolerance, si, param.shrinking);
 		double r = si.r;
 
 		svm.info("C = " + 1 / r + "\n");
@@ -938,7 +938,7 @@ public class svm {
 
 		Solver s = new Solver();
 		s.Solve(l, new ONE_CLASS_Q(prob, param), zeros, ones, alpha, 1.0, 1.0,
-				param.eps, si, param.shrinking);
+				param.epsilonTolerance, si, param.shrinking);
 	}
 
 	private static void solve_epsilon_svr(svm_problem prob, SvmParameter param,
@@ -960,21 +960,21 @@ public class svm {
 		}
 
 		Solver s = new Solver();
-		s.Solve(2 * l, new SVR_Q(prob, param), linear_term, y, alpha2, param.C,
-				param.C, param.eps, si, param.shrinking);
+		s.Solve(2 * l, new SVR_Q(prob, param), linear_term, y, alpha2, param.costC,
+				param.costC, param.epsilonTolerance, si, param.shrinking);
 
 		double sum_alpha = 0;
 		for (i = 0; i < l; i++) {
 			alpha[i] = alpha2[i] - alpha2[i + l];
 			sum_alpha += Math.abs(alpha[i]);
 		}
-		svm.info("nu = " + sum_alpha / (param.C * l) + "\n");
+		svm.info("nu = " + sum_alpha / (param.costC * l) + "\n");
 	}
 
 	private static void solve_nu_svr(svm_problem prob, SvmParameter param,
 			double[] alpha, Solver.SolutionInfo si) {
 		int l = prob.length;
-		double C = param.C;
+		double C = param.costC;
 		double[] alpha2 = new double[2 * l];
 		double[] linear_term = new double[2 * l];
 		byte[] y = new byte[2 * l];
@@ -994,7 +994,7 @@ public class svm {
 
 		Solver_NU s = new Solver_NU();
 		s.Solve(2 * l, new SVR_Q(prob, param), linear_term, y, alpha2, C, C,
-				param.eps, si, param.shrinking);
+				param.epsilonTolerance, si, param.shrinking);
 
 		svm.info("epsilon = " + (-si.r) + "\n");
 
@@ -1292,7 +1292,7 @@ public class svm {
 			else {
 				SvmParameter subparam = (SvmParameter) param.clone();
 				subparam.probability = 0;
-				subparam.C = 1.0;
+				subparam.costC = 1.0;
 				subparam.nr_weight = 2;
 				subparam.weight_label = new int[2];
 				subparam.weight = new double[2];
@@ -1501,7 +1501,7 @@ public class svm {
 
 			double[] weighted_C = new double[nr_class];
 			for (i = 0; i < nr_class; i++)
-				weighted_C[i] = param.C;
+				weighted_C[i] = param.costC;
 			for (i = 0; i < param.nr_weight; i++) {
 				int j;
 				for (j = 0; j < nr_class; j++)

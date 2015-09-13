@@ -24,7 +24,7 @@ public class ParameterValidationManagerTest {
 	@Test
 	public void checkValidationMessageIsComplete() {
 		String expectedMessage = "Svm type: nu_svr\nKernel type: poly\nGamma = 1.0\nDegree = 1\nCache size: 1.0\n"
-				+ "Eps = 1.0\nC = 1.0\nNu = 1.0\nShrinking = 1\nProbability = 1\n";
+				+ "Epsilon (tolerance) = 1.0\nC = 1.0\nNu = 1.0\nShrinking = 1\nProbability = 1\n";
 		manager.runCheckAndGetResponse("Svm Type", manager, createSvmParameter(SvmType.nu_svr));
 		assertThat(manager.getValidationMessage().toString(), equalTo(expectedMessage));
 	}
@@ -62,7 +62,7 @@ public class ParameterValidationManagerTest {
 
 	@Test
 	public void parameterCheckerShouldReturnEpsWhenRequested() {
-		checkValidationMessageContainsString("Eps", "Eps = 1.0\n", null);
+		checkValidationMessageContainsString("Eps", "Epsilon (tolerance) = 1.0\n", null);
 	}
 
 	@Test
@@ -77,7 +77,7 @@ public class ParameterValidationManagerTest {
 
 	@Test
 	public void parameterCheckerShouldReturnPWhenRequested() {
-		checkValidationMessageContainsString("P", "p = 1.0\n", SvmType.epsilon_svr);
+		checkValidationMessageContainsString("P", "Epsilon (Loss Function) = 1.0\n", SvmType.epsilon_svr);
 	}
 
 	@Test
@@ -104,14 +104,14 @@ public class ParameterValidationManagerTest {
 		SvmParameter params = new SvmParameter();
 		params.svmType = svmType;
 		params.kernelType = KernelType.poly;
-		params.C = 1;
+		params.costC = 1;
 		params.cache_size = 1;
 		params.degree = 1;
-		params.eps = 1;
+		params.epsilonTolerance = 1;
 		params.gamma = 1;
 		params.nu = 1;
 		params.nr_weight = 1;
-		params.p = 1;
+		params.epsilonLossFunction = 1;
 		params.probability = 1;
 		params.shrinking = 1;
 		return params;

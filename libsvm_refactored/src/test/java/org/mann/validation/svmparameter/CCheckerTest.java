@@ -76,9 +76,9 @@ public class CCheckerTest {
 		assertThat(manager.getValidationMessage().toString(), not(containsString("C = 1.0\n")));
 	}
 	
-	private SvmParameter createSvmParameter(double c, SvmType svmType) {
+	private SvmParameter createSvmParameter(double cost, SvmType svmType) {
 		SvmParameter params = new SvmParameter();
-		params.C = c;
+		params.costC = cost;
 		params.svmType = svmType;
 		return params;
 	}

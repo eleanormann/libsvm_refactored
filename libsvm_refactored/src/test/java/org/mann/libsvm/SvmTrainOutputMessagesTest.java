@@ -50,7 +50,7 @@ public class SvmTrainOutputMessagesTest {
 	@Test
 	public void parseCommandLineShouldAddExceptionMessageWhenOptionNotRecognised() throws IOException {
 		train.run(new String[] { "-u", "0" }, result);
-		assertThat(result.getResult(), containsString("ERROR: java.lang.IllegalArgumentException: Unknown option: -u\n"));
+		assertThat(result.getResult(), containsString("ERROR: org.apache.commons.cli.UnrecognizedOptionException: Unrecognized option: -u"));
 	}
 
 	@Test

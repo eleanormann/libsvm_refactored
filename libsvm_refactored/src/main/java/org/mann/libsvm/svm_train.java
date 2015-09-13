@@ -20,6 +20,7 @@ import org.mann.ui.ResultCollector;
 import org.mann.ui.SvmPrintInterface;
 import org.mann.ui.SvmPrinterFactory;
 import org.mann.ui.SvmPrinterFactory.PrintMode;
+import org.mann.validation.commandline.SvmTrainOptionsValidator;
 import org.mann.validation.svmparameter.ParameterValidationManager;
 
 public class svm_train {
@@ -118,10 +119,12 @@ public class svm_train {
 		return (d);
 	}
 
-	protected void parse_command_line(String argv[], ResultCollector result) {
+	protected void parse_command_line(String argv[], ResultCollector result) throws ParseException {
 		int i;
 		SvmPrintInterface print_func = null; // default printing to stdout
-
+		SvmTrainOptionsValidator optionsValidator = new SvmTrainOptionsValidator();
+		CommandLine options = optionsValidator.parseCommandLine(argv);
+		
 		param = new SvmParameter();
 		// default values
 		param.setDefaultValues();
@@ -158,13 +161,13 @@ public class svm_train {
 				param.cache_size = atof(argv[i]);
 				break;
 			case 'c':
-				param.C = atof(argv[i]);
+				param.costC = atof(argv[i]);
 				break;
 			case 'e':
-				param.eps = atof(argv[i]);
+				param.epsilonTolerance = atof(argv[i]);
 				break;
 			case 'p':
-				param.p = atof(argv[i]);
+				param.epsilonLossFunction = atof(argv[i]);
 				break;
 			case 'h':
 				param.shrinking = Integer.parseInt(argv[i]);

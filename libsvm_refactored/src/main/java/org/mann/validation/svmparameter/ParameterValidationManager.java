@@ -40,7 +40,7 @@ public class ParameterValidationManager {
 				checker =  new CacheSizeChecker(this);
 				break;
 			case "Eps":
-				checker = new EpsChecker(this);
+				checker = new EpsilonToleranceChecker(this);
 				break;
 			case "Nu":
 				checker =  new NuChecker(this);
@@ -49,7 +49,7 @@ public class ParameterValidationManager {
 				checker =  new CChecker(this);
 				break;
 			case "P":
-				checker =  new PChecker(this);
+				checker =  new EpsilonLossFunctionChecker(this);
 				break;
 			case "Shrinking":
 				checker =  new ShrinkingChecker(this);

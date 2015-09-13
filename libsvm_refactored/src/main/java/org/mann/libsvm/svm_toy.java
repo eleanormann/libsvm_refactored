@@ -197,9 +197,9 @@ public class svm_toy extends Applet {
 		param.coef0 = 0;
 		param.nu = 0.5;
 		param.cache_size = 40;
-		param.C = 1;
-		param.eps = 1e-3;
-		param.p = 0.1;
+		param.costC = 1;
+		param.epsilonTolerance = 1e-3;
+		param.epsilonLossFunction = 0.1;
 		param.shrinking = 1;
 		param.probability = 0;
 		param.nr_weight = 0;
@@ -244,13 +244,13 @@ public class svm_toy extends Applet {
 					param.cache_size = atof(argv[i]);
 					break;
 				case 'c':
-					param.C = atof(argv[i]);
+					param.costC = atof(argv[i]);
 					break;
 				case 'e':
-					param.eps = atof(argv[i]);
+					param.epsilonTolerance = atof(argv[i]);
 					break;
 				case 'p':
-					param.p = atof(argv[i]);
+					param.epsilonLossFunction = atof(argv[i]);
 					break;
 				case 'h':
 					param.shrinking = atoi(argv[i]);
@@ -321,7 +321,7 @@ public class svm_toy extends Applet {
 			window_gc.setColor(colors[0]);
 			window_gc.drawLine(0,0,0,YLEN-1);
 			
-			int p = (int)(param.p * YLEN);
+			int p = (int)(param.epsilonLossFunction * YLEN);
 			for(int i=1;i<XLEN;i++)
 			{
 				buffer_gc.setColor(colors[0]);

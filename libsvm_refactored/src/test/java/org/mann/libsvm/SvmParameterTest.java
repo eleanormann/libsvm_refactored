@@ -22,9 +22,9 @@ public class SvmParameterTest {
 		param.coef0 = 0;
 		param.nu = 0.5;
 		param.cache_size = 100;
-		param.C = 1;
-		param.eps = 1e-3;
-		param.p = 0.1;
+		param.costC = 1;
+		param.epsilonTolerance = 1e-3;
+		param.epsilonLossFunction = 0.1;
 		param.shrinking = 1;
 		param.probability = 0;
 		param.nr_weight = 0;
@@ -40,9 +40,9 @@ public class SvmParameterTest {
 		assertThat(actualParam.coef0, equalTo(0.0));
 		assertThat(actualParam.nu, equalTo(0.5));
 		assertThat(actualParam.cache_size, equalTo(100.0));
-		assertThat(actualParam.C, equalTo(1.0));
-		assertThat(actualParam.eps, equalTo(1e-3));
-		assertThat(actualParam.p, equalTo(0.1));
+		assertThat(actualParam.costC, equalTo(1.0));
+		assertThat(actualParam.epsilonTolerance, equalTo(1e-3));
+		assertThat(actualParam.epsilonLossFunction, equalTo(0.1));
 		assertThat(actualParam.shrinking, equalTo(1));
 		assertThat(actualParam.probability, equalTo(0));
 		assertThat(actualParam.nr_weight, equalTo(0));
@@ -50,5 +50,8 @@ public class SvmParameterTest {
 		assertThat(actualParam.weight, equalTo(new double[]{}));
 	}
 	
-	
+	@Test
+	public void setSvmParameterFieldsShouldSetFieldsCorrectly(){
+		
+	}
 }
