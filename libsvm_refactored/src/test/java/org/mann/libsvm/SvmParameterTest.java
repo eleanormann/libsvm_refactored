@@ -6,11 +6,9 @@ import static org.junit.Assert.assertThat;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.ParseException;
 import org.junit.Test;
-import org.mann.libsvm.SvmParameter;
 import org.mann.libsvm.SvmParameter.KernelType;
 import org.mann.libsvm.SvmParameter.SvmType;
-import org.mann.validation.commandline.SvmTrainOptionsValidator;
-
+import org.mann.validation.commandline.SvmTrainCommandLineParser;
 
 public class SvmParameterTest {
 	
@@ -57,7 +55,7 @@ public class SvmParameterTest {
 	public void setSvmParameterFieldsShouldSetFieldsCorrectly() throws ParseException{
 		SvmParameter actualParam = new SvmParameter();
 		String[] options = new String[]{"-s", "nu_svr", "-t", "linear", "-d", "2", "-g", "1", "-m", "200", };
-		SvmTrainOptionsValidator optionsParser = new SvmTrainOptionsValidator();
+		SvmTrainCommandLineParser optionsParser = new SvmTrainCommandLineParser();
 		CommandLine cmd = optionsParser.parseCommandLine(options);
 		actualParam.initializeFields(cmd);
 		assertThat(actualParam.getSvmType(), equalTo(SvmType.nu_svr));

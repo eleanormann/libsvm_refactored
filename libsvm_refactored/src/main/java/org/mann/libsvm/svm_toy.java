@@ -187,24 +187,39 @@ public class svm_toy extends Applet {
 		// guard
 		if(point_list.isEmpty()) return;
 
-		SvmParameter param = new SvmParameter();
+		SvmParameter param = new SvmParameter()
+			.svmType("c_svc")
+			.kernelType("rbf")
+			.degree("3")
+			.gamma("0")
+			.coef0("0")
+			.nu("0.5")
+			.cacheSize("40")
+			.costC("1")
+			.epsilonTolerance("1e-3")
+			.epsilonLossFunction("0.1")
+			.shrinking("1")
+			.probability("0")
+			.nrWeight(0)
+			.weightLabel(new int[0])
+			.weight(new double[0]);
 
 		// default values
-		param.svmType = SvmType.c_svc;
-		param.kernelType = KernelType.rbf;
-		param.degree = 3;
-		param.gamma = 0;
-		param.coef0 = 0;
-		param.nu = 0.5;
-		param.cache_size = 40;
-		param.costC = 1;
-		param.epsilonTolerance = 1e-3;
-		param.epsilonLossFunction = 0.1;
-		param.shrinking = 1;
-		param.probability = 0;
-		param.nr_weight = 0;
-		param.weight_label = new int[0];
-		param.weight = new double[0];
+//		param.svmType = SvmType.c_svc;
+//		param.kernelType = KernelType.rbf;
+//		param.degree = 3;
+//		param.gamma = 0;
+//		param.coef0 = 0;
+//		param.nu = 0.5;
+//		param.cache_size = 40;
+//		param.costC = 1;
+//		param.epsilonTolerance = 1e-3;
+//		param.epsilonLossFunction = 0.1;
+//		param.shrinking = 1;
+//		param.probability = 0;
+//		param.nr_weight = 0;
+//		param.weight_label = new int[0];
+//		param.weight = new double[0];
 
 		// parse options
 		StringTokenizer st = new StringTokenizer(args);
@@ -223,57 +238,57 @@ public class svm_toy extends Applet {
 			switch(argv[i-1].charAt(1))
 			{
 				case 's':
-					param.svmType = SvmType.values()[(atoi(argv[i]))];
+					param.setSvmType(SvmType.values()[(atoi(argv[i]))]);
 					break;
 				case 't':
-					param.kernelType = KernelType.values()[atoi(argv[i])];
+					param.kernelType(argv[i]);
 					break;
 				case 'd':
-					param.degree = atoi(argv[i]);
+					param.degree(argv[i]);// = atoi(argv[i]);
 					break;
 				case 'g':
-					param.gamma = atof(argv[i]);
+					param.gamma(argv[i]);// = atof(argv[i]);
 					break;
 				case 'r':
-					param.coef0 = atof(argv[i]);
+					param.coef0(argv[i]);// = atof(argv[i]);
 					break;
 				case 'n':
-					param.nu = atof(argv[i]);
+					param.nu(argv[i]);// = atof(argv[i]);
 					break;
 				case 'm':
-					param.cache_size = atof(argv[i]);
+					param.cacheSize(argv[i]);// = atof(argv[i]);
 					break;
 				case 'c':
-					param.costC = atof(argv[i]);
+					param.costC(argv[i]);// = atof(argv[i]);
 					break;
 				case 'e':
-					param.epsilonTolerance = atof(argv[i]);
+					param.epsilonTolerance(argv[i]);// = atof(argv[i]);
 					break;
 				case 'p':
-					param.epsilonLossFunction = atof(argv[i]);
+					param.epsilonLossFunction(argv[i]); // = atof(argv[i]);
 					break;
 				case 'h':
-					param.shrinking = atoi(argv[i]);
+					param.shrinking(argv[i]); // = atoi(argv[i]);
 					break;
 				case 'b':
-					param.probability = atoi(argv[i]);
+					param.probability(argv[i]); // = atoi(argv[i]);
 					break;
 				case 'w':
 					++param.nr_weight;
 					{
-						int[] old = param.weight_label;
-						param.weight_label = new int[param.nr_weight];
-						System.arraycopy(old,0,param.weight_label,0,param.nr_weight-1);
+						int[] old = param.getWeight_label();
+						param.setWeightLabel(new int[param.nr_weight]);
+						System.arraycopy(old,0,param.getWeight_label(),0,param.nr_weight-1);
 					}
 
 					{
-						double[] old = param.weight;
-						param.weight = new double[param.nr_weight];
-						System.arraycopy(old,0,param.weight,0,param.nr_weight-1);
+						double[] old = param.getWeight();
+						param.setWeight(new double[param.nr_weight]);
+						System.arraycopy(old,0,param.getWeight(),0,param.nr_weight-1);
 					}
 
-					param.weight_label[param.nr_weight-1] = atoi(argv[i-1].substring(2));
-					param.weight[param.nr_weight-1] = atof(argv[i]);
+					param.getWeight_label()[param.nr_weight-1] = atoi(argv[i-1].substring(2));
+					param.getWeight()[param.nr_weight-1] = atof(argv[i]);
 					break;
 				default:
 					System.err.print("unknown option\n");
@@ -285,13 +300,14 @@ public class svm_toy extends Applet {
 		prob.length = point_list.size();
 		prob.y = new double[prob.length];
 
-		if(param.kernelType == KernelType.precomputed)
+		if(param.getKernelType() == KernelType.precomputed)	{
+		//eh?
+		}else if(param.getSvmType() == SvmType.epsilon_svr ||
+			param.getSvmType() == SvmType.nu_svr)
 		{
-		}
-		else if(param.svmType == SvmType.epsilon_svr ||
-			param.svmType == SvmType.nu_svr)
-		{
-			if(param.gamma == 0) param.gamma = 1;
+			if(param.getGamma() == 0) {
+				param.setGamma(1);
+			}
 			prob.x = new SvmNode[prob.length][1];
 			for(int i=0;i<prob.length;i++)
 			{
@@ -321,7 +337,7 @@ public class svm_toy extends Applet {
 			window_gc.setColor(colors[0]);
 			window_gc.drawLine(0,0,0,YLEN-1);
 			
-			int p = (int)(param.epsilonLossFunction * YLEN);
+			int p = (int)(param.getEpsilonLossFunction() * YLEN);
 			for(int i=1;i<XLEN;i++)
 			{
 				buffer_gc.setColor(colors[0]);
@@ -334,7 +350,7 @@ public class svm_toy extends Applet {
 				buffer_gc.drawLine(i-1,j[i-1],i,j[i]);
 				window_gc.drawLine(i-1,j[i-1],i,j[i]);
 
-				if(param.svmType == SvmType.epsilon_svr)
+				if(param.getSvmType() == SvmType.epsilon_svr)
 				{
 					buffer_gc.setColor(colors[2]);
 					window_gc.setColor(colors[2]);
@@ -350,7 +366,7 @@ public class svm_toy extends Applet {
 		}
 		else
 		{
-			if(param.gamma == 0) param.gamma = 0.5;
+			if(param.getGamma() == 0) param.setGamma(0.5);
 			prob.x = new SvmNode [prob.length][2];
 			for(int i=0;i<prob.length;i++)
 			{
@@ -378,7 +394,7 @@ public class svm_toy extends Applet {
 					x[0].value = (double) i / XLEN;
 					x[1].value = (double) j / YLEN;
 					double d = svm.svm_predict(model, x);
-					if (param.svmType == SvmType.one_class && d<0) d=2;
+					if (param.getSvmType() == SvmType.one_class && d<0) d=2;
 					buffer_gc.setColor(colors[(int)d]);
 					window_gc.setColor(colors[(int)d]);
 					buffer_gc.drawLine(i,j,i,j);
