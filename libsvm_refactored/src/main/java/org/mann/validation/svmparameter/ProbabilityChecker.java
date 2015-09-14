@@ -23,7 +23,7 @@ public class ProbabilityChecker implements Checker {
 	}
 
 	public Checker checkParameter(SvmParameter params) {
-		checkProbability(params.probability, params.svmType);
+		checkProbability(params.getProbability(), params.getSvmType());
 		return null;
 	}
 

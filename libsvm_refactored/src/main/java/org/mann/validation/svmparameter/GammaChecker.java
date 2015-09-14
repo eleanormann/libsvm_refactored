@@ -15,12 +15,12 @@ private ParameterValidationManager manager;
 		if(gamma < 0) {
 			validationMessage.append( "ERROR: gamma less than zero\n");
 		}else{
-			validationMessage.append(  "Gamma = " + gamma + "\n");			
+			validationMessage.append("Gamma = ").append(gamma).append("\n");			
 		}
 	}
 
 	public Checker checkParameter(SvmParameter params) {
-		checkGamma(params.gamma);
+		checkGamma(params.getGamma());
 		return manager.runCheckAndGetResponse("Degree", manager, params);
 	}
 

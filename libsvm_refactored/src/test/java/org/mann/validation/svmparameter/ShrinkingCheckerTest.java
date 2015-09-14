@@ -54,7 +54,7 @@ public class ShrinkingCheckerTest {
 	
 	private SvmParameter createSvmParameter(int value) {
 		SvmParameter params = new SvmParameter();
-		params.shrinking=value;
+		params.setShrinking(value);
 		return params;
 	}
 }

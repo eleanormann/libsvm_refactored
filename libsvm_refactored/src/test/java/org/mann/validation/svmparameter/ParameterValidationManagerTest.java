@@ -102,18 +102,18 @@ public class ParameterValidationManagerTest {
 
 	private SvmParameter createSvmParameter(SvmType svmType) {
 		SvmParameter params = new SvmParameter();
-		params.svmType = svmType;
-		params.kernelType = KernelType.poly;
-		params.costC = 1;
-		params.cache_size = 1;
-		params.degree = 1;
-		params.epsilonTolerance = 1;
-		params.gamma = 1;
-		params.nu = 1;
-		params.nr_weight = 1;
-		params.epsilonLossFunction = 1;
-		params.probability = 1;
-		params.shrinking = 1;
+		params.setSvmType(svmType);
+		params.setKernelType(KernelType.poly);
+		params.setCostC(1);
+		params.setCacheSize(1);
+		params.setDegree(1);
+		params.setEpsilonTolerance(1);
+		params.setGamma(1);
+		params.setNu(1);
+		params.setNrWeight(1);
+		params.setEpsilonLossFunction(1);
+		params.setProbability(1);
+		params.setShrinking(1);
 		return params;
 	}
 }

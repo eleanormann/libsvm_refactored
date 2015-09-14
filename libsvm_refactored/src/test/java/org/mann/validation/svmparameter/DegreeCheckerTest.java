@@ -54,7 +54,7 @@ public class DegreeCheckerTest {
 	
 	private SvmParameter createSvmParameter(int degree) {
 		SvmParameter params = new SvmParameter();
-		params.degree = degree;
+		params.setDegree(degree);
 		return params;
 	}
 

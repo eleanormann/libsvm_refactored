@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.List;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
@@ -79,7 +80,8 @@ public class svm_train {
 
 		svm.svm_cross_validation(prob, param, nr_fold, target);
 		
-		if (param.svmType == SvmType.epsilon_svr || param.svmType == SvmType.nu_svr) {
+		SvmType svmType = param.getSvmType();
+		if (svmType == SvmType.epsilon_svr || svmType == SvmType.nu_svr) {
 			for (i = 0; i < prob.length; i++) {
 				double y = prob.y[i];
 				double v = target[i];
@@ -126,104 +128,55 @@ public class svm_train {
 		CommandLine options = optionsValidator.parseCommandLine(argv);
 		
 		param = new SvmParameter();
-		// default values
-		param.setDefaultValues();
+		param.initializeFields(options);
 		cross_validation = 0;
-
-		// parse options
-		for (i = 0; i < argv.length; i++) {
-			if (argv[i].charAt(0) != '-'){
-				break;		
-			}
-			if (++i >= argv.length){
-				result.addError("option on its own is not valid input");
-			}
-			switch (argv[i - 1].charAt(1)) {
-			case 's':
-				param.svmType = SvmType.values()[Integer.parseInt(argv[i])];
-				break;
-			case 't':
-				param.kernelType = KernelType.values()[Integer.parseInt(argv[i])];
-				break;
-			case 'd':
-				param.degree = Integer.parseInt(argv[i]);
-				break;
-			case 'g':
-				param.gamma = atof(argv[i]);
-				break;
-			case 'r':
-				param.coef0 = atof(argv[i]);
-				break;
-			case 'n':
-				param.nu = atof(argv[i]);
-				break;
-			case 'm':
-				param.cache_size = atof(argv[i]);
-				break;
-			case 'c':
-				param.costC = atof(argv[i]);
-				break;
-			case 'e':
-				param.epsilonTolerance = atof(argv[i]);
-				break;
-			case 'p':
-				param.epsilonLossFunction = atof(argv[i]);
-				break;
-			case 'h':
-				param.shrinking = Integer.parseInt(argv[i]);
-				break;
-			case 'b':
-				param.probability = Integer.parseInt(argv[i]);
-				break;
-			case 'q':
-				print_func = SvmPrinterFactory.getPrinter(PrintMode.QUIET);
-				i--;
-				break;
-			case 'v':
-				cross_validation = 1;
-				nr_fold = Integer.parseInt(argv[i]);
-				if (nr_fold < 2) {
-					result.addError("n-fold cross validation: n must >= 2");
-				}
-				break;
-			case 'w':
-				++param.nr_weight;
-				{
-					int[] old = param.weight_label;
-					param.weight_label = new int[param.nr_weight];
-					System.arraycopy(old, 0, param.weight_label, 0, param.nr_weight - 1);
-				}
-
-				{
-					double[] old = param.weight;
-					param.weight = new double[param.nr_weight];
-					System.arraycopy(old, 0, param.weight, 0, param.nr_weight - 1);
-				}
-
-				param.weight_label[param.nr_weight - 1] = Integer.parseInt(argv[i - 1].substring(2));
-				param.weight[param.nr_weight - 1] = atof(argv[i]);
-				break;
-			default:
-				throw new IllegalArgumentException("Unknown option: " + argv[i - 1]);
-			}
+		if(options.hasOption('q')){
+			print_func = SvmPrinterFactory.getPrinter(PrintMode.QUIET);
 		}
+		if(options.hasOption('v')){
+			cross_validation = 1;
+			nr_fold = Integer.parseInt(options.getOptionValue('v'));
+			checkNFold(result);
+		}
+		if(options.hasOption("w")){ 
+			++param.nr_weight;
+			{
+				int[] old = param.getWeight_label();
+				param.setWeightLabel(new int[param.getNr_weight()]); //new array with 1 value
+				System.arraycopy(old, 0, param.getWeight_label(), 0, param.getNr_weight() - 1);
+			}
+			
+			{
+				double[] old = param.getWeight();
+				param.setWeight(new double[param.nr_weight]);
+				System.arraycopy(old, 0, param.getWeight(), 0, param.nr_weight - 1);
+			}
+			
+			param.getWeight_label()[param.nr_weight - 1] = Integer.parseInt(options.getOptionValues('w')[0]);
+			param.getWeight()[param.nr_weight - 1] = atof(options.getOptionValues('w')[1]);
+		}
+			
 
 		svm.svm_set_print_string_function(print_func);
 
 		// determine filenames
-
-		if (i >= argv.length){
+		List<String> filenames = options.getArgList();
+		if(filenames.isEmpty()){
 			result.addError("No file has been specified");
+		}else{
+			input_file_name = filenames.get(0);
+			if(filenames.size()>1){
+				model_file_name = filenames.get(1) + ".model";
+			}
 		}
-		
-		input_file_name = argv[i];
 
-		if (i < argv.length - 1)
-			model_file_name = argv[i + 1];
-		else {
-			int p = argv[i].lastIndexOf('/');
-			++p; // whew...
-			model_file_name = argv[i].substring(p) + ".model";
+	}
+
+	private void checkNFold(ResultCollector result) {
+		if (nr_fold < 2) {
+			result.addError("n-fold cross validation: n must >= 2");
+		}else{
+			result.addInfo(nr_fold + "-fold cross validation");
 		}
 	}
 
@@ -266,10 +219,10 @@ public class svm_train {
 			for (int i = 0; i < prob.length; i++)
 				prob.y[i] = vy.elementAt(i);
 
-			if (param.gamma == 0 && max_index > 0)
-				param.gamma = 1.0 / max_index;
+			if (param.getGamma() == 0 && max_index > 0)
+				param.setGamma(1.0 / max_index);
 
-			if (param.kernelType == KernelType.precomputed) {
+			if (param.getKernelType() == KernelType.precomputed) {
 
 				for (int i = 0; i < prob.length; i++) {
 					if (prob.x[i][0].index != 0) {

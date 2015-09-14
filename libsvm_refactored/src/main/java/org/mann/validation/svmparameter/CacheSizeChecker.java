@@ -16,12 +16,12 @@ public class CacheSizeChecker implements Checker {
 		if (cache_size <= 0) {
 			manager.getValidationMessage().append("ERROR: cache size <= 0\n");
 		} else {
-			manager.getValidationMessage().append("Cache size: " + cache_size + "\n");
+			manager.getValidationMessage().append("Cache size: ").append(cache_size).append("\n");
 		}
 	}
 
 	public Checker checkParameter(SvmParameter params) {
-		checkCacheSize(params.cache_size);
+		checkCacheSize(params.getCache_size());
 		return manager.runCheckAndGetResponse("Eps", manager, params);
 	}
 }

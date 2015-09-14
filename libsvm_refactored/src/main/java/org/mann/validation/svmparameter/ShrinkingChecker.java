@@ -13,14 +13,14 @@ public class ShrinkingChecker implements Checker {
 
 	public void checkShrinking(int shrinking) {
 		if (shrinking != 0 && shrinking != 1){
-			manager.getValidationMessage().append( "ERROR: shrinking is neither 0 nor 1\n");
+			manager.getValidationMessage().append("ERROR: shrinking is neither 0 nor 1\n");
 		}else{
-			manager.getValidationMessage().append("Shrinking = " + shrinking + "\n");
+			manager.getValidationMessage().append("Shrinking = ").append(shrinking).append("\n");
 		}
 	}
 
 	public Checker checkParameter(SvmParameter params) {
-		checkShrinking(params.shrinking);
+		checkShrinking(params.getShrinking());
 		return manager.runCheckAndGetResponse("Probability", manager, params);
 	}
 

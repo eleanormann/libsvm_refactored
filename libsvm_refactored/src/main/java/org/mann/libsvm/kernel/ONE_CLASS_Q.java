@@ -12,7 +12,7 @@ public class ONE_CLASS_Q extends Kernel {
 
 	public ONE_CLASS_Q(svm_problem prob, SvmParameter param) {
 		super(prob.length, prob.x, param);
-		cache = new Cache(prob.length, (long) (param.cache_size * (1 << 20)));
+		cache = new Cache(prob.length, (long) (param.getCache_size() * (1 << 20)));
 		QD = new double[prob.length];
 		for (int i = 0; i < prob.length; i++)
 			QD[i] = kernel_function(i, i);

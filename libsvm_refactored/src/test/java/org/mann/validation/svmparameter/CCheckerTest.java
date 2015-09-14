@@ -78,8 +78,8 @@ public class CCheckerTest {
 	
 	private SvmParameter createSvmParameter(double cost, SvmType svmType) {
 		SvmParameter params = new SvmParameter();
-		params.costC = cost;
-		params.svmType = svmType;
+		params.setCostC(cost);
+		params.setSvmType(svmType);
 		return params;
 	}
 }

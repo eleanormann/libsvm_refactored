@@ -36,6 +36,6 @@ public class SvmTrainRunnerTest {
 		runner.run(new svm_train(), null);
 		
 		String result = runner.getResultCollector().getResult();
-		assertThat(result, equalTo("ERROR: java.lang.NullPointerException\n"));
+		assertThat(result, equalTo("ERROR: No file has been specified\nERROR: java.lang.NullPointerException\n"));
 	}
 }

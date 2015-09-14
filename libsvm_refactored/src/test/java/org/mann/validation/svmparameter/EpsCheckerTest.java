@@ -53,7 +53,7 @@ public class EpsCheckerTest {
 	
 	private SvmParameter createSvmParameter(double eps) {
 		SvmParameter params = new SvmParameter();
-		params.epsilonTolerance = eps;
+		params.setEpsilonTolerance(eps);
 		return params;
 	}
 

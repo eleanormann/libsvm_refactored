@@ -3,17 +3,10 @@ package org.mann.libsvm;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.mann.helpers.HelpMessages;
 import org.mann.libsvm.SvmParameter.KernelType;
 import org.mann.libsvm.SvmParameter.SvmType;
 import org.mann.ui.ResultCollector;
@@ -35,7 +28,7 @@ public class SvmTrainTest {
 		train.run(new String[] { BASE_PATH + "fakeTrainingData.train" }, new ResultCollector());
 
 		// Assert
-		assertThat(train.getSvmParameter().kernelType, equalTo(KernelType.rbf));
+		assertThat(train.getSvmParameter().getKernelType(), equalTo(KernelType.rbf));
 		assertThat(train.getSvmProblem().length, equalTo(11));
 		assertThatSvmProblemDataValuesSetCorrectly(train, 0);
 	}
@@ -46,11 +39,11 @@ public class SvmTrainTest {
 		svm_train train = new svm_train();
 
 		// Act
-		train.run(new String[] { "-t", "4", BASE_PATH + "fakeTrainingDataWithPrecomputedKernel.train" }, new ResultCollector());
+		train.run(new String[] { "-t", "precomputed", BASE_PATH + "fakeTrainingDataWithPrecomputedKernel.train" }, new ResultCollector());
 
 		// Assert
-		assertThat(train.getSvmParameter().kernelType, equalTo(KernelType.precomputed));
-		assertThat(train.getSvmParameter().gamma, equalTo(1.0 / 2)); 													
+		assertThat(train.getSvmParameter().getKernelType(), equalTo(KernelType.precomputed));
+		assertThat(train.getSvmParameter().getGamma(), equalTo(1.0 / 2)); 													
 		assertThatPrecomputedKernelSetCorrectly(train);
 		assertThatSvmProblemDataValuesSetCorrectly(train, 1);
 	}
@@ -71,10 +64,10 @@ public class SvmTrainTest {
 
 		// Act
 		ResultCollector result = new ResultCollector();
-		train.run(new String[] { "-t", "4", BASE_PATH + "fakeTrainingData.train" }, result);
+		train.run(new String[] { "-t", "precomputed", BASE_PATH + "fakeTrainingData.train" }, result);
 
 		// Assert
-		assertThat(train.getSvmParameter().kernelType, equalTo(KernelType.precomputed));
+		assertThat(train.getSvmParameter().getKernelType(), equalTo(KernelType.precomputed));
 		assertThat(result.getResult(), containsString("ERROR: Wrong kernel matrix: first column must be 0:sample_serial_number\n"));
 	}
 
@@ -85,10 +78,10 @@ public class SvmTrainTest {
 		ResultCollector result = new ResultCollector();
 
 		// Act
-		train.run(new String[] { "-t", "4", BASE_PATH + "fakeTrainingDataWithKernelOutOfRange.train" }, result);
+		train.run(new String[] { "-t", "precomputed", BASE_PATH + "fakeTrainingDataWithKernelOutOfRange.train" }, result);
 
 		// Assert
-		assertThat(train.getSvmParameter().kernelType, equalTo(KernelType.precomputed));
+		assertThat(train.getSvmParameter().getKernelType(), equalTo(KernelType.precomputed));
 		assertThat(result.getResult(), containsString("ERROR: Wrong input format: sample_serial_number out of range\n"));
 	}
 
@@ -134,18 +127,18 @@ public class SvmTrainTest {
 
 	private SvmParameter createSvmParameter(SvmType svmType) {
 		SvmParameter params = new SvmParameter();
-		params.svmType = svmType;
-		params.kernelType = KernelType.linear;
-		params.costC = 1;
-		params.cache_size = 1;
-		params.degree = 1;
-		params.epsilonTolerance = 1;
-		params.gamma = 1;
-		params.nu = 1;
-		params.nr_weight = 1;
-		params.epsilonLossFunction = 1;
-		params.probability = 1;
-		params.shrinking=1;
+		params.setSvmType(svmType);
+		params.setKernelType(KernelType.linear);
+		params.setCostC(1);
+		params.setCacheSize(1);
+		params.setDegree(1);
+		params.setEpsilonTolerance(1);
+		params.setGamma(1);
+		params.setNu(1);
+		params.setNrWeight(1);
+		params.setEpsilonLossFunction(1);
+		params.setProbability(1);
+		params.setShrinking(1);
 		return params;
 	}
 }

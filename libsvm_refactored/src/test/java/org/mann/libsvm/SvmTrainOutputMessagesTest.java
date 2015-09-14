@@ -35,13 +35,6 @@ public class SvmTrainOutputMessagesTest {
 	}
 
 	@Test
-	public void parseCommandLineShouldAddErrorMessageWhenOptionOnItsOwnPassed() throws IOException {
-		train.run(new String[] { "-q" }, result);
-		assertThat(result.getResult(), containsString("ERROR: option on its own is not valid input\n"));
-//		assertThat(result.getResult(), containsString(HelpMessages.TRAIN_HELP_MESSAGE_ON_BAD_INPUT + "\n"));
-	}
-
-	@Test
 	public void parseCommandLineShouldAddErrorMessageWhenNFoldLessThanTwo() throws IOException {
 		new svm_train().run(new String[] { "-v", "1" }, result);
 		assertThat(result.getResult(), containsString("ERROR: n-fold cross validation: n must >= 2\n"));

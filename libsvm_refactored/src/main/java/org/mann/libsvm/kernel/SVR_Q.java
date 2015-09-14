@@ -16,7 +16,7 @@ public class SVR_Q extends Kernel {
 	public SVR_Q(svm_problem prob, SvmParameter param) {
 		super(prob.length, prob.x, param);
 		l = prob.length;
-		cache = new Cache(l, (long) (param.cache_size * (1 << 20)));
+		cache = new Cache(l, (long) (param.getCache_size() * (1 << 20)));
 		QD = new double[2 * l];
 		sign = new byte[2 * l];
 		index = new int[2 * l];

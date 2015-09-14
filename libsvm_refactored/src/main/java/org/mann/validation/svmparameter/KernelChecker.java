@@ -1,6 +1,7 @@
 package org.mann.validation.svmparameter;
 
 import org.mann.libsvm.SvmParameter;
+import org.mann.libsvm.SvmParameter.KernelType;
 import org.mann.validation.Checker;
 public class KernelChecker implements Checker {
 	private ParameterValidationManager manager;
@@ -10,10 +11,11 @@ public class KernelChecker implements Checker {
 	}
 	
 	public Checker checkParameter(SvmParameter params) {
-		if(params.kernelType==null){
-			manager.getValidationMessage().append( "ERROR: kernel type not set\n");
+		KernelType kernelType = params.getKernelType();
+		if(kernelType==null){
+			manager.getValidationMessage().append("ERROR: kernel type not set\n");
 		}else{ 			
-			manager.getValidationMessage().append( "Kernel type: " + params.kernelType + "\n");
+			manager.getValidationMessage().append("Kernel type: ").append(kernelType).append("\n");
 		}
 		return manager.runCheckAndGetResponse("Gamma", manager, params);
 	}

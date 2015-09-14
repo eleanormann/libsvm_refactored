@@ -39,7 +39,7 @@ public class SvmTypeCheckerTest {
 	
 	public SvmParameter createSvmParameter(SvmType svmType){
 		SvmParameter params = new SvmParameter();
-		params.svmType = svmType;
+		params.setSvmType(svmType);
 		return params;
 	}
 

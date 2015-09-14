@@ -96,8 +96,9 @@ public class CommandLineParserTest {
 	
 	@Test
 	public void parseCommandLineSetsWeight() throws ParseException {
-		CommandLine output = validator.parseCommandLine(new String[]{"-wi", "0.9"});
-		assertThat(output.getOptionValue("wi"), equalTo("0.9"));
+		CommandLine output = validator.parseCommandLine(new String[]{"-w","1", "0.9"});
+		assertThat(output.getOptionValues("w")[0], equalTo("1"));
+		assertThat(output.getOptionValues("w")[1], equalTo("0.9"));
 	}
 	
 	@Test
@@ -114,13 +115,14 @@ public class CommandLineParserTest {
 	
 	@Test
 	public void parseCommandLineParsesMultipleOptions() throws ParseException{
-		String[] options = new String[]{"-s", "C-SVC", "-t", "rbf", "-m", "200", "-q"};
+		String[] options = new String[]{"-s", "C-SVC", "-t", "rbf", "-m", "200", "-q", "-w", "1", "2"};
 		CommandLine output = validator.parseCommandLine(options);
 		assertThat(output.getOptionValue("s"), equalTo("C-SVC"));
 		assertThat(output.getOptionValue("t"), equalTo("rbf"));
 		assertThat(output.getOptionValue("m"), equalTo("200"));
 		assertThat(output.hasOption("q"), equalTo(true));
-		assertThat(output.hasOption("wi"), equalTo(false));
+		assertThat(output.getOptionValues("w")[0], equalTo("1"));
+		assertThat(output.getOptionValues("w")[1], equalTo("2"));	
 	}
 	
 }

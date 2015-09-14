@@ -56,8 +56,8 @@ public class EpsilonLossFunctionCheckerTest {
 	
 	private SvmParameter createSvmParameter(int value, SvmType svmType) {
 		SvmParameter params = new SvmParameter();
-		params.epsilonLossFunction = value;
-		params.svmType = svmType;
+		params.setEpsilonLossFunction(value);
+		params.setSvmType(svmType);
 		return params;
 	}
 }

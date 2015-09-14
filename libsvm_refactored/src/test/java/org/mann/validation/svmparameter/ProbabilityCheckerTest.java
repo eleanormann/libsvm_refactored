@@ -41,8 +41,8 @@ public class ProbabilityCheckerTest {
 
 	private SvmParameter createSvmParameter(int probability, SvmType svmType) {
 		SvmParameter params = new SvmParameter();
-		params.svmType = svmType;
-		params.probability = probability;
+		params.setSvmType(svmType);
+		params.setProbability(probability);
 		return params;
 	}
 }

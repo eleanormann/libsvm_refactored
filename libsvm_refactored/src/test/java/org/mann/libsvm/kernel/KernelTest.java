@@ -24,7 +24,7 @@ public class KernelTest {
 	public void kernelConstructorShouldCreateKernelSettingXSquareWhenKernelIsRBF(){
 		SvmNode[][] problemX = createExpectedSvmProblemX();
 		SvmParameter param = new SvmParameter();
-		param.kernelType = KernelType.rbf;
+		param.setKernelType(KernelType.rbf);
 		double[] xSquare = calculateExpectedXSquare(problemX);
 		Kernel kernel = new Kernel(problemX.length, problemX, param);
 		assertThat(kernel.getXSquare(), equalTo(xSquare));
@@ -48,7 +48,7 @@ public class KernelTest {
 	@Test
 	public void kernelFunctionShouldReturnDotWhenLinear(){
 		SvmParameter param = new SvmParameter();
-		param.kernelType = KernelType.linear;
+		param.setKernelType(KernelType.linear);
 		SvmNode[][] trainingData = new SvmNode[][]{ //repetition but keeping this here so I can see the data used
 				{ new SvmNode(1, 2), new SvmNode(2, 3), new SvmNode(3, 5) },
 				{ new SvmNode(2, 3), new SvmNode(3, 4)}
@@ -61,7 +61,7 @@ public class KernelTest {
 	public void kernelFunctionShouldReturnCorrectValueWhenPoly(){
 		SvmParameter defaultParam = new SvmParameter();
 		defaultParam.setDefaultValues();
-		defaultParam.kernelType = KernelType.poly;
+		defaultParam.setKernelType(KernelType.poly);
 		SvmNode[][] trainingData = new SvmNode[][]{
 				{ new SvmNode(1, 2), new SvmNode(2, 3), new SvmNode(3, 5)},
 				{ new SvmNode(2, 3), new SvmNode(3, 4)}
@@ -75,7 +75,7 @@ public class KernelTest {
 	public void kernelFunctionShouldReturnCorrectValueWhenRbf(){
 		SvmParameter defaultParam = new SvmParameter();
 		defaultParam.setDefaultValues();
-		defaultParam.kernelType = KernelType.rbf;
+		defaultParam.setKernelType(KernelType.rbf);
 		SvmNode[][] trainingData = new SvmNode[][]{
 				{ new SvmNode(1, 2), new SvmNode(2, 3), new SvmNode(3, 5) },
 				{ new SvmNode(2, 3), new SvmNode(3, 4)}

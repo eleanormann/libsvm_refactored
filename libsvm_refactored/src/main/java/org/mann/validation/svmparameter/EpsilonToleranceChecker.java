@@ -15,12 +15,12 @@ public class EpsilonToleranceChecker implements Checker {
 		if (eps <= 0){
 			manager.getValidationMessage().append("ERROR: Epsilon (tolerance) <= 0\n");			
 		}else{
-			manager.getValidationMessage().append("Epsilon (tolerance) = " + eps + "\n");
+			manager.getValidationMessage().append("Epsilon (tolerance) = ").append(eps).append("\n");
 		}
 	}
 
 	public Checker checkParameter(SvmParameter params) {
-		checkEps(params.epsilonTolerance);
+		checkEps(params.getEpsilonTolerance());
 		return manager.runCheckAndGetResponse("C", manager, params);
 	}
 

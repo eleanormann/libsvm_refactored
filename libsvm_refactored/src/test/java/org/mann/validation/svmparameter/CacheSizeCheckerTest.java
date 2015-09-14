@@ -40,7 +40,7 @@ public class CacheSizeCheckerTest {
 	
 	private SvmParameter createSvmParameter(double cacheSize) {
 		SvmParameter params = new SvmParameter();
-		params.cache_size = cacheSize;
+		params.setCacheSize(cacheSize);
 		return params;
 	}
 }

@@ -27,10 +27,10 @@ public class Kernel extends QMatrix {
 	private final double coef0;
 
 	public Kernel(int l, SvmNode[][] x_, SvmParameter param) {
-		this.kernelType = param.kernelType;
-		this.degree = param.degree;
-		this.gamma = param.gamma;
-		this.coef0 = param.coef0;
+		this.kernelType = param.getKernelType();
+		this.degree = param.getDegree();
+		this.gamma = param.getGamma();
+		this.coef0 = param.getCoef0();
 		
 		x = (SvmNode[][]) x_.clone();
 		
@@ -119,11 +119,11 @@ public class Kernel extends QMatrix {
 	}
 
 	public static double k_function(SvmNode[] x, SvmNode[] y, SvmParameter param) {
-		switch (param.kernelType) {
+		switch (param.getKernelType()) {
 		case linear:
 			return dot(x, y);
 		case poly:
-			return powi(param.gamma * dot(x, y) + param.coef0, param.degree);
+			return powi(param.getGamma() * dot(x, y) + param.getCoef0(), param.getDegree());
 		case rbf: {
 			double sum = 0;
 			int xlen = x.length;
@@ -153,10 +153,10 @@ public class Kernel extends QMatrix {
 				++j;
 			}
 
-			return Math.exp(-param.gamma * sum);
+			return Math.exp(-param.getGamma() * sum);
 		}
 		case sigmoid:
-			return Math.tanh(param.gamma * dot(x, y) + param.coef0);
+			return Math.tanh(param.getGamma() * dot(x, y) + param.getCoef0());
 		case precomputed:
 			return x[(int) (y[0].value)].value;
 		default:

@@ -16,12 +16,13 @@ public class CChecker implements Checker {
 		if (c <= 0) {
 			manager.getValidationMessage().append("ERROR: C <= 0\n");
 		} else {
-			manager.getValidationMessage().append("C = " + c + "\n");
+			manager.getValidationMessage().append("C = ").append(c).append("\n");
 		}
 	}
 
 	public Checker checkParameter(SvmParameter params) {
-		if (params.svmType == SvmType.c_svc || params.svmType == SvmType.epsilon_svr || params.svmType == SvmType.nu_svr) {
+		SvmType svmType = params.getSvmType();
+		if (svmType == SvmType.c_svc || svmType == SvmType.epsilon_svr || svmType == SvmType.nu_svr) {
 			checkC(params.costC);
 		}
 		return manager.runCheckAndGetResponse("Nu", manager, params);

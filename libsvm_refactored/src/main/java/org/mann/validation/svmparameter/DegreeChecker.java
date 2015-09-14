@@ -15,12 +15,12 @@ public class DegreeChecker implements Checker {
 		if (degree < 0){
 			manager.getValidationMessage().append("ERROR: degree of polynomial kernel < 0\n");
 		}else{			
-			manager.getValidationMessage().append("Degree = " + degree + "\n");
+			manager.getValidationMessage().append("Degree = ").append(degree).append("\n");
 		}
 	}
 
 	public Checker checkParameter(SvmParameter params) {
-		checkDegreeOfPolynomialKernel(params.degree);
+		checkDegreeOfPolynomialKernel(params.getDegree());
 		return manager.runCheckAndGetResponse("Cache", manager, params);
 	}
 

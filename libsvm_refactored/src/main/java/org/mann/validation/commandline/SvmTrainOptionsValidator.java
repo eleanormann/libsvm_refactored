@@ -42,7 +42,7 @@ public class SvmTrainOptionsValidator {
 	}
 
 	private Option buildWeightOption() {
-		return Option.builder("wi").hasArg(true).required(false)
+		return Option.builder("w").numberOfArgs(2).required(false)
 				.longOpt("Weight").desc(HelpMessages.WEIGHT).build();
 	}
 

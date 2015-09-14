@@ -33,7 +33,7 @@ public class KernelCheckerTest {
 
 	private SvmParameter createSvmParameter(KernelType kernelType) {
 		SvmParameter params = new SvmParameter();
-		params.kernelType = kernelType;
+		params.setKernelType(kernelType);
 		return params;
 	}
 }

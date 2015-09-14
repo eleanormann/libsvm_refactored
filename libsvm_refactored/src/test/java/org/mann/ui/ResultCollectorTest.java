@@ -2,6 +2,7 @@ package org.mann.ui;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -35,7 +36,13 @@ public class ResultCollectorTest {
 	}
 	
 	@Test
+	public void resultCollectorShouldAddInfoMessage(){
+		collector.addInfo("Parameter set to x");
+		assertThat(collector.getResult(), equalTo("Parameter set to x\n"));
+	}
+	
+	@Test
 	public void resultCollectorShouldEndProcess(){
-		
+		fail("not yet implemented");
 	}
 }

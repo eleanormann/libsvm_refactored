@@ -31,18 +31,18 @@ public class HelpMessages {
 	public static final String CROSS_VALIDATION_ACCURACY = "Cross Validation Accuracy = %s%";
 	
 	public static final String SVM_TYPE = "-s svm_type : set type of SVM (default C-SVC)\n"
-			+"	0 -- C-SVC		(multi-class classification)\n"
-			+"	1 -- nu-SVC		(multi-class classification)\n"
-			+"	2 -- one-class SVM\n"
-			+"	3 -- epsilon-SVR	(regression)\n"
-			+"	4 -- nu-SVR		(regression)\n";
+			+"	c_svc 		-- C-SVC		(multi-class classification)\n"
+			+"	nu_svc 		-- nu-SVC		(multi-class classification)\n"
+			+"	one_class	-- one-class SVM\n"
+			+"	epsilon_svr -- epsilon-SVR	(regression)\n"
+			+"	nu_svr	 	-- nu-SVR		(regression)\n";
 
 	public static final String KERNEL = "-t kernel_type : set type of kernel function (default 2)\n"
-			+"	0 -- linear: u'*v\n"
-			+"	1 -- polynomial: (gamma*u'*v + coef0)^degree\n"
-			+"	2 -- radial basis function: exp(-gamma*|u-v|^2)\n"
-			+"	3 -- sigmoid: tanh(gamma*u'*v + coef0)\n"
-			+"	4 -- precomputed kernel (kernel values in training_set_file)\n";
+			+"	linear 		-- linear: u'*v\n"
+			+"	poly		-- polynomial: (gamma*u'*v + coef0)^degree\n"
+			+"	rbf			-- radial basis function: exp(-gamma*|u-v|^2)\n"
+			+"	sigmoid 	-- sigmoid: tanh(gamma*u'*v + coef0)\n"
+			+"	precomputed	-- precomputed kernel (kernel values in training_set_file)\n";
 
 	public static final String GAMMA = "-g gamma : set gamma in kernel function (default 1/num_features)";
 
@@ -64,7 +64,7 @@ public class HelpMessages {
 
 	public static final String PROBABILITY_ESTIMATES = "-b probability_estimates : whether to train a SVC or SVR model for probability estimates, 0 or 1 (default 0)";
 
-	public static final String WEIGHT = "-wi weight : set the parameter C of class i to weight*C, for C-SVC (default 1)";
+	public static final String WEIGHT = "-w i weight : set the parameter C of class i to weight*C, for C-SVC (default 1)";
 
 	public static final String N_FOLD_CROSS_VALIDATION = "-v n : n-fold cross validation mode";
 

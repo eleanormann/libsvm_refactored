@@ -40,7 +40,7 @@ public class GammaCheckerTest {
 	
 	private SvmParameter createSvmParameter(double gamma) {
 		SvmParameter params = new SvmParameter();
-		params.gamma = gamma;
+		params.setGamma(gamma);
 		return params;
 	}
 }

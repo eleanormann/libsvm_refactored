@@ -107,7 +107,7 @@ public class SvmTest {
 		when(fp.readLine()).thenReturn("svm_type nu_svc").thenReturn("");
 		
 		svm.read_model_header(fp, model);
-		assertThat(model.getParam().svmType, equalTo(SvmType.nu_svc));	
+		assertThat(model.getParam().getSvmType(), equalTo(SvmType.nu_svc));	
 	}
 	
 	@Test
@@ -130,7 +130,7 @@ public class SvmTest {
 		when(fp.readLine()).thenReturn("svm_type ");
 		
 		boolean isSuccessfulRead = svm.read_model_header(fp, model);
-		assertThat(model.getParam().svmType, equalTo(null));
+		assertThat(model.getParam().getSvmType(), equalTo(null));
 		assertThat(errContent.toString(), equalTo("Unknown svm type.\n"));
 		assertThat(isSuccessfulRead, equalTo(false));	
 	}
@@ -143,7 +143,7 @@ public class SvmTest {
 		when(fp.readLine()).thenReturn("kernel_type poly").thenReturn("");
 		
 		svm.read_model_header(fp, model);
-		assertThat(model.getParam().kernelType, equalTo(KernelType.poly));	
+		assertThat(model.getParam().getKernelType(), equalTo(KernelType.poly));	
 	}
 	
 	@Test
@@ -166,7 +166,7 @@ public class SvmTest {
 		when(fp.readLine()).thenReturn("kernel_type ");
 		
 		boolean isSuccessfulRead = svm.read_model_header(fp, model);
-		assertThat(model.getParam().kernelType, equalTo(null));
+		assertThat(model.getParam().getKernelType(), equalTo(null));
 		assertThat(errContent.toString(), equalTo("Unknown kernel function.\n"));
 		assertThat(isSuccessfulRead, equalTo(false));	
 	}
@@ -175,8 +175,8 @@ public class SvmTest {
 	private SvmModel createModel(SvmType svmType, KernelType kernelType) {
 		SvmModel model = new SvmModel();
 		SvmParameter param = new SvmParameter();
-		param.svmType = svmType;
-		param.kernelType = kernelType;
+		param.setSvmType(svmType);
+		param.setKernelType(kernelType);
 		model.setParam(param);
 		model.nr_class = 2;
 		model.rho = new double[]{0,0};

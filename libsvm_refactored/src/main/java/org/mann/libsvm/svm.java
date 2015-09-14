@@ -855,7 +855,7 @@ public class svm {
 
 		Solver s = new Solver();
 		s.Solve(l, new SVC_Q(prob, param, y), minus_ones, y, alpha, Cp, Cn,
-				param.epsilonTolerance, si, param.shrinking);
+				param.getEpsilonTolerance(), si, param.getShrinking());
 
 		double sum_alpha = 0;
 		for (i = 0; i < l; i++)
@@ -872,7 +872,7 @@ public class svm {
 			double[] alpha, Solver.SolutionInfo si) {
 		int i;
 		int l = prob.length;
-		double nu = param.nu;
+		double nu = param.getNu();
 
 		byte[] y = new byte[l];
 
@@ -901,7 +901,7 @@ public class svm {
 
 		Solver_NU s = new Solver_NU();
 		s.Solve(l, new SVC_Q(prob, param, y), zeros, y, alpha, 1.0, 1.0,
-				param.epsilonTolerance, si, param.shrinking);
+				param.getEpsilonTolerance(), si, param.getShrinking());
 		double r = si.r;
 
 		svm.info("C = " + 1 / r + "\n");
@@ -922,12 +922,12 @@ public class svm {
 		byte[] ones = new byte[l];
 		int i;
 
-		int n = (int) (param.nu * prob.length); // # of alpha's at upper bound
+		int n = (int) (param.getNu() * prob.length); // # of alpha's at upper bound
 
 		for (i = 0; i < n; i++)
 			alpha[i] = 1;
 		if (n < prob.length)
-			alpha[n] = param.nu * prob.length - n;
+			alpha[n] = param.getNu() * prob.length - n;
 		for (i = n + 1; i < l; i++)
 			alpha[i] = 0;
 
@@ -938,7 +938,7 @@ public class svm {
 
 		Solver s = new Solver();
 		s.Solve(l, new ONE_CLASS_Q(prob, param), zeros, ones, alpha, 1.0, 1.0,
-				param.epsilonTolerance, si, param.shrinking);
+				param.getEpsilonTolerance(), si, param.getShrinking());
 	}
 
 	private static void solve_epsilon_svr(svm_problem prob, SvmParameter param,
@@ -951,36 +951,36 @@ public class svm {
 
 		for (i = 0; i < l; i++) {
 			alpha2[i] = 0;
-			linear_term[i] = param.p - prob.y[i];
+			linear_term[i] = param.getEpsilonLossFunction() - prob.y[i];
 			y[i] = 1;
 
 			alpha2[i + l] = 0;
-			linear_term[i + l] = param.p + prob.y[i];
+			linear_term[i + l] = param.getEpsilonLossFunction() + prob.y[i];
 			y[i + l] = -1;
 		}
 
 		Solver s = new Solver();
-		s.Solve(2 * l, new SVR_Q(prob, param), linear_term, y, alpha2, param.costC,
-				param.costC, param.epsilonTolerance, si, param.shrinking);
+		s.Solve(2 * l, new SVR_Q(prob, param), linear_term, y, alpha2, param.getCostC(),
+				param.getCostC(), param.getEpsilonTolerance(), si, param.getShrinking());
 
 		double sum_alpha = 0;
 		for (i = 0; i < l; i++) {
 			alpha[i] = alpha2[i] - alpha2[i + l];
 			sum_alpha += Math.abs(alpha[i]);
 		}
-		svm.info("nu = " + sum_alpha / (param.costC * l) + "\n");
+		svm.info("nu = " + sum_alpha / (param.getCostC() * l) + "\n");
 	}
 
 	private static void solve_nu_svr(svm_problem prob, SvmParameter param,
 			double[] alpha, Solver.SolutionInfo si) {
 		int l = prob.length;
-		double C = param.costC;
+		double C = param.getCostC();
 		double[] alpha2 = new double[2 * l];
 		double[] linear_term = new double[2 * l];
 		byte[] y = new byte[2 * l];
 		int i;
 
-		double sum = C * param.nu * l / 2;
+		double sum = C * param.getNu() * l / 2;
 		for (i = 0; i < l; i++) {
 			alpha2[i] = alpha2[i + l] = Math.min(sum, C);
 			sum -= alpha2[i];
@@ -994,7 +994,7 @@ public class svm {
 
 		Solver_NU s = new Solver_NU();
 		s.Solve(2 * l, new SVR_Q(prob, param), linear_term, y, alpha2, C, C,
-				param.epsilonTolerance, si, param.shrinking);
+				param.getEpsilonTolerance(), si, param.getShrinking());
 
 		svm.info("epsilon = " + (-si.r) + "\n");
 
@@ -1014,7 +1014,7 @@ public class svm {
 			SvmParameter param, double Cp, double Cn) {
 		double[] alpha = new double[prob.length];
 		Solver.SolutionInfo si = new Solver.SolutionInfo();
-		switch (param.svmType) {
+		switch (param.getSvmType()) {
 		case c_svc:
 			solve_c_svc(prob, param, alpha, si, Cp, Cn);
 			break;
@@ -1291,15 +1291,15 @@ public class svm {
 					dec_values[perm[j]] = -1;
 			else {
 				SvmParameter subparam = (SvmParameter) param.clone();
-				subparam.probability = 0;
+				subparam.setProbability(0);
 				subparam.costC = 1.0;
 				subparam.nr_weight = 2;
-				subparam.weight_label = new int[2];
-				subparam.weight = new double[2];
-				subparam.weight_label[0] = +1;
-				subparam.weight_label[1] = -1;
-				subparam.weight[0] = Cp;
-				subparam.weight[1] = Cn;
+				subparam.setWeightLabel(new int[2]);
+				subparam.setWeight(new double[2]);
+				subparam.getWeight_label()[0] = +1;
+				subparam.getWeight_label()[1] = -1;
+				subparam.getWeight()[0] = Cp;
+				subparam.getWeight()[1] = Cn;
 				SvmModel submodel = svm_train(subprob, subparam);
 				for (j = begin; j < end; j++) {
 					double[] dec_value = new double[1];
@@ -1322,7 +1322,7 @@ public class svm {
 		double mae = 0;
 
 		SvmParameter newparam = (SvmParameter) param.clone();
-		newparam.probability = 0;
+		newparam.setProbability(0);
 		svm_cross_validation(prob, newparam, nr_fold, ymv);
 		for (i = 0; i < prob.length; i++) {
 			ymv[i] = prob.y[i] - ymv[i];
@@ -1434,9 +1434,10 @@ public class svm {
 		SvmModel model = new SvmModel();
 		model.setParam(param);
 
-		if (param.svmType == SvmType.one_class
-				|| param.svmType == SvmType.epsilon_svr
-				|| param.svmType == SvmType.nu_svr) {
+		SvmType svmType = param.getSvmType();
+		if (svmType == SvmType.one_class
+				|| svmType == SvmType.epsilon_svr
+				|| svmType == SvmType.nu_svr) {
 			// regression or one-class-svm
 			model.nr_class = 2;
 			model.label = null;
@@ -1445,8 +1446,8 @@ public class svm {
 			model.probB = null;
 			model.sv_coef = new double[1][];
 
-			if (param.probability == 1
-					&& (param.svmType == SvmType.epsilon_svr || param.svmType == SvmType.nu_svr)) {
+			if (param.getProbability() == 1
+					&& (svmType == SvmType.epsilon_svr || svmType == SvmType.nu_svr)) {
 				model.probA = new double[1];
 				model.probA[0] = svm_svr_probability(prob, param);
 			}
@@ -1501,18 +1502,18 @@ public class svm {
 
 			double[] weighted_C = new double[nr_class];
 			for (i = 0; i < nr_class; i++)
-				weighted_C[i] = param.costC;
+				weighted_C[i] = param.getCostC();
 			for (i = 0; i < param.nr_weight; i++) {
 				int j;
 				for (j = 0; j < nr_class; j++)
-					if (param.weight_label[i] == label[j])
+					if (param.getWeight_label()[i] == label[j])
 						break;
 				if (j == nr_class)
 					System.err.print("WARNING: class label "
-							+ param.weight_label[i]
+							+ param.getWeight_label()[i]
 							+ " specified in weight is not found\n");
 				else
-					weighted_C[j] *= param.weight[i];
+					weighted_C[j] *= param.getWeight()[i];
 			}
 
 			// train k*(k-1)/2 models
@@ -1524,7 +1525,7 @@ public class svm {
 					* (nr_class - 1) / 2];
 
 			double[] probA = null, probB = null;
-			if (param.probability == 1) {
+			if (param.getProbability() == 1) {
 				probA = new double[nr_class * (nr_class - 1) / 2];
 				probB = new double[nr_class * (nr_class - 1) / 2];
 			}
@@ -1548,7 +1549,7 @@ public class svm {
 						sub_prob.y[ci + k] = -1;
 					}
 
-					if (param.probability == 1) {
+					if (param.getProbability() == 1) {
 						double[] probAB = new double[2];
 						svm_binary_svc_probability(sub_prob, param,
 								weighted_C[i], weighted_C[j], probAB);
@@ -1580,7 +1581,7 @@ public class svm {
 			for (i = 0; i < nr_class * (nr_class - 1) / 2; i++)
 				model.rho[i] = f[i].rho;
 
-			if (param.probability == 1) {
+			if (param.getProbability() == 1) {
 				model.probA = new double[nr_class * (nr_class - 1) / 2];
 				model.probB = new double[nr_class * (nr_class - 1) / 2];
 				for (i = 0; i < nr_class * (nr_class - 1) / 2; i++) {
@@ -1664,7 +1665,7 @@ public class svm {
 
 		// stratified cv may not give leave-one-out rate
 		// Each class to l folds -> some folds may have zero elements
-		if ((param.svmType == SvmType.c_svc || param.svmType == SvmType.nu_svc)
+		if ((param.getSvmType() == SvmType.c_svc || param.getSvmType() == SvmType.nu_svc)
 				&& nr_fold < l) {
 			int[] tmp_nr_class = new int[1];
 			int[][] tmp_label = new int[1][];
@@ -1751,8 +1752,8 @@ public class svm {
 				++k;
 			}
 			SvmModel submodel = svm_train(subprob, param);
-			if (param.probability == 1
-					&& (param.svmType == SvmType.c_svc || param.svmType == SvmType.nu_svc)) {
+			if (param.getProbability() == 1
+					&& (param.getSvmType() == SvmType.c_svc || param.getSvmType() == SvmType.nu_svc)) {
 				double[] prob_estimates = new double[svm_get_nr_class(submodel)];
 				for (j = begin; j < end; j++)
 					target[perm[j]] = svm_predict_probability(submodel,
@@ -1764,7 +1765,7 @@ public class svm {
 	}
 
 	public static SvmType getSvmTypeFromModel(SvmModel model) {
-		return model.getParam().svmType;
+		return model.getParam().getSvmType();
 	}
 
 	public static int svm_get_nr_class(SvmModel model) {
@@ -1788,8 +1789,8 @@ public class svm {
 	}
 
 	public static double svm_get_svr_probability(SvmModel model) {
-		if ((model.getParam().svmType == SvmType.epsilon_svr || model
-				.getParam().svmType == SvmType.nu_svr) && model.probA != null)
+		if ((model.getParam().getSvmType() == SvmType.epsilon_svr || model
+				.getParam().getSvmType() == SvmType.nu_svr) && model.probA != null)
 			return model.probA[0];
 		else {
 			System.err
@@ -1801,9 +1802,9 @@ public class svm {
 	public static double svm_predict_values(SvmModel model, SvmNode[] x,
 			double[] dec_values) {
 		int i;
-		if (model.getParam().svmType == SvmType.one_class
-				|| model.getParam().svmType == SvmType.epsilon_svr
-				|| model.getParam().svmType == SvmType.nu_svr) {
+		if (model.getParam().getSvmType() == SvmType.one_class
+				|| model.getParam().getSvmType() == SvmType.epsilon_svr
+				|| model.getParam().getSvmType() == SvmType.nu_svr) {
 			double[] sv_coef = model.sv_coef[0];
 			double sum = 0;
 			for (i = 0; i < model.l; i++)
@@ -1812,7 +1813,7 @@ public class svm {
 			sum -= model.rho[0];
 			dec_values[0] = sum;
 
-			if (model.getParam().svmType == SvmType.one_class)
+			if (model.getParam().getSvmType() == SvmType.one_class)
 				return (sum > 0) ? 1 : -1;
 			else
 				return sum;
@@ -1871,9 +1872,9 @@ public class svm {
 	public static double svm_predict(SvmModel model, SvmNode[] x) {
 		int nr_class = model.nr_class;
 		double[] dec_values;
-		if (model.getParam().svmType == SvmType.one_class
-				|| model.getParam().svmType == SvmType.epsilon_svr
-				|| model.getParam().svmType == SvmType.nu_svr)
+		if (model.getParam().getSvmType() == SvmType.one_class
+				|| model.getParam().getSvmType() == SvmType.epsilon_svr
+				|| model.getParam().getSvmType() == SvmType.nu_svr)
 			dec_values = new double[1];
 		else
 			dec_values = new double[nr_class * (nr_class - 1) / 2];
@@ -1883,7 +1884,7 @@ public class svm {
 
 	public static double svm_predict_probability(SvmModel model, SvmNode[] x,
 			double[] prob_estimates) {
-		if ((model.getParam().svmType == SvmType.c_svc || model.getParam().svmType == SvmType.nu_svc)
+		if ((model.getParam().getSvmType() == SvmType.c_svc || model.getParam().getSvmType() == SvmType.nu_svc)
 				&& model.probA != null && model.probB != null) {
 			int i;
 			int nr_class = model.nr_class;
@@ -1920,20 +1921,20 @@ public class svm {
 
 		SvmParameter param = model.getParam();
 
-		fp.writeBytes("svm_type " + param.svmType.toString() + "\n");
-		fp.writeBytes("kernel_type " + param.kernelType.toString() + "\n");
+		fp.writeBytes("svm_type " + param.getSvmType().toString() + "\n");
+		fp.writeBytes("kernel_type " + param.getKernelType().toString() + "\n");
 
-		if (param.kernelType == KernelType.poly)
-			fp.writeBytes("degree " + param.degree + "\n");
+		if (param.getKernelType() == KernelType.poly)
+			fp.writeBytes("degree " + param.getDegree() + "\n");
 
-		if (param.kernelType == KernelType.poly
-				|| param.kernelType == KernelType.rbf
-				|| param.kernelType == KernelType.sigmoid)
-			fp.writeBytes("gamma " + param.gamma + "\n");
+		if (param.getKernelType() == KernelType.poly
+				|| param.getKernelType() == KernelType.rbf
+				|| param.getKernelType() == KernelType.sigmoid)
+			fp.writeBytes("gamma " + param.getGamma() + "\n");
 
-		if (param.kernelType == KernelType.poly
-				|| param.kernelType == KernelType.sigmoid)
-			fp.writeBytes("coef0 " + param.coef0 + "\n");
+		if (param.getKernelType() == KernelType.poly
+				|| param.getKernelType() == KernelType.sigmoid)
+			fp.writeBytes("coef0 " + param.getCoef0() + "\n");
 
 		int nr_class = model.nr_class;
 		int l = model.l;
@@ -1984,7 +1985,7 @@ public class svm {
 
 			SvmNode[] p = SV[i];
 			
-			if (param.kernelType == KernelType.precomputed)
+			if (param.getKernelType() == KernelType.precomputed)
 				fp.writeBytes("0:" + (int) (p[0].value));
 			else
 				for (int j = 0; j < p.length; j++)
@@ -1995,6 +1996,7 @@ public class svm {
 		fp.close();
 	}
 
+	
 	protected static boolean read_model_header(BufferedReader fp, SvmModel model) {
 		SvmParameter param = new SvmParameter();
 		model.setParam(param);
@@ -2005,8 +2007,8 @@ public class svm {
 
 				if (cmd.startsWith("svm_type")) {
 					try{
-						param.svmType = SvmType.valueOf(arg);
-						if(param.svmType == null){
+						param.svmType(arg);
+						if(param.getSvmType() == null){
 							throw new IllegalArgumentException();
 						}
 					}catch(IllegalArgumentException e){
@@ -2016,8 +2018,8 @@ public class svm {
 					}
 				} else if (cmd.startsWith("kernel_type")) {
 					try{
-						param.kernelType = KernelType.valueOf(arg);
-						if(param.kernelType == null){
+						param.kernelType(arg);
+						if(param.getKernelType() == null){
 							throw new IllegalArgumentException();
 						}
 					}catch(IllegalArgumentException e){		
@@ -2026,11 +2028,11 @@ public class svm {
 						return false;
 					}
 				} else if (cmd.startsWith("degree"))
-					param.degree = Integer.parseInt(arg);
+					param = param.degree(arg);
 				else if (cmd.startsWith("gamma"))
-					param.gamma = Double.parseDouble(arg);
+					param = param.gamma(arg);
 				else if (cmd.startsWith("coef0"))
-					param.coef0 = Double.parseDouble(arg);
+					param = param.coef0(arg);
 				else if (cmd.startsWith("nr_class"))
 					model.nr_class = Integer.parseInt(arg);
 				else if (cmd.startsWith("total_sv"))
@@ -2129,11 +2131,10 @@ public class svm {
 	
 	
 	public static int svm_check_probability_model(SvmModel model) {
-		if (((model.getParam().svmType == SvmType.c_svc || model
-				.getParam().svmType == SvmType.nu_svc)
+		SvmType svmType = model.getParam().getSvmType();
+		if (((svmType == SvmType.c_svc || svmType == SvmType.nu_svc)
 				&& model.probA != null && model.probB != null)
-				|| ((model.getParam().svmType == SvmType.epsilon_svr || model
-						.getParam().svmType == SvmType.nu_svr) && model.probA != null))
+				|| ((svmType == SvmType.epsilon_svr ||svmType == SvmType.nu_svr) && model.probA != null))
 			return 1;
 		else
 			return 0;

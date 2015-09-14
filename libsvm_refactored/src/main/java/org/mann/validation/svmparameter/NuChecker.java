@@ -14,17 +14,17 @@ public class NuChecker implements Checker {
 	public NuChecker(ParameterValidationManager parameterValidationManager) {
 		this.manager = parameterValidationManager;
 	}
-	
+
 	protected void checkNu(double nu) {
-		if (nu <= 0 || nu > 1){
-			manager.getValidationMessage().append( "ERROR: nu <= 0 or nu > 1\n");			
-		}else{
-			manager.getValidationMessage().append("Nu = " + nu + "\n");
+		if (nu <= 0 || nu > 1) {
+			manager.getValidationMessage().append("ERROR: nu <= 0 or nu > 1\n");
+		} else {
+			manager.getValidationMessage().append("Nu = ").append(nu).append("\n");
 		}
 	}
 
 	public void checkFeasibilityOfNu(svm_problem prob, SvmParameter param) {
-		if (param.svmType == SvmType.nu_svc) {
+		if (param.getSvmType() == SvmType.nu_svc) {
 			int problemLength = prob.length;
 			int arrayLength = 16;
 			int currentIndexInProblem = 0;
@@ -53,17 +53,19 @@ public class NuChecker implements Checker {
 				}
 			}
 
+			double nu = param.getNu();
 			for (i = 0; i < currentIndexInProblem; i++) {
 				int n1 = count[i];
 				for (int j = i + 1; j < currentIndexInProblem; j++) {
 					int n2 = count[j];
-					if (param.nu * (n1 + n2) / 2 > Math.min(n1, n2)){
-						manager.getValidationMessage().append("ERROR: " + param.nu + " is not a feasible nu for these data");
+					if (nu * (n1 + n2) / 2 > Math.min(n1, n2)) {
+						manager.getValidationMessage().append("ERROR: ").append(nu)
+								.append(" is not a feasible nu for these data");
 						return;
-					}	
+					}
 				}
 			}
-			manager.getValidationMessage().append( "Nu = " + param.nu + ": feasibility checked and is OK\n");
+			manager.getValidationMessage().append("Nu = ").append(nu).append(": feasibility checked and is OK\n");
 		}
 	}
 
@@ -74,8 +76,9 @@ public class NuChecker implements Checker {
 	}
 
 	public Checker checkParameter(SvmParameter params) {
-		if (params.svmType == SvmType.one_class || params.svmType == SvmType.nu_svr) {
-			checkNu(params.nu);	
+		SvmType svmType = params.getSvmType();
+		if (svmType == SvmType.one_class || svmType == SvmType.nu_svr) {
+			checkNu(params.getNu());
 		}
 		return manager.runCheckAndGetResponse("P", manager, params);
 	}

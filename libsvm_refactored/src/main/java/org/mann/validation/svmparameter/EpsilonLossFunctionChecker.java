@@ -13,16 +13,16 @@ public class EpsilonLossFunctionChecker implements Checker {
 	}
 
 	public void checkEpsilonLossFunction(double epsilonLossFunct) {
-		if (epsilonLossFunct < 0){
-			manager.getValidationMessage().append("ERROR: Epsilon (loss function) < 0\n");			
-		}else{
-			manager.getValidationMessage().append("Epsilon (Loss Function) = " + epsilonLossFunct + "\n");
+		if (epsilonLossFunct < 0) {
+			manager.getValidationMessage().append("ERROR: Epsilon (loss function) < 0\n");
+		} else {
+			manager.getValidationMessage().append("Epsilon (Loss Function) = ").append(epsilonLossFunct).append("\n");
 		}
 	}
 
 	public Checker checkParameter(SvmParameter params) {
-		if(params.svmType == SvmType.epsilon_svr){
-			checkEpsilonLossFunction(params.epsilonLossFunction);			
+		if (params.getSvmType() == SvmType.epsilon_svr) {
+			checkEpsilonLossFunction(params.getEpsilonLossFunction());
 		}
 		return manager.runCheckAndGetResponse("Shrinking", manager, params);
 	}
