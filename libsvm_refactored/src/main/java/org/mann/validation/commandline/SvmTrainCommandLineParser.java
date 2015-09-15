@@ -12,7 +12,7 @@ import org.mann.libsvm.SvmParameter.SvmType;
 
 public class SvmTrainCommandLineParser {
 
-	public CommandLine parseCommandLine(String[] commandLine) throws ParseException {
+	public SvmCommandLine parseCommandLine(String[] commandLine) throws ParseException {
 		Options options = new Options();
 		options.addOption(buildSvmTypeOption());
 		options.addOption(buildKernelTypeOption());
@@ -30,7 +30,8 @@ public class SvmTrainCommandLineParser {
 		options.addOption(buildCrosValNumOption());
 		options.addOption(buildQuietModeOption());
 		CommandLineParser parser = new DefaultParser();
-		return parser.parse(options, commandLine);
+		CommandLine cmd = parser.parse(options, commandLine);
+		return new SvmCommandLine(cmd);
 	}
 
 	private Option buildQuietModeOption() {
@@ -109,6 +110,7 @@ public class SvmTrainCommandLineParser {
 	}
 
 	//TODO: Too brittle perhaps; look for alternative
+	//also its not that easy to option
 	//Expires 15th October 2015
 	public Object getOptionValue(Option option) {
 		if(option.getType().equals(Integer.class)){

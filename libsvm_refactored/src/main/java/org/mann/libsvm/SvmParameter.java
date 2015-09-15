@@ -3,6 +3,8 @@ package org.mann.libsvm;
 import org.apache.commons.cli.CommandLine;
 import org.mann.libsvm.SvmParameter.KernelType;
 import org.mann.libsvm.SvmParameter.SvmType;
+import org.mann.validation.commandline.SvmCommandLine;
+import org.mann.validation.commandline.SvmTrainCommandLineParser;
 
 public class SvmParameter implements Cloneable, java.io.Serializable {
 
@@ -35,80 +37,89 @@ public class SvmParameter implements Cloneable, java.io.Serializable {
 	private int probability; // do probability estimates
 	public double costC; // for C_SVC, EPSILON_SVR and NU_SVR
 
-	public SvmParameter svmType(String svmType) {
-		this.svmType = SvmType.valueOf(svmType);
-		return this;
-	}
-
-	public SvmParameter kernelType(String kernelType) {
-		this.kernelType = KernelType.valueOf(kernelType);
-		return this;
-	}
-
-	public SvmParameter degree(String degree) {
-		this.degree = Integer.parseInt(degree);
-		return this;
-	}
-
-	public SvmParameter gamma(String gamma) {
-		this.gamma = Double.parseDouble(gamma);
-		return this;
-	}
-
-	public SvmParameter coef0(String coef0) {
-		this.coef0 = Double.parseDouble(coef0);
-		return this;
-	}
-
-	public SvmParameter cacheSize(String cacheSize) {
-		this.cache_size = Double.parseDouble(cacheSize);
-		return this;
-	}
-
-	public SvmParameter epsilonTolerance(String epsTolerance) {
-		this.epsilonTolerance = Double.parseDouble(epsTolerance);
-		return this;
-	}
-
-	public SvmParameter epsilonLossFunction(String epsLossFunction) {
-		this.epsilonLossFunction = Double.parseDouble(epsLossFunction);
-		return this;
-	}
-
-	public SvmParameter costC(String costC) {
-		this.costC = Double.parseDouble(costC);
-		return this;
-	}
-
-	public SvmParameter shrinking(String shrinking) {
-		this.shrinking = Integer.parseInt(shrinking);
-		return this;
-	}
-
-	public SvmParameter probability(String probability) {
-		this.probability = Integer.parseInt(probability);
-		return this;
-	}
-
-	public SvmParameter nu(String nu) {
-		this.nu = Double.parseDouble(nu);
-		return this;
-	}
-
-	public SvmParameter nrWeight(int nrWeight) {
-		this.nr_weight = nrWeight;
-		return this;
-	}
-
-	public SvmParameter weightLabel(int[] weightLabel) {
-		this.weight_label = weightLabel;
-		return this;
-	}
-
-	public SvmParameter weight(double[] weight) {
-		this.weight = weight;
-		return this;
-	}
+//	private SvmParameter(SvmParameter svmParameter) {
+//	}
+//
+//	public SvmParameter(){};
+//	
+//	public SvmParameter svmType(SvmType svmType) {
+//		this.svmType = svmType;
+//		return this;
+//	}
+//
+//	public SvmParameter kernelType(KernelType kernelType) {
+//		this.kernelType = kernelType;
+//		return this;
+//	}
+//
+//	public SvmParameter degree(int degree) {
+//		this.degree = degree;
+//		return this;
+//	}
+//
+//	public SvmParameter gamma(double gamma) {
+//		this.gamma = gamma;
+//		return this;
+//	}
+//
+//	public SvmParameter coef0(double coef0) {
+//		this.coef0 = coef0;
+//		return this;
+//	}
+//
+//	public SvmParameter cacheSize(double cacheSize) {
+//		this.cache_size = cacheSize;
+//		return this;
+//	}
+//
+//	public SvmParameter epsilonTolerance(double epsTolerance) {
+//		this.epsilonTolerance = epsTolerance;
+//		return this;
+//	}
+//
+//	public SvmParameter epsilonLossFunction(double epsLossFunction) {
+//		this.epsilonLossFunction = epsLossFunction;
+//		return this;
+//	}
+//
+//	public SvmParameter costC(double costC) {
+//		this.costC = costC;
+//		return this;
+//	}
+//
+//	public SvmParameter shrinking(int shrinking) {
+//		this.shrinking = shrinking;
+//		return this;
+//	}
+//
+//	public SvmParameter probability(int probability) {
+//		this.probability = probability;
+//		return this;
+//	}
+//
+//	public SvmParameter nu(double nu) {
+//		this.nu = nu;
+//		return this;
+//	}
+//
+//	public SvmParameter nrWeight(int nrWeight) {
+//		this.nr_weight = nrWeight;
+//		return this;
+//	}
+//
+//	public SvmParameter weightLabel(int[] weightLabel) {
+//		this.weight_label = weightLabel;
+//		return this;
+//	}
+//
+//	public SvmParameter build(){
+//		return new SvmParameter(this);
+//	}
+//	
+//	public SvmParameter weight(double[] weight) {
+//		this.weight = weight;
+//		return this;
+//	}
 
 	public SvmType getSvmType() {
 		return svmType;
@@ -197,22 +208,22 @@ public class SvmParameter implements Cloneable, java.io.Serializable {
 
 	}
 
-	public void initializeFields(CommandLine cmd) {
+	public void initializeFields(SvmCommandLine cmd, SvmTrainCommandLineParser parser) {
 		//TODO: change this terrible implementation
 		//Expires October 14th 2015
 		setDefaultValues();
-		svmType = cmd.hasOption("s") ? SvmType.valueOf(cmd.getOptionValue("s")) : SvmType.c_svc;
-		kernelType = cmd.hasOption("t") ? KernelType.valueOf(cmd.getOptionValue("t")) : KernelType.rbf;
-		degree = cmd.hasOption("d") ? Integer.parseInt(cmd.getOptionValue("d")) : 3;
-		gamma = cmd.hasOption("g") ? Double.parseDouble(cmd.getOptionValue("g")) : 0;
-		coef0 = cmd.hasOption("r") ? Double.parseDouble(cmd.getOptionValue("r")) : 0;
-		nu = cmd.hasOption("n") ? Double.parseDouble(cmd.getOptionValue("n")) : 0.5;
-		cache_size = cmd.hasOption("m") ? Double.parseDouble(cmd.getOptionValue("m")) : 100;
-		costC = cmd.hasOption("c") ? Double.parseDouble(cmd.getOptionValue("c")) : 1;
-		epsilonTolerance = cmd.hasOption("p") ? Double.parseDouble(cmd.getOptionValue("p")) : 1e-3;
-		epsilonLossFunction = cmd.hasOption("e") ? Double.parseDouble(cmd.getOptionValue("e")) : 0.1;
-		shrinking = cmd.hasOption("h") ? Integer.parseInt(cmd.getOptionValue("h")) : 1;
-		probability = cmd.hasOption("b") ? Integer.parseInt(cmd.getOptionValue("b")) : 0;
+		svmType = cmd.hasOption("s") ? (SvmType)parser.getOptionValue(cmd.getOption("s")) : SvmType.c_svc;
+		kernelType = cmd.hasOption("t") ? (KernelType)parser.getOptionValue(cmd.getOption("t")) : KernelType.rbf;
+		degree = cmd.hasOption("d") ? (Integer)parser.getOptionValue(cmd.getOption("d")) : 3;
+		gamma = cmd.hasOption("g") ? (Double)parser.getOptionValue(cmd.getOption("g")) : 0;
+		coef0 = cmd.hasOption("r") ? (Double)parser.getOptionValue(cmd.getOption("r")) : 0;
+		nu = cmd.hasOption("n") ? (Double)parser.getOptionValue(cmd.getOption("n")) : 0.5;
+		cache_size = cmd.hasOption("m") ? (Double)parser.getOptionValue(cmd.getOption("m")) : 100;
+		costC = cmd.hasOption("c") ? (Double)parser.getOptionValue(cmd.getOption("c")) : 1;
+		epsilonTolerance = cmd.hasOption("p") ? (Double)parser.getOptionValue(cmd.getOption("p")) : 1e-3;
+		epsilonLossFunction = cmd.hasOption("e") ? (Double)parser.getOptionValue(cmd.getOption("e")) : 0.1;
+		shrinking = cmd.hasOption("h") ? (Integer)parser.getOptionValue(cmd.getOption("h")) : 1;
+		probability = cmd.hasOption("b") ? (Integer)parser.getOptionValue(cmd.getOption("b")) : 0;
 	}
 
 	public void setGamma(double gamma) {

@@ -21,6 +21,7 @@ import org.mann.ui.ResultCollector;
 import org.mann.ui.SvmPrintInterface;
 import org.mann.ui.SvmPrinterFactory;
 import org.mann.ui.SvmPrinterFactory.PrintMode;
+import org.mann.validation.commandline.SvmCommandLine;
 import org.mann.validation.commandline.SvmTrainCommandLineParser;
 import org.mann.validation.svmparameter.ParameterValidationManager;
 
@@ -125,10 +126,10 @@ public class svm_train {
 		int i;
 		SvmPrintInterface print_func = null; // default printing to stdout
 		SvmTrainCommandLineParser optionsValidator = new SvmTrainCommandLineParser();
-		CommandLine options = optionsValidator.parseCommandLine(argv);
+		SvmCommandLine options = optionsValidator.parseCommandLine(argv);
 		
 		param = new SvmParameter();
-		param.initializeFields(options);
+		param.initializeFields(options, optionsValidator);
 		cross_validation = 0;
 		if(options.hasOption('q')){
 			print_func = SvmPrinterFactory.getPrinter(PrintMode.QUIET);
