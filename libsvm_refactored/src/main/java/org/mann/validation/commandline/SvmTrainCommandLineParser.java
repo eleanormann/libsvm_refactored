@@ -44,7 +44,7 @@ public class SvmTrainCommandLineParser {
 	}
 
 	private Option buildWeightOption() {
-		return Option.builder("w").numberOfArgs(2).required(false)
+		return Option.builder("w").numberOfArgs(2).required(false).type(int[].class)
 				.longOpt("Weight").desc(HelpMessages.WEIGHT).build();
 	}
 
@@ -108,6 +108,8 @@ public class SvmTrainCommandLineParser {
 				.longOpt("Svm type").desc(HelpMessages.SVM_TYPE).build();
 	}
 
+	//TODO: Too brittle perhaps; look for alternative
+	//Expires 15th October 2015
 	public Object getOptionValue(Option option) {
 		if(option.getType().equals(Integer.class)){
 			return Integer.parseInt(option.getValue());			
@@ -120,6 +122,13 @@ public class SvmTrainCommandLineParser {
 		}
 		if(option.getType()==KernelType.class){
 			return KernelType.valueOf(option.getValue());
+		}
+		if(option.getType()==int[].class){
+			int[] weight = new int[]{
+					Integer.parseInt(option.getValue(0)), 
+					Integer.parseInt(option.getValue(1))}; //only weight at the moment - change variable name if expand
+			
+			return weight;
 		}
 		return option.getValue();
 	}

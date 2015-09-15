@@ -2,7 +2,6 @@ package org.mann.validation.commandline;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
@@ -133,20 +132,13 @@ public class CommandLineParserTest {
 	public void parseCommandLineParsesMultipleOptions() throws ParseException{
 		String[] options = new String[]{"-s", "c_svc", "-t", "rbf", "-m", "200", "-q", "-w", "1", "2"};
 		CommandLine output = validator.parseCommandLine(options);
-		fail("change to test of type too");
-		assertThat(output.getOptionValue("s"), equalTo("c_svc"));
-		assertThat(output.getOptionValue("t"), equalTo("rbf"));
-		assertThat(output.getOptionValue("m"), equalTo("200"));
+		assertThat((SvmType)validator.getOptionValue(output.getOptions()[0]), equalTo(SvmType.c_svc));
+		assertThat((KernelType)validator.getOptionValue(output.getOptions()[1]), equalTo(KernelType.rbf));
+		assertThat((Double)validator.getOptionValue(output.getOptions()[2]), equalTo(200.0));
 		assertThat(output.hasOption("q"), equalTo(true));
-		assertThat(output.getOptionValues("w")[0], equalTo("1"));
-		assertThat(output.getOptionValues("w")[1], equalTo("2"));	
-	}
-	
-	@Test
-	public void getValueShouldReturnIntegerWhenTypeIsInteger() throws ParseException{
-		CommandLine output = validator.parseCommandLine(new String[]{"-v", "2"});
-		Option option = output.getOptions()[0];
-		assertThat((Integer)validator.getOptionValue(option), equalTo(2));
+		int[] optionValue = (int[]) validator.getOptionValue(output.getOptions()[4]);
+		assertThat(optionValue[0], equalTo(1));
+		assertThat(optionValue[1], equalTo(2));	
 	}
 	
 }
