@@ -12,7 +12,7 @@ import org.mann.libsvm.SvmParameter.SvmType;
 
 public class SvmTrainCommandLineParser {
 
-	public SvmCommandLine parseCommandLine(String[] commandLine) throws ParseException {
+	public CommandLineWrapper parseCommandLine(String[] commandLine) throws ParseException {
 		Options options = new Options();
 		options.addOption(buildSvmTypeOption());
 		options.addOption(buildKernelTypeOption());
@@ -31,7 +31,7 @@ public class SvmTrainCommandLineParser {
 		options.addOption(buildQuietModeOption());
 		CommandLineParser parser = new DefaultParser();
 		CommandLine cmd = parser.parse(options, commandLine);
-		return new SvmCommandLine(cmd);
+		return new CommandLineWrapper(cmd);
 	}
 
 	private Option buildQuietModeOption() {
@@ -109,29 +109,5 @@ public class SvmTrainCommandLineParser {
 				.longOpt("Svm type").desc(HelpMessages.SVM_TYPE).build();
 	}
 
-	//TODO: Too brittle perhaps; look for alternative
-	//also its not that easy to option
-	//Expires 15th October 2015
-	public Object getOptionValue(Option option) {
-		if(option.getType().equals(Integer.class)){
-			return Integer.parseInt(option.getValue());			
-		}
-		if(option.getType()==Double.class){
-			return Double.parseDouble(option.getValue());
-		}
-		if(option.getType()==SvmType.class){
-			return SvmType.valueOf(option.getValue());
-		}
-		if(option.getType()==KernelType.class){
-			return KernelType.valueOf(option.getValue());
-		}
-		if(option.getType()==int[].class){
-			int[] weight = new int[]{
-					Integer.parseInt(option.getValue(0)), 
-					Integer.parseInt(option.getValue(1))}; //only weight at the moment - change variable name if expand
-			
-			return weight;
-		}
-		return option.getValue();
-	}
+	
 }

@@ -21,7 +21,7 @@ import org.mann.ui.ResultCollector;
 import org.mann.ui.SvmPrintInterface;
 import org.mann.ui.SvmPrinterFactory;
 import org.mann.ui.SvmPrinterFactory.PrintMode;
-import org.mann.validation.commandline.SvmCommandLine;
+import org.mann.validation.commandline.CommandLineWrapper;
 import org.mann.validation.commandline.SvmTrainCommandLineParser;
 import org.mann.validation.svmparameter.ParameterValidationManager;
 
@@ -126,20 +126,21 @@ public class svm_train {
 		int i;
 		SvmPrintInterface print_func = null; // default printing to stdout
 		SvmTrainCommandLineParser optionsValidator = new SvmTrainCommandLineParser();
-		SvmCommandLine options = optionsValidator.parseCommandLine(argv);
-		
+		CommandLineWrapper options = optionsValidator.parseCommandLine(argv);
+		CommandLine cmd = options.getCommandLine();
 		param = new SvmParameter();
 		param.initializeFields(options, optionsValidator);
 		cross_validation = 0;
-		if(options.hasOption('q')){
+		
+		if(cmd.hasOption('q')){
 			print_func = SvmPrinterFactory.getPrinter(PrintMode.QUIET);
 		}
-		if(options.hasOption('v')){
+		if(cmd.hasOption('v')){
 			cross_validation = 1;
-			nr_fold = Integer.parseInt(options.getOptionValue('v'));
+			nr_fold = (int) options.getOptionValue("v");
 			checkNFold(result);
 		}
-		if(options.hasOption("w")){ 
+		if(cmd.hasOption("w")){ 
 			++param.nr_weight;
 			{
 				int[] old = param.getWeight_label();
@@ -153,15 +154,15 @@ public class svm_train {
 				System.arraycopy(old, 0, param.getWeight(), 0, param.nr_weight - 1);
 			}
 			
-			param.getWeight_label()[param.nr_weight - 1] = Integer.parseInt(options.getOptionValues('w')[0]);
-			param.getWeight()[param.nr_weight - 1] = atof(options.getOptionValues('w')[1]);
+			param.getWeight_label()[param.nr_weight - 1] = ((int[]) options.getOptionValue("w"))[0];
+			param.getWeight()[param.nr_weight - 1] = ((int[])options.getOptionValue("w"))[1];
 		}
 			
 
 		svm.svm_set_print_string_function(print_func);
 
 		// determine filenames
-		List<String> filenames = options.getArgList();
+		List<String> filenames = options.getArgsList();
 		if(filenames.isEmpty()){
 			result.addError("No file has been specified");
 		}else{

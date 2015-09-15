@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mann.libsvm.SvmParameter;
 import org.mann.libsvm.SvmParameter.SvmType;
+import org.mann.validation.Checker;
 import org.mann.validation.svmparameter.SvmTypeChecker;
 
 import static org.hamcrest.CoreMatchers.containsString;
@@ -27,7 +28,8 @@ public class SvmTypeCheckerTest {
 		thrown.expect(IllegalArgumentException.class);
 		thrown.expectMessage("No enum constant org.mann.libsvm.SvmParameter.SvmType.Unknown");
 		ParameterValidationManager manager = new ParameterValidationManager(new StringBuilder());
-		new SvmTypeChecker(manager).checkParameter(createSvmParameter(SvmType.valueOf("Unknown")));
+		SvmType svmType = SvmType.valueOf(SvmType.class, "Unknown");
+		new SvmTypeChecker(manager).checkParameter(createSvmParameter(svmType));
 	}
 	
 	@Test

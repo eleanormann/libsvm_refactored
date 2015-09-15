@@ -2007,7 +2007,7 @@ public class svm {
 
 				if (cmd.startsWith("svm_type")) {
 					try{
-						param.svmType(arg);
+						param.setSvmType(SvmType.valueOf(arg));
 						if(param.getSvmType() == null){
 							throw new IllegalArgumentException();
 						}
@@ -2018,7 +2018,7 @@ public class svm {
 					}
 				} else if (cmd.startsWith("kernel_type")) {
 					try{
-						param.kernelType(arg);
+						param.setKernelType(KernelType.valueOf(arg));
 						if(param.getKernelType() == null){
 							throw new IllegalArgumentException();
 						}
@@ -2028,11 +2028,11 @@ public class svm {
 						return false;
 					}
 				} else if (cmd.startsWith("degree"))
-					param = param.degree(arg);
+					param.setDegree(Integer.parseInt(arg));
 				else if (cmd.startsWith("gamma"))
-					param = param.gamma(arg);
+					param.setGamma(Double.parseDouble(arg));
 				else if (cmd.startsWith("coef0"))
-					param = param.coef0(arg);
+					param.setCoef0(Double.parseDouble(arg));
 				else if (cmd.startsWith("nr_class"))
 					model.nr_class = Integer.parseInt(arg);
 				else if (cmd.startsWith("total_sv"))

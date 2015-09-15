@@ -187,41 +187,13 @@ public class svm_toy extends Applet {
 		// guard
 		if(point_list.isEmpty()) return;
 
-		SvmParameter param = new SvmParameter()
-			.svmType("c_svc")
-			.kernelType("rbf")
-			.degree("3")
-			.gamma("0")
-			.coef0("0")
-			.nu("0.5")
-			.cacheSize("40")
-			.costC("1")
-			.epsilonTolerance("1e-3")
-			.epsilonLossFunction("0.1")
-			.shrinking("1")
-			.probability("0")
-			.nrWeight(0)
-			.weightLabel(new int[0])
-			.weight(new double[0]);
-
-		// default values
-//		param.svmType = SvmType.c_svc;
-//		param.kernelType = KernelType.rbf;
-//		param.degree = 3;
-//		param.gamma = 0;
-//		param.coef0 = 0;
-//		param.nu = 0.5;
-//		param.cache_size = 40;
-//		param.costC = 1;
-//		param.epsilonTolerance = 1e-3;
-//		param.epsilonLossFunction = 0.1;
-//		param.shrinking = 1;
-//		param.probability = 0;
-//		param.nr_weight = 0;
-//		param.weight_label = new int[0];
-//		param.weight = new double[0];
+		SvmParameter param = new SvmParameter();
+		param.setDefaultValues();
+		param.setCacheSize(40);
 
 		// parse options
+		
+		
 		StringTokenizer st = new StringTokenizer(args);
 		String[] argv = new String[st.countTokens()];
 		for(int i=0;i<argv.length;i++)
@@ -241,37 +213,37 @@ public class svm_toy extends Applet {
 					param.setSvmType(SvmType.values()[(atoi(argv[i]))]);
 					break;
 				case 't':
-					param.kernelType(argv[i]);
+					param.setKernelType(KernelType.valueOf(argv[i]));
 					break;
 				case 'd':
-					param.degree(argv[i]);// = atoi(argv[i]);
+					param.setDegree(Integer.parseInt(argv[i]));// = atoi(argv[i]);
 					break;
 				case 'g':
-					param.gamma(argv[i]);// = atof(argv[i]);
+					param.setGamma(Double.parseDouble(argv[i]));// = atof(argv[i]);
 					break;
 				case 'r':
-					param.coef0(argv[i]);// = atof(argv[i]);
+					param.setCoef0(Double.parseDouble(argv[i]));// = atof(argv[i]);
 					break;
 				case 'n':
-					param.nu(argv[i]);// = atof(argv[i]);
+					param.setNu(Double.parseDouble(argv[i]));// = atof(argv[i]);
 					break;
 				case 'm':
-					param.cacheSize(argv[i]);// = atof(argv[i]);
+					param.setCacheSize(Double.parseDouble(argv[i]));// = atof(argv[i]);
 					break;
 				case 'c':
-					param.costC(argv[i]);// = atof(argv[i]);
+					param.setCostC(Double.parseDouble(argv[i]));// = atof(argv[i]);
 					break;
 				case 'e':
-					param.epsilonTolerance(argv[i]);// = atof(argv[i]);
+					param.setEpsilonTolerance(Double.parseDouble(argv[i]));// = atof(argv[i]);
 					break;
 				case 'p':
-					param.epsilonLossFunction(argv[i]); // = atof(argv[i]);
+					param.setEpsilonLossFunction(Integer.parseInt(argv[i])); // = atof(argv[i]);
 					break;
 				case 'h':
-					param.shrinking(argv[i]); // = atoi(argv[i]);
+					param.setShrinking(Integer.parseInt(argv[i])); // = atoi(argv[i]);
 					break;
 				case 'b':
-					param.probability(argv[i]); // = atoi(argv[i]);
+					param.setProbability(Integer.parseInt(argv[i])); // = atoi(argv[i]);
 					break;
 				case 'w':
 					++param.nr_weight;

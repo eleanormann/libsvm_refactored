@@ -8,6 +8,7 @@ import org.apache.commons.cli.ParseException;
 import org.junit.Test;
 import org.mann.libsvm.SvmParameter.KernelType;
 import org.mann.libsvm.SvmParameter.SvmType;
+import org.mann.validation.commandline.CommandLineWrapper;
 import org.mann.validation.commandline.SvmTrainCommandLineParser;
 
 public class SvmParameterTest {
@@ -15,22 +16,22 @@ public class SvmParameterTest {
 	@Test
 	public void checkDefaultValuesSet(){
 		
-		SvmParameter param = new SvmParameter()
-		.svmType("c_svc")
-		.kernelType("rbf")
-		.degree("3")
-		.gamma("0") // 1/num_features
-		.coef0("0")
-		.nu("0.5")
-		.cacheSize("100")
-		.costC("1")
-		.epsilonTolerance("1e-3")
-		.epsilonLossFunction("0.1")
-		.shrinking("1")
-		.probability("0")
-		.nrWeight(0)
-		.weightLabel(new int[0])
-		.weight(new double[0]);
+		SvmParameter param = new SvmParameter();
+		param.setSvmType(SvmType.c_svc);
+		param.setKernelType(KernelType.rbf);
+		param.setDegree(3);
+		param.setGamma(0);
+		param.setCoef0(0);
+		param.setNu(0.5);
+		param.setCacheSize(100);
+		param.setCostC(1);
+		param.setEpsilonTolerance(1e-3);
+		param.setEpsilonLossFunction(0.1);
+		param.setShrinking(1);
+		param.setProbability(0);
+		param.setNrWeight(0);
+		param.setWeightLabel(new int[0]);
+		param.setWeight(new double[0]);
 		
 		SvmParameter actualParam = new SvmParameter();
 		actualParam.setDefaultValues();
@@ -56,8 +57,8 @@ public class SvmParameterTest {
 		SvmParameter actualParam = new SvmParameter();
 		String[] options = new String[]{"-s", "nu_svr", "-t", "linear", "-d", "2", "-g", "1", "-m", "200", };
 		SvmTrainCommandLineParser optionsParser = new SvmTrainCommandLineParser();
-		CommandLine cmd = optionsParser.parseCommandLine(options);
-		actualParam.initializeFields(cmd);
+		CommandLineWrapper cmdWrapper = optionsParser.parseCommandLine(options);
+		actualParam.initializeFields(cmdWrapper, optionsParser);
 		assertThat(actualParam.getSvmType(), equalTo(SvmType.nu_svr));
 		assertThat(actualParam.getKernelType(), equalTo(KernelType.linear));
 		assertThat(actualParam.getDegree(), equalTo(2));
