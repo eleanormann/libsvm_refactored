@@ -1,8 +1,6 @@
 package org.mann.libsvm;
 
 import org.apache.commons.cli.CommandLine;
-import org.mann.libsvm.SvmParameter.KernelType;
-import org.mann.libsvm.SvmParameter.SvmType;
 import org.mann.validation.commandline.CommandLineWrapper;
 import org.mann.validation.commandline.SvmTrainCommandLineParser;
 
@@ -18,23 +16,27 @@ public class SvmParameter implements Cloneable, java.io.Serializable {
 
 	private SvmType svmType;
 	private KernelType kernelType;
+	private double cache_size; // in MB
+	private int shrinking; // use the shrinking heuristics
+	private int probability; // do probability estimates
+	
+
+	
 	private int degree; // for poly
 	private double gamma; // for poly/rbf/sigmoid
 	private double coef0; // for poly/sigmoid
 
+	
 	// these are for training only
-	private double cache_size; // in MB
 	private double epsilonTolerance; // stopping criteria
 	private double nu; // for NU_SVC, ONE_CLASS, and NU_SVR
 	private double epsilonLossFunction; // for EPSILON_SVR
-	private int shrinking; // use the shrinking heuristics
 
 	// TODO: tdd the changes needed to make these private
 	// Expires 13th October 2015
 	public int nr_weight; // for C_SVC
 	private int[] weight_label; // for C_SVC
 	private double[] weight; // for C_SVC
-	private int probability; // do probability estimates
 	public double costC; // for C_SVC, EPSILON_SVR and NU_SVR
 
 	public SvmType getSvmType() {
@@ -108,7 +110,7 @@ public class SvmParameter implements Cloneable, java.io.Serializable {
 	public void setDefaultValues() {
 		svmType = SvmType.c_svc;
 		kernelType = KernelType.rbf;
-		degree = 3;
+		degree = 3; //why? not needed for rbf
 		gamma = 0; // 1/num_features
 		coef0 = 0;
 		nu = 0.5;
@@ -202,5 +204,4 @@ public class SvmParameter implements Cloneable, java.io.Serializable {
 	public void setCoef0(double coef0) {
 		this.coef0 = coef0;
 	}
-
 }

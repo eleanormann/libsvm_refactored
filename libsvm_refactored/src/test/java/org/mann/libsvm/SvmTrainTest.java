@@ -3,7 +3,11 @@ package org.mann.libsvm;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
+import java.io.BufferedOutputStream;
+import java.io.DataOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 
 import org.junit.Test;
@@ -109,6 +113,18 @@ public class SvmTrainTest {
 		assertThat(validationMessage, equalTo(expectedMessage));
 	}
 	
+	@Test
+	public void crossValidationShouldCorrectlyCrossValidate() throws IOException{
+		ResultCollector result = new ResultCollector();
+		svm_train train = new svm_train();
+		train.run(new String[]{"-v", "2", "src/test/resources/testdata/hfmTrainingData.train"}, result);
+		fail();
+	}
+	
+	@Test
+	public void crossValidationShouldNotCrossValidateWhenNfoldTooLarge() throws IOException{
+		
+	}
 	private void assertThatSvmProblemDataValuesSetCorrectly(svm_train train, int index) {
 		assertThat(train.getSvmProblem().x[0][index].index, equalTo(1));
 		assertThat(train.getSvmProblem().x[1][index].index, equalTo(1));

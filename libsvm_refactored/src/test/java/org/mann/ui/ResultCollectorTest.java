@@ -4,6 +4,12 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.nio.CharBuffer;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mann.helpers.HelpMessages;
@@ -40,9 +46,25 @@ public class ResultCollectorTest {
 		collector.addInfo("Parameter set to x");
 		assertThat(collector.getResult(), equalTo("Parameter set to x\n"));
 	}
+		
+	@Test
+	public void resultCollectorShouldWriteToFile() throws IOException{
+		collector.addInfo("hello");
+		collector.writeToFile("test.txt");
+		String output = null;
+		try(BufferedReader fp = new BufferedReader(new FileReader("target/output/test.txt"))){
+			output = fp.readLine();
+		}
+		assertThat(output, equalTo("hello"));
+	}
 	
 	@Test
-	public void resultCollectorShouldEndProcess(){
-		fail("not yet implemented");
+	public void removeDuplicateRowsShouldResultInASet(){
+		for(int i = 0; i < 5; i++){
+			collector.addInfo("hello");			
+		}
+		assertThat (collector.getResult(), equalTo("hello\nhello\nhello\nhello\nhello\n"));
+		collector.removeDuplicateRows();
+		assertThat(collector.getResult(), equalTo("hello\n"));
 	}
 }

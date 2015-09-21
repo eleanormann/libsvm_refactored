@@ -116,7 +116,12 @@ public class svm_toy extends Applet {
 
 		button_run.addActionListener(new ActionListener()
 		{ public void actionPerformed (ActionEvent e)
-		  { button_run_clicked(input_line.getText()); }});
+		  { try {
+			button_run_clicked(input_line.getText());
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} }});
 
 		button_clear.addActionListener(new ActionListener()
 		{ public void actionPerformed (ActionEvent e)
@@ -132,7 +137,12 @@ public class svm_toy extends Applet {
 
 		input_line.addActionListener(new ActionListener()
 		{ public void actionPerformed (ActionEvent e)
-		  { button_run_clicked(input_line.getText()); }});
+		  { try {
+			button_run_clicked(input_line.getText());
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} }});
 
 		this.enableEvents(AWTEvent.MOUSE_EVENT_MASK);
 	}
@@ -182,7 +192,7 @@ public class svm_toy extends Applet {
 		return Integer.parseInt(s);
 	}
 
-	void button_run_clicked(String args)
+	void button_run_clicked(String args) throws IOException
 	{
 		// guard
 		if(point_list.isEmpty()) return;

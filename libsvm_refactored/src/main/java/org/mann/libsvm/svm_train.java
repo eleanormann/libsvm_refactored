@@ -30,7 +30,7 @@ public class svm_train {
 	private SvmParameter param; // set by parse_command_line
 	private svm_problem prob; // set by read_problem
 	private SvmModel model;
-	private String input_file_name; // set by parse_command_line
+	private String inputFilename; // set by parse_command_line
 	private String model_file_name; // set by parse_command_line
 	private String error_msg;
 	private int cross_validation;
@@ -40,7 +40,7 @@ public class svm_train {
 		return param;
 	}
 	
-	protected svm_problem getSvmProblem(){
+	public svm_problem getSvmProblem(){
 		return prob;
 	}
 	
@@ -72,18 +72,16 @@ public class svm_train {
 		}
 	}
 	
-	private void do_cross_validation() {
-		int i;
-		int total_correct = 0;
-		double total_error = 0;
-		double sumv = 0, sumy = 0, sumvv = 0, sumyy = 0, sumvy = 0;
+	private void do_cross_validation() throws IOException {
+		
 		double[] target = new double[prob.length];
-
 		svm.svm_cross_validation(prob, param, nr_fold, target);
 		
 		SvmType svmType = param.getSvmType();
 		if (svmType == SvmType.epsilon_svr || svmType == SvmType.nu_svr) {
-			for (i = 0; i < prob.length; i++) {
+			double total_error = 0;
+			double sumv = 0, sumy = 0, sumvv = 0, sumyy = 0, sumvy = 0;
+			for (int i = 0; i < prob.length; i++) {
 				double y = prob.y[i];
 				double v = target[i];
 				total_error += (v - y) * (v - y);
@@ -100,14 +98,16 @@ public class svm_train {
 			System.out.println(String.format(HelpMessages.CROSS_VALIDATION_MSE, meanSqError));
 			System.out.println(String.format(HelpMessages.CROSS_VALIDATION_RSQ, rSquared));
 		} else {
-			for (i = 0; i < prob.length; i++) {
+			int total_correct = 0;
+			for (int i = 0; i < prob.length; i++) {
 				if (target[i] == prob.y[i]){
 					++total_correct;					
 				}				
 			}
 			double accuracy = 100.0 * total_correct / prob.length;
-			System.out.println(String.format(HelpMessages.CROSS_VALIDATION_ACCURACY, accuracy));
+			System.out.println(String.format(HelpMessages.CROSS_VALIDATION_ACCURACY, accuracy, "%"));
 		}
+		
 	}
 
 
@@ -166,7 +166,7 @@ public class svm_train {
 		if(filenames.isEmpty()){
 			result.addError("No file has been specified");
 		}else{
-			input_file_name = filenames.get(0);
+			inputFilename = filenames.get(0);
 			if(filenames.size()>1){
 				model_file_name = filenames.get(1) + ".model";
 			}
@@ -186,7 +186,7 @@ public class svm_train {
 
 	protected void read_problem(ResultCollector result) throws IOException {
 
-		try (BufferedReader fp = new BufferedReader(new FileReader(input_file_name))) {
+		try (BufferedReader fp = new BufferedReader(new FileReader(inputFilename))) {
 			Vector<Double> vy = new Vector<Double>();
 			Vector<SvmNode[]> vx = new Vector<SvmNode[]>();
 			int max_index = 0;
@@ -199,49 +199,60 @@ public class svm_train {
 				StringTokenizer st = new StringTokenizer(line, " \t\n\r\f:");
 
 				vy.addElement(atof(st.nextToken()));
-				int m = st.countTokens() / 2;
-				SvmNode[] x = new SvmNode[m];
-				for (int j = 0; j < m; j++) {
+				int max = st.countTokens() / 2;
+				SvmNode[] x = new SvmNode[max];
+				for (int j = 0; j < max; j++) {
 					x[j] = new SvmNode();
 					x[j].index = Integer.parseInt(st.nextToken());
 					x[j].value = atof(st.nextToken());
 				}
-				if (m > 0) {
-					max_index = Math.max(max_index, x[m - 1].index);
+				if (max > 0) {
+					max_index = Math.max(max_index, x[max - 1].index);
 				}
 				vx.addElement(x);
 			}
 
 			prob = new svm_problem();
 			prob.length = vy.size();
+			
 			prob.x = new SvmNode[prob.length][];
-			for (int i = 0; i < prob.length; i++)
-				prob.x[i] = vx.elementAt(i);
+			for (int i = 0; i < prob.length; i++){
+				prob.x[i] = vx.elementAt(i);				
+			}
+			
 			prob.y = new double[prob.length];
-			for (int i = 0; i < prob.length; i++)
+			for (int i = 0; i < prob.length; i++){				
 				prob.y[i] = vy.elementAt(i);
+			}
 
-			if (param.getGamma() == 0 && max_index > 0)
+			if (param.getGamma() == 0 && max_index > 0){				
 				param.setGamma(1.0 / max_index);
+			}
 
 			if (param.getKernelType() == KernelType.precomputed) {
 
-				for (int i = 0; i < prob.length; i++) {
-					if (prob.x[i][0].index != 0) {
-						// TODO: put this check in the validation section
-						// Expires 6th October 2015
-						result.addError("Wrong kernel matrix: first column must be 0:sample_serial_number");
-						return;
-					}
-					if ((int) prob.x[i][0].value <= 0 || (int) prob.x[i][0].value > max_index) {
-						// TODO: put this check in the validation section
-						// Expires 6th October 2015
-						result.addError("Wrong input format: sample_serial_number out of range");
-						return;
-					}
-				}
+				checkPrecomputedKernelProperlySet(result, max_index);
 			}
 		}
+	}
+
+	private ResultCollector checkPrecomputedKernelProperlySet(ResultCollector result, int max_index) {
+		for (int i = 0; i < prob.length; i++) {
+			if (prob.x[i][0].index != 0) {
+				// TODO: put this check in the validation section
+				// Expires 6th October 2015
+				result.addError("Wrong kernel matrix: first column must be 0:sample_serial_number");
+				return result;
+			}
+			if ((int) prob.x[i][0].value <= 0 || (int) prob.x[i][0].value > max_index) {
+				// TODO: put this check in the validation section
+				// Expires 6th October 2015
+				result.addError("Wrong input format: sample_serial_number out of range");
+				return result;
+			}
+		}
+		result.addInfo("precomputed kernel correctly formated\n");
+		return result;
 	}
 
 	public String checkSvmParameter(svm_problem prob, SvmParameter param) {
@@ -253,6 +264,10 @@ public class svm_train {
 	public static void main(String argv[]) throws IOException {
 		svm_train t = new svm_train();
 		t.run(argv, new ResultCollector());
+	}
+
+	public void setInputFile(String filename) {
+		this.inputFilename = filename;
 	}
 
 	

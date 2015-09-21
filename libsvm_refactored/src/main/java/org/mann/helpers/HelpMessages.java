@@ -28,7 +28,7 @@ public class HelpMessages {
 
 	public static final String CROSS_VALIDATION_RSQ = "Cross Validation Squared correlation coefficient = %s";
 
-	public static final String CROSS_VALIDATION_ACCURACY = "Cross Validation Accuracy = %s%";
+	public static final String CROSS_VALIDATION_ACCURACY = "Cross Validation Accuracy = %s%s";
 	
 	public static final String SVM_TYPE = "-s svm_type : set type of SVM (default C-SVC)\n"
 			+"	c_svc 		-- C-SVC		(multi-class classification)\n"

@@ -16,6 +16,7 @@ import org.mann.libsvm.kernel.ONE_CLASS_Q;
 import org.mann.libsvm.kernel.QMatrix;
 import org.mann.libsvm.kernel.SVC_Q;
 import org.mann.libsvm.kernel.SVR_Q;
+import org.mann.ui.ResultCollector;
 import org.mann.ui.SvmPrintInterface;
 import org.mann.validation.svmparameter.ParameterValidationManager;
 
@@ -56,9 +57,9 @@ class Solver {
 	double[] G_bar; // gradient, if we treat free variables as 0
 	int l;
 	boolean unshrink; // XXX
-
+	private int counter;
 	static final double INF = Double.POSITIVE_INFINITY;
-
+	
 	double get_C(int i) {
 		return (y[i] > 0) ? Cp : Cn;
 	}
@@ -402,8 +403,9 @@ class Solver {
 
 		si.upper_bound_p = Cp;
 		si.upper_bound_n = Cn;
-
+		
 		svm.info("\noptimization finished, #iter = " + iter + "\n");
+		svm.addResult(String.valueOf(iter)); 
 	}
 
 	// return 1 if already optimal, return 0 otherwise
@@ -413,7 +415,7 @@ class Solver {
 		// j: mimimizes the decrease of obj value
 		// (if quadratic coefficeint <= 0, replace it with tau)
 		// -y_j*grad(f)_j < -y_i*grad(f)_i, j in I_low(\alpha)
-
+		System.out.println(counter++);
 		double Gmax = Double.NEGATIVE_INFINITY;
 		double Gmax2 = Double.NEGATIVE_INFINITY;
 		int Gmax_idx = -1;
@@ -593,6 +595,7 @@ class Solver {
 // additional constraint: e^T \alpha = constant
 //
 final class Solver_NU extends Solver {
+	
 	private SolutionInfo si;
 
 	void Solve(int l, QMatrix Q, double[] p, byte[] y, double[] alpha,
@@ -817,6 +820,7 @@ final class Solver_NU extends Solver {
 
 
 public class svm {
+	private static final ResultCollector resultCollector = new ResultCollector();	
 	//
 	// construct and solve various formulations
 	//
@@ -834,6 +838,10 @@ public class svm {
 
 	static void info(String s) {
 		svm_print_string.print(s);
+	}
+//just where resultcollector cannot be seen
+	public static void addResult(String result) {
+		resultCollector.addCrossValResult(result);
 	}
 
 	private static void solve_c_svc(svm_problem prob, SvmParameter param,
@@ -861,11 +869,15 @@ public class svm {
 		for (i = 0; i < l; i++)
 			sum_alpha += alpha[i];
 
-		if (Cp == Cn)
-			svm.info("nu = " + sum_alpha / (Cp * prob.length) + "\n");
-
-		for (i = 0; i < l; i++)
-			alpha[i] *= y[i];
+		if (Cp == Cn) {
+			double nu = sum_alpha / (Cp * prob.length);
+			svm.info("nu = " + nu + "\n");
+			resultCollector.addCrossValResult(nu + "");
+		}
+		
+		for (i = 0; i < l; i++){
+			alpha[i] *= y[i];			
+		}
 	}
 
 	private static void solve_nu_svc(svm_problem prob, SvmParameter param,
@@ -1033,7 +1045,8 @@ public class svm {
 		}
 
 		svm.info("obj = " + si.obj + ", rho = " + si.rho + "\n");
-
+		resultCollector.addCrossValResult(si.obj + "");
+		resultCollector.addCrossValResult("" + si.rho);
 		// output SVs
 
 		int nSV = 0;
@@ -1052,7 +1065,9 @@ public class svm {
 		}
 
 		svm.info("nSV = " + nSV + ", nBSV = " + nBSV + "\n");
-
+		resultCollector.addCrossValResult("" + nSV);
+		resultCollector.addCrossValResult(""+ nBSV);
+		
 		decision_function f = new decision_function();
 		f.alpha = alpha;
 		f.rho = si.rho;
@@ -1606,9 +1621,10 @@ public class svm {
 				model.nSV[i] = nSV;
 				nz_count[i] = nSV;
 			}
-
+			
 			svm.info("Total nSV = " + nnz + "\n");
-
+			resultCollector.addTotalNsv("" + nnz);
+			
 			model.l = nnz;
 			model.SV = new SvmNode[nnz][];
 			model.sv_indices = new int[nnz];
@@ -1656,8 +1672,7 @@ public class svm {
 	}
 
 	// Stratified cross validation
-	public static void svm_cross_validation(svm_problem prob,
-			SvmParameter param, int nr_fold, double[] target) {
+	public static void svm_cross_validation(svm_problem prob, SvmParameter param, int nr_fold, double[] target) {
 		int i;
 		int[] fold_start = new int[nr_fold + 1];
 		int l = prob.length;
@@ -1665,8 +1680,10 @@ public class svm {
 
 		// stratified cv may not give leave-one-out rate
 		// Each class to l folds -> some folds may have zero elements
-		if ((param.getSvmType() == SvmType.c_svc || param.getSvmType() == SvmType.nu_svc)
-				&& nr_fold < l) {
+		SvmType svmType = param.getSvmType();
+		
+		//TODO: move n_fold check to param/problem validation phase
+		if ((svmType == SvmType.c_svc || svmType == SvmType.nu_svc) && nr_fold < l) {
 			int[] tmp_nr_class = new int[1];
 			int[][] tmp_label = new int[1][];
 			int[][] tmp_start = new int[1][];
@@ -1752,15 +1769,21 @@ public class svm {
 				++k;
 			}
 			SvmModel submodel = svm_train(subprob, param);
-			if (param.getProbability() == 1
-					&& (param.getSvmType() == SvmType.c_svc || param.getSvmType() == SvmType.nu_svc)) {
+			
+			if(begin==fold_start[nr_fold-1]){
+				svm.resultCollector.writeToFile("cross-validation-output.csv");
+			}
+			
+			if (param.getProbability() == 1 && (svmType == SvmType.c_svc || svmType == SvmType.nu_svc)) {
 				double[] prob_estimates = new double[svm_get_nr_class(submodel)];
-				for (j = begin; j < end; j++)
-					target[perm[j]] = svm_predict_probability(submodel,
-							prob.x[perm[j]], prob_estimates);
-			} else
-				for (j = begin; j < end; j++)
-					target[perm[j]] = svm_predict(submodel, prob.x[perm[j]]);
+				for (j = begin; j < end; j++){
+					target[perm[j]] = svm_predict_probability(submodel, prob.x[perm[j]], prob_estimates);
+				}
+			} else{
+				for (j = begin; j < end; j++) {
+					target[perm[j]] = svm_predict(submodel, prob.x[perm[j]]);					
+				}
+			}
 		}
 	}
 
@@ -2146,6 +2169,9 @@ public class svm {
 			svm_print_string = svm_print_stdout;
 		else
 			svm_print_string = print_func;
+	}
+	public static ResultCollector getResultCollector() {
+		return resultCollector;
 	}
 	
 

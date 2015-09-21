@@ -6,9 +6,11 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 
@@ -22,6 +24,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mann.libsvm.SvmParameter.KernelType;
 import org.mann.libsvm.SvmParameter.SvmType;
+import org.mann.ui.ResultCollector;
 
 @RunWith(JMockit.class)
 public class SvmTest {
@@ -171,7 +174,6 @@ public class SvmTest {
 		assertThat(isSuccessfulRead, equalTo(false));	
 	}
 	
-	
 	private SvmModel createModel(SvmType svmType, KernelType kernelType) {
 		SvmModel model = new SvmModel();
 		SvmParameter param = new SvmParameter();
@@ -186,5 +188,6 @@ public class SvmTest {
 		return model;
 	}
 
+	
 	
 }
