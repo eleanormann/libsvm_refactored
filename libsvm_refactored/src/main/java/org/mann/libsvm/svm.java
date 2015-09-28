@@ -405,7 +405,8 @@ class Solver {
 		si.upper_bound_n = Cn;
 		
 		svm.info("\noptimization finished, #iter = " + iter + "\n");
-		svm.addResult(String.valueOf(iter)); 
+		svm.addResult(String.valueOf(iter), null);
+		svm.addResult(iter, "iterations"); 
 	}
 
 	// return 1 if already optimal, return 0 otherwise
@@ -415,7 +416,7 @@ class Solver {
 		// j: mimimizes the decrease of obj value
 		// (if quadratic coefficeint <= 0, replace it with tau)
 		// -y_j*grad(f)_j < -y_i*grad(f)_i, j in I_low(\alpha)
-		System.out.println(counter++);
+	
 		double Gmax = Double.NEGATIVE_INFINITY;
 		double Gmax2 = Double.NEGATIVE_INFINITY;
 		int Gmax_idx = -1;
@@ -820,7 +821,7 @@ final class Solver_NU extends Solver {
 
 
 public class svm {
-	private static final ResultCollector resultCollector = new ResultCollector();	
+	private static ResultCollector resultCollector = new ResultCollector();	
 	//
 	// construct and solve various formulations
 	//
@@ -835,13 +836,21 @@ public class svm {
 	};
 
 	private static SvmPrintInterface svm_print_string = svm_print_stdout;
-
+	
+	public static void setResultCollector(ResultCollector crossValidationResults) {
+		resultCollector = crossValidationResults;
+	}
 	static void info(String s) {
 		svm_print_string.print(s);
 	}
 //just where resultcollector cannot be seen
-	public static void addResult(String result) {
-		resultCollector.addCrossValResult(result);
+	public static <T> void addResult(T result, String resultType) {
+		if("iterations".equals(resultType)){
+			
+			resultCollector.addIteration((Integer) result);
+		}else{
+			resultCollector.addCrossValResult((String) result);			
+		}
 	}
 
 	private static void solve_c_svc(svm_problem prob, SvmParameter param,
@@ -1768,6 +1777,7 @@ public class svm {
 				subprob.y[k] = prob.y[perm[j]];
 				++k;
 			}
+			resultCollector.addCrossValResult("" + nr_fold);
 			SvmModel submodel = svm_train(subprob, param);
 			
 			if(begin==fold_start[nr_fold-1]){

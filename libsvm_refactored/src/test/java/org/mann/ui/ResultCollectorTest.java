@@ -1,6 +1,8 @@
 package org.mann.ui;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItems;
+
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
@@ -10,6 +12,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.CharBuffer;
 
+import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.mann.helpers.HelpMessages;
@@ -59,12 +62,9 @@ public class ResultCollectorTest {
 	}
 	
 	@Test
-	public void removeDuplicateRowsShouldResultInASet(){
-		for(int i = 0; i < 5; i++){
-			collector.addInfo("hello");			
-		}
-		assertThat (collector.getResult(), equalTo("hello\nhello\nhello\nhello\nhello\n"));
-		collector.removeDuplicateRows();
-		assertThat(collector.getResult(), equalTo("hello\n"));
+	public void resultCollectorShouldAddIterationsToList(){
+		collector.addIteration(234);
+		collector.addIteration(342);
+		assertThat(collector.getIterations(), hasItems(234, 342));
 	}
 }

@@ -1,7 +1,10 @@
 package org.mann.libsvm;
 
+import static org.hamcrest.CoreMatchers.both;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.number.OrderingComparison.greaterThanOrEqualTo;
+import static org.hamcrest.number.OrderingComparison.lessThanOrEqualTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
@@ -119,12 +122,20 @@ public class SvmTrainTest {
 		svm_train train = new svm_train();
 		train.run(new String[]{"-v", "2", "src/test/resources/testdata/hfmTrainingData.train"}, result);
 		fail();
+//			
+//		int lowerbound = 3002;
+//		int upperbound = 3782;
+//		for(int iteration : crossValidationResults.getIterations()){			
+//			assertThat(iteration, both(greaterThanOrEqualTo(lowerbound)).and(lessThanOrEqualTo(upperbound)));
+//		}
 	}
 	
 	@Test
 	public void crossValidationShouldNotCrossValidateWhenNfoldTooLarge() throws IOException{
 		
 	}
+	
+	
 	private void assertThatSvmProblemDataValuesSetCorrectly(svm_train train, int index) {
 		assertThat(train.getSvmProblem().x[0][index].index, equalTo(1));
 		assertThat(train.getSvmProblem().x[1][index].index, equalTo(1));

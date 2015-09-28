@@ -2,6 +2,10 @@ package org.mann.libsvm;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.both;
+import static org.hamcrest.number.OrderingComparison.greaterThanOrEqualTo;
+import static org.hamcrest.number.OrderingComparison.lessThanOrEqualTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -18,6 +22,7 @@ import mockit.Mock;
 import mockit.MockUp;
 import mockit.integration.junit4.JMockit;
 
+import org.apache.commons.cli.ParseException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -174,6 +179,35 @@ public class SvmTest {
 		assertThat(isSuccessfulRead, equalTo(false));	
 	}
 	
+	@Test
+	public void addResultShouldAddIterations(){
+		svm.addResult(23, "iterations");
+		assertThat(svm.getResultCollector().getIterations(), hasItem(23));
+	}
+	
+	@Test
+	public void crossValidationResultsShouldBeInExpectedRange() throws ParseException, IOException{
+		ResultCollector inputValidationResults = new ResultCollector();
+		ResultCollector crossValidationResults = new ResultCollector();
+		svm_train train = new svm_train();
+		
+		train.parse_command_line(setCrossValidationConfig(5), inputValidationResults);
+		train.read_problem(inputValidationResults);
+		svm_problem svmProblem = train.getSvmProblem();
+		svm.setResultCollector(crossValidationResults);
+		svm.svm_cross_validation(svmProblem, train.getSvmParameter(), 5, new double[svmProblem.length]);
+			
+
+		int lowerbound = 4646;
+		int upperbound = 5541;
+		for(int iteration : crossValidationResults.getIterations()){			
+			assertThat(iteration, both(greaterThanOrEqualTo(lowerbound)).and(lessThanOrEqualTo(upperbound)));
+		}
+	}
+	
+	private String[] setCrossValidationConfig(int times){
+		return new String[]{"-v", String.valueOf(times), "src/test/resources/testdata/hfmTrainingData.train"};
+	}
 	private SvmModel createModel(SvmType svmType, KernelType kernelType) {
 		SvmModel model = new SvmModel();
 		SvmParameter param = new SvmParameter();

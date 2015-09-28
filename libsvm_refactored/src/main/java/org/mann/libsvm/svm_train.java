@@ -17,6 +17,7 @@ import org.apache.commons.cli.ParseException;
 import org.mann.helpers.HelpMessages;
 import org.mann.libsvm.SvmParameter.KernelType;
 import org.mann.libsvm.SvmParameter.SvmType;
+import org.mann.libsvm.crossvalidation.CrossValidator;
 import org.mann.ui.ResultCollector;
 import org.mann.ui.SvmPrintInterface;
 import org.mann.ui.SvmPrinterFactory;
@@ -34,7 +35,7 @@ public class svm_train {
 	private String model_file_name; // set by parse_command_line
 	private String error_msg;
 	private int cross_validation;
-	private int nr_fold;
+	private int nFold;
 
 	protected SvmParameter getSvmParameter(){
 		return param;
@@ -62,7 +63,7 @@ public class svm_train {
 			
 			
 			if (cross_validation != 0) {
-				do_cross_validation();
+				new CrossValidator(nFold, result).doCrossValidation(prob, param);;
 			} else {
 				model = svm.svm_train(prob, param);
 				svm.svm_save_model(model_file_name, model);
@@ -71,47 +72,6 @@ public class svm_train {
 			result.addException(e);
 		}
 	}
-	
-	private void do_cross_validation() throws IOException {
-		
-		double[] target = new double[prob.length];
-		svm.svm_cross_validation(prob, param, nr_fold, target);
-		
-		SvmType svmType = param.getSvmType();
-		if (svmType == SvmType.epsilon_svr || svmType == SvmType.nu_svr) {
-			double total_error = 0;
-			double sumv = 0, sumy = 0, sumvv = 0, sumyy = 0, sumvy = 0;
-			for (int i = 0; i < prob.length; i++) {
-				double y = prob.y[i];
-				double v = target[i];
-				total_error += (v - y) * (v - y);
-				sumv += v;
-				sumy += y;
-				sumvv += v * v;
-				sumyy += y * y;
-				sumvy += v * y;
-			}
-			double meanSqError = total_error / prob.length;
-			double rSquared = ((prob.length * sumvy - sumv * sumy) * (prob.length * sumvy - sumv * sumy))
-					/ ((prob.length * sumvv - sumv * sumv) * (prob.length * sumyy - sumy * sumy));
-			
-			System.out.println(String.format(HelpMessages.CROSS_VALIDATION_MSE, meanSqError));
-			System.out.println(String.format(HelpMessages.CROSS_VALIDATION_RSQ, rSquared));
-		} else {
-			int total_correct = 0;
-			for (int i = 0; i < prob.length; i++) {
-				if (target[i] == prob.y[i]){
-					++total_correct;					
-				}				
-			}
-			double accuracy = 100.0 * total_correct / prob.length;
-			System.out.println(String.format(HelpMessages.CROSS_VALIDATION_ACCURACY, accuracy, "%"));
-		}
-		
-	}
-
-
-
 
 	private static double atof(String s) {
 		double d = Double.valueOf(s).doubleValue();
@@ -137,7 +97,7 @@ public class svm_train {
 		}
 		if(cmd.hasOption('v')){
 			cross_validation = 1;
-			nr_fold = (int) options.getOptionValue("v");
+			nFold = (int) options.getOptionValue("v");
 			checkNFold(result);
 		}
 		if(cmd.hasOption("w")){ 
@@ -175,16 +135,16 @@ public class svm_train {
 	}
 
 	private void checkNFold(ResultCollector result) {
-		if (nr_fold < 2) {
+		if (nFold < 2) {
 			result.addError("n-fold cross validation: n must >= 2");
 		}else{
-			result.addInfo(nr_fold + "-fold cross validation");
+			result.addInfo(nFold + "-fold cross validation");
 		}
 	}
 
 	// read in a problem (in svmlight format)
 
-	protected void read_problem(ResultCollector result) throws IOException {
+	public void read_problem(ResultCollector result) throws IOException {
 
 		try (BufferedReader fp = new BufferedReader(new FileReader(inputFilename))) {
 			Vector<Double> vy = new Vector<Double>();
@@ -268,6 +228,14 @@ public class svm_train {
 
 	public void setInputFile(String filename) {
 		this.inputFilename = filename;
+	}
+
+	public void setNrFold(int nFold) {
+		this.nFold = nFold;
+	}
+
+	public void setParam(SvmParameter svmParam) {
+		this.param = svmParam;	
 	}
 
 	

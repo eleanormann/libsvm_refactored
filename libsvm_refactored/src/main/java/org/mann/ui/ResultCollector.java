@@ -2,14 +2,10 @@ package org.mann.ui;
 
 import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.mann.helpers.HelpMessages;
 
@@ -18,6 +14,8 @@ public class ResultCollector {
 	private static final String ERROR = "ERROR: ";
 	private static final String COMMA = ",";
 	private StringBuilder result;
+	
+	private List<Integer> iterations;
 
 	public ResultCollector() {
 		this.result = new StringBuilder();
@@ -52,6 +50,7 @@ public class ResultCollector {
 		result.append(totalNsv).append(NEW_LINE);
 	}
 
+	
 	public void writeToFile(String filename){
 		try (FileOutputStream fos = new FileOutputStream("target/output/" + filename, true);
 				DataOutputStream out = new DataOutputStream((new BufferedOutputStream(fos)))){
@@ -60,4 +59,16 @@ public class ResultCollector {
 			e.printStackTrace();
 		}
 	}
+
+	public void addIteration(int iteration) {
+		if(iterations==null){
+			iterations = new ArrayList<>();	
+		}
+		iterations.add(iteration);
+	}
+
+	public List<Integer> getIterations() {
+		return iterations;
+	}
+	
 }
