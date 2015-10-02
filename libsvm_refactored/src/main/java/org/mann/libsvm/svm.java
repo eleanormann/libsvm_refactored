@@ -151,7 +151,7 @@ class Solver {
 				nr_free++;
 
 		if (2 * nr_free < active_size)
-			svm.info("\nWARNING: using -h 0 may be faster\n");
+			System.err.print("\nWARNING: using -h 0 may be faster\n");
 
 		if (nr_free * l > 2 * active_size * (l - active_size)) {
 			for (i = active_size; i < l; i++) {
@@ -234,9 +234,10 @@ class Solver {
 
 			if (--counter == 0) {
 				counter = Math.min(l, 1000);
-				if (shrinking != 0)
-					do_shrinking();
-				svm.info(".");
+				if (shrinking != 0){
+					do_shrinking();					
+				}
+				svm.addResult(".", "progress");
 			}
 
 			if (select_working_set(working_set) != 0) {
@@ -244,7 +245,7 @@ class Solver {
 				reconstruct_gradient();
 				// reset active set size and check
 				active_size = l;
-				svm.info("*");
+				svm.addResult("*", "progress");
 				if (select_working_set(working_set) != 0)
 					break;
 				else
@@ -376,7 +377,7 @@ class Solver {
 				// reconstruct the whole gradient to calculate objective value
 				reconstruct_gradient();
 				active_size = l;
-				svm.info("*");
+				svm.addResult("*", "progress");
 			}
 			System.err.print("\nWARNING: reaching max number of iterations\n");
 		}
@@ -404,7 +405,7 @@ class Solver {
 		si.upper_bound_p = Cp;
 		si.upper_bound_n = Cn;
 		
-		svm.info("\noptimization finished, #iter = " + iter + "\n");
+		svm.addResult("optimization finished, #iter = " + iter, "console output");
 		svm.addResult(String.valueOf(iter), null);
 		svm.addResult(iter, "iterations"); 
 	}
@@ -845,15 +846,18 @@ public class svm {
 	}
 //just where resultcollector cannot be seen
 	public static <T> void addResult(T result, String resultType) {
-		if("iterations".equals(resultType)){
-			
+		if("iterations".equals(resultType)){	
 			resultCollector.addIteration((Integer) result);
+		}else if("progress".equals(resultType)){
+			//TODO: handle progress
+		}else if("console output".equals(resultType)){
+			resultCollector.addConsoleOutput(null,(String) result, true);
 		}else{
 			resultCollector.addCrossValResult((String) result);			
 		}
 	}
 
-	private static void solve_c_svc(svm_problem prob, SvmParameter param,
+	private static void solve_c_svc(SvmProblem prob, SvmParameter param,
 			double[] alpha, Solver.SolutionInfo si, double Cp, double Cn) {
 		int l = prob.length;
 		double[] minus_ones = new double[l];
@@ -880,7 +884,8 @@ public class svm {
 
 		if (Cp == Cn) {
 			double nu = sum_alpha / (Cp * prob.length);
-			svm.info("nu = " + nu + "\n");
+			resultCollector.addConsoleOutput("nu = ", String.valueOf(nu), true);
+			resultCollector.addNu(nu);
 			resultCollector.addCrossValResult(nu + "");
 		}
 		
@@ -889,7 +894,7 @@ public class svm {
 		}
 	}
 
-	private static void solve_nu_svc(svm_problem prob, SvmParameter param,
+	private static void solve_nu_svc(SvmProblem prob, SvmParameter param,
 			double[] alpha, Solver.SolutionInfo si) {
 		int i;
 		int l = prob.length;
@@ -924,9 +929,12 @@ public class svm {
 		s.Solve(l, new SVC_Q(prob, param, y), zeros, y, alpha, 1.0, 1.0,
 				param.getEpsilonTolerance(), si, param.getShrinking());
 		double r = si.r;
-
-		svm.info("C = " + 1 / r + "\n");
-
+		double c = 1 / r;
+		
+		//TODO: remove this reference
+		svm.info("C = " + c + "\n");
+		resultCollector.addConsoleOutput("C = ", String.valueOf(c), true);
+		
 		for (i = 0; i < l; i++)
 			alpha[i] *= y[i] / r;
 
@@ -936,7 +944,7 @@ public class svm {
 		si.upper_bound_n = 1 / r;
 	}
 
-	private static void solve_one_class(svm_problem prob, SvmParameter param,
+	private static void solve_one_class(SvmProblem prob, SvmParameter param,
 			double[] alpha, Solver.SolutionInfo si) {
 		int l = prob.length;
 		double[] zeros = new double[l];
@@ -962,7 +970,7 @@ public class svm {
 				param.getEpsilonTolerance(), si, param.getShrinking());
 	}
 
-	private static void solve_epsilon_svr(svm_problem prob, SvmParameter param,
+	private static void solve_epsilon_svr(SvmProblem prob, SvmParameter param,
 			double[] alpha, Solver.SolutionInfo si) {
 		int l = prob.length;
 		double[] alpha2 = new double[2 * l];
@@ -989,10 +997,13 @@ public class svm {
 			alpha[i] = alpha2[i] - alpha2[i + l];
 			sum_alpha += Math.abs(alpha[i]);
 		}
-		svm.info("nu = " + sum_alpha / (param.getCostC() * l) + "\n");
+		double nu = sum_alpha / (param.getCostC() * l);
+		//TODO: remove this reference
+		svm.info("nu = " + nu + "\n");
+		resultCollector.addConsoleOutput("nu = ", String.valueOf(nu), true);
 	}
 
-	private static void solve_nu_svr(svm_problem prob, SvmParameter param,
+	private static void solve_nu_svr(SvmProblem prob, SvmParameter param,
 			double[] alpha, Solver.SolutionInfo si) {
 		int l = prob.length;
 		double C = param.getCostC();
@@ -1017,8 +1028,10 @@ public class svm {
 		s.Solve(2 * l, new SVR_Q(prob, param), linear_term, y, alpha2, C, C,
 				param.getEpsilonTolerance(), si, param.getShrinking());
 
+		//TODO: remove this reference
 		svm.info("epsilon = " + (-si.r) + "\n");
-
+		resultCollector.addConsoleOutput("epsilon (in solve_nu_svr) = ", String.valueOf(-si.r), true);
+		
 		for (i = 0; i < l; i++)
 			alpha[i] = alpha2[i] - alpha2[i + l];
 	}
@@ -1031,7 +1044,7 @@ public class svm {
 		double rho;
 	};
 
-	static decision_function svm_train_one(svm_problem prob,
+	static decision_function svm_train_one(SvmProblem prob,
 			SvmParameter param, double Cp, double Cn) {
 		double[] alpha = new double[prob.length];
 		Solver.SolutionInfo si = new Solver.SolutionInfo();
@@ -1053,9 +1066,12 @@ public class svm {
 			break;
 		}
 
-		svm.info("obj = " + si.obj + ", rho = " + si.rho + "\n");
+		resultCollector.addConsoleOutput("obj = ", String.valueOf(si.obj), false);
+		resultCollector.addConsoleOutput(", rho = ", String.valueOf(si.rho), true);
 		resultCollector.addCrossValResult(si.obj + "");
 		resultCollector.addCrossValResult("" + si.rho);
+		resultCollector.addObj(si.obj);
+		resultCollector.addRho(si.rho);
 		// output SVs
 
 		int nSV = 0;
@@ -1073,9 +1089,12 @@ public class svm {
 			}
 		}
 
-		svm.info("nSV = " + nSV + ", nBSV = " + nBSV + "\n");
+		resultCollector.addConsoleOutput("nSV = " , String.valueOf(nSV), false);
+		resultCollector.addConsoleOutput(", nBSV = ", String.valueOf(nBSV), true);
 		resultCollector.addCrossValResult("" + nSV);
 		resultCollector.addCrossValResult(""+ nBSV);
+		resultCollector.addNSv(nSV);
+		resultCollector.addNBSv(nBSV);
 		
 		decision_function f = new decision_function();
 		f.alpha = alpha;
@@ -1258,7 +1277,7 @@ public class svm {
 	}
 
 	// Cross-validation decision values for probability estimates
-	private static void svm_binary_svc_probability(svm_problem prob,
+	private static void svm_binary_svc_probability(SvmProblem prob,
 			SvmParameter param, double Cp, double Cn, double[] probAB) {
 		int i;
 		int nr_fold = 5;
@@ -1280,7 +1299,7 @@ public class svm {
 			int begin = i * prob.length / nr_fold;
 			int end = (i + 1) * prob.length / nr_fold;
 			int j, k;
-			svm_problem subprob = new svm_problem();
+			SvmProblem subprob = new SvmProblem();
 
 			subprob.length = prob.length - (end - begin);
 			subprob.x = new SvmNode[subprob.length][];
@@ -1338,7 +1357,7 @@ public class svm {
 	}
 
 	// Return parameter of a Laplace distribution
-	private static double svm_svr_probability(svm_problem prob,
+	private static double svm_svr_probability(SvmProblem prob,
 			SvmParameter param) {
 		int i;
 		int nr_fold = 5;
@@ -1370,7 +1389,7 @@ public class svm {
 	// label: label name, start: begin of each class, count: #data of classes,
 	// perm: indices to the original data
 	// perm, length l, must be allocated before calling this subroutine
-	private static void svm_group_classes(svm_problem prob, int[] nr_class_ret,
+	private static void svm_group_classes(SvmProblem prob, int[] nr_class_ret,
 			int[][] label_ret, int[][] start_ret, int[][] count_ret, int[] perm) {
 		int l = prob.length;
 		int max_nr_class = 16;
@@ -1454,7 +1473,7 @@ public class svm {
 	//
 	// Interface functions
 	//
-	public static SvmModel svm_train(svm_problem prob, SvmParameter param) {
+	public static SvmModel svm_train(SvmProblem prob, SvmParameter param) {
 		SvmModel model = new SvmModel();
 		model.setParam(param);
 
@@ -1557,7 +1576,7 @@ public class svm {
 			int p = 0;
 			for (i = 0; i < nr_class; i++)
 				for (int j = i + 1; j < nr_class; j++) {
-					svm_problem sub_prob = new svm_problem();
+					SvmProblem sub_prob = new SvmProblem();
 					int si = start[i], sj = start[j];
 					int ci = count[i], cj = count[j];
 					sub_prob.length = ci + cj;
@@ -1617,7 +1636,7 @@ public class svm {
 				model.probB = null;
 			}
 
-			int nnz = 0;
+			int totalNSv = 0;
 			int[] nz_count = new int[nr_class];
 			model.nSV = new int[nr_class];
 			for (i = 0; i < nr_class; i++) {
@@ -1625,18 +1644,20 @@ public class svm {
 				for (int j = 0; j < count[i]; j++)
 					if (nonzero[start[i] + j]) {
 						++nSV;
-						++nnz;
+						++totalNSv;
 					}
 				model.nSV[i] = nSV;
 				nz_count[i] = nSV;
 			}
 			
-			svm.info("Total nSV = " + nnz + "\n");
-			resultCollector.addTotalNsv("" + nnz);
+			resultCollector.addConsoleOutput("Total nSV = ", String.valueOf(totalNSv), false);
+			System.out.println(resultCollector.getConsoleOutput());
+			resultCollector.addDeprecatedTotalNsv("" + totalNSv);
+			resultCollector.addTotalNSv(totalNSv);
 			
-			model.l = nnz;
-			model.SV = new SvmNode[nnz][];
-			model.sv_indices = new int[nnz];
+			model.l = totalNSv;
+			model.SV = new SvmNode[totalNSv][];
+			model.sv_indices = new int[totalNSv];
 			p = 0;
 			for (i = 0; i < l; i++)
 				if (nonzero[i]) {
@@ -1651,7 +1672,7 @@ public class svm {
 
 			model.sv_coef = new double[nr_class - 1][];
 			for (i = 0; i < nr_class - 1; i++)
-				model.sv_coef[i] = new double[nnz];
+				model.sv_coef[i] = new double[totalNSv];
 
 			p = 0;
 			for (i = 0; i < nr_class; i++)
@@ -1681,7 +1702,7 @@ public class svm {
 	}
 
 	// Stratified cross validation
-	public static void svm_cross_validation(svm_problem prob, SvmParameter param, int nr_fold, double[] target) {
+	public static void svm_cross_validation(SvmProblem prob, SvmParameter param, int nr_fold, double[] target) {
 		int i;
 		int[] fold_start = new int[nr_fold + 1];
 		int l = prob.length;
@@ -1760,7 +1781,7 @@ public class svm {
 			int begin = fold_start[i];
 			int end = fold_start[i + 1];
 			int j, k;
-			svm_problem subprob = new svm_problem();
+			SvmProblem subprob = new SvmProblem();
 
 			subprob.length = l - (end - begin);
 			subprob.x = new SvmNode[subprob.length][];

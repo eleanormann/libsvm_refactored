@@ -3,14 +3,14 @@ package org.mann.libsvm.kernel;
 import org.mann.libsvm.Cache;
 import org.mann.libsvm.kernel.Kernel;
 import org.mann.libsvm.SvmParameter;
-import org.mann.libsvm.svm_problem;
+import org.mann.libsvm.SvmProblem;
 
 
 public class ONE_CLASS_Q extends Kernel {
 	private final Cache cache;
 	private final double[] QD;
 
-	public ONE_CLASS_Q(svm_problem prob, SvmParameter param) {
+	public ONE_CLASS_Q(SvmProblem prob, SvmParameter param) {
 		super(prob.length, prob.x, param);
 		cache = new Cache(prob.length, (long) (param.getCache_size() * (1 << 20)));
 		QD = new double[prob.length];

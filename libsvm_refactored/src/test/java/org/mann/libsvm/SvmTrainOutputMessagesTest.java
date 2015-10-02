@@ -51,7 +51,7 @@ public class SvmTrainOutputMessagesTest {
 
 		new MockUp<svm>() {
 			@Mock
-			public SvmModel svm_train(svm_problem prob, SvmParameter param) {
+			public SvmModel svm_train(SvmProblem prob, SvmParameter param) {
 				return new SvmModel();
 			}
 

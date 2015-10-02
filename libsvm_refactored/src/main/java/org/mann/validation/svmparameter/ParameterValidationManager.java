@@ -1,7 +1,7 @@
 package org.mann.validation.svmparameter;
 
 import org.mann.libsvm.SvmParameter;
-import org.mann.libsvm.svm_problem;
+import org.mann.libsvm.SvmProblem;
 import org.mann.validation.Checker;
 
 public class ParameterValidationManager {
@@ -16,7 +16,7 @@ public class ParameterValidationManager {
 	}
 	
 	public void checkNuThenRunCheckAndGetResponse(String checkType, ParameterValidationManager manager, SvmParameter params,
-			svm_problem prob) {
+			SvmProblem prob) {
 		new NuChecker(this).checkFeasibilityOfNu(prob, params);
 		runCheckAndGetResponse(checkType, this, params);
 	}

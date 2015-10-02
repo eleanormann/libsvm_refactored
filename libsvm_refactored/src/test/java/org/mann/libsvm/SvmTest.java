@@ -193,7 +193,7 @@ public class SvmTest {
 		
 		train.parse_command_line(setCrossValidationConfig(5), inputValidationResults);
 		train.read_problem(inputValidationResults);
-		svm_problem svmProblem = train.getSvmProblem();
+		SvmProblem svmProblem = train.getSvmProblem();
 		svm.setResultCollector(crossValidationResults);
 		svm.svm_cross_validation(svmProblem, train.getSvmParameter(), 5, new double[svmProblem.length]);
 			

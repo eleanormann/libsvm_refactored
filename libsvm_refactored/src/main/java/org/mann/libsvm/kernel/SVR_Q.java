@@ -2,7 +2,7 @@ package org.mann.libsvm.kernel;
 
 import org.mann.libsvm.Cache;
 import org.mann.libsvm.SvmParameter;
-import org.mann.libsvm.svm_problem;
+import org.mann.libsvm.SvmProblem;
 
 public class SVR_Q extends Kernel {
 	private final int l;
@@ -13,7 +13,7 @@ public class SVR_Q extends Kernel {
 	private float[][] buffer;
 	private final double[] QD;
 
-	public SVR_Q(svm_problem prob, SvmParameter param) {
+	public SVR_Q(SvmProblem prob, SvmParameter param) {
 		super(prob.length, prob.x, param);
 		l = prob.length;
 		cache = new Cache(l, (long) (param.getCache_size() * (1 << 20)));

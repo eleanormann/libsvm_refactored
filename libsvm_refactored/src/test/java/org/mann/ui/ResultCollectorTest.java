@@ -67,4 +67,29 @@ public class ResultCollectorTest {
 		collector.addIteration(342);
 		assertThat(collector.getIterations(), hasItems(234, 342));
 	}
+	
+	@Test
+	public void resultCollectorShouldBuildStandardOutMessage(){
+		collector.addConsoleOutput("nu = ", String.valueOf(0), false);
+		assertThat(collector.getConsoleOutput(), equalTo("nu = 0"));
+	}
+	
+	@Test
+	public void resultCollectorShouldBuildStandardOutMessageWithNewline(){
+		collector.addConsoleOutput("nu = ", String.valueOf(0), true);
+		assertThat(collector.getConsoleOutput(), equalTo("nu = 0\n"));
+	}
+	
+	@Test
+	public void resultCollectorShouldAddEmptyStringWhenDecriptorNull(){
+		collector.addConsoleOutput(null, String.valueOf(0), true);
+		assertThat(collector.getConsoleOutput(), equalTo("0\n"));
+	}
+	
+	@Test
+	public void resultCollectorShouldAddNullWhenValueNull(){
+		collector.addConsoleOutput("nu = ", null, true);
+		assertThat(collector.getConsoleOutput(), equalTo("nu = null\n"));
+	}
+	
 }

@@ -7,7 +7,7 @@ import org.junit.Test;
 import org.mann.libsvm.SvmNode;
 import org.mann.libsvm.SvmParameter;
 import org.mann.libsvm.SvmParameter.KernelType;
-import org.mann.libsvm.svm_problem;
+import org.mann.libsvm.SvmProblem;
 import org.mann.libsvm.kernel.Kernel;
 
 public class KernelTest {

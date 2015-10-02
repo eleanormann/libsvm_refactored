@@ -278,7 +278,7 @@ public class svm_toy extends Applet {
 		}
 
 		// build problem
-		svm_problem prob = new svm_problem();
+		SvmProblem prob = new SvmProblem();
 		prob.length = point_list.size();
 		prob.y = new double[prob.length];
 

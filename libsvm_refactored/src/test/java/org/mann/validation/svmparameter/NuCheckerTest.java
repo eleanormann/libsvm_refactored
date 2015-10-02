@@ -7,7 +7,7 @@ import static org.junit.Assert.assertThat;
 import org.junit.Test;
 import org.mann.libsvm.SvmNode;
 import org.mann.libsvm.SvmParameter;
-import org.mann.libsvm.svm_problem;
+import org.mann.libsvm.SvmProblem;
 import org.mann.libsvm.SvmParameter.SvmType;
 import org.mann.validation.svmparameter.NuChecker;
 
@@ -22,7 +22,7 @@ public class NuCheckerTest {
 	
 	@Test
 	public void checkFeasibilityOfNuReturnsErrorMessageWhenUnfeasible(){
-		svm_problem dataset = createSvmProblem();
+		SvmProblem dataset = createSvmProblem();
 		SvmParameter param = new SvmParameter();
 		//.88 is the largest nu (to 2 dp) that is feasible for these data
 		param.setNu(.89);
@@ -35,7 +35,7 @@ public class NuCheckerTest {
 	@Test
 	public void checkFeasibilityofNuReturnsSuccessMessageWhenNuIsFeasible(){
 		ParameterValidationManager managerForSuccessTest = new ParameterValidationManager(new StringBuilder()); 
-		svm_problem dataset = createSvmProblem();
+		SvmProblem dataset = createSvmProblem();
 		SvmParameter param = new SvmParameter();
 		param.setNu(.88);
 		param.setSvmType(SvmType.nu_svc);
@@ -68,8 +68,8 @@ public class NuCheckerTest {
 		assertThat(manager.getValidationMessage().toString(), equalTo("Nu = " + param.getNu() + ": feasibility checked and is OK\n"));
 		
 	}
-	private svm_problem createSvmProblem() {
-		svm_problem dataset = new svm_problem();
+	private SvmProblem createSvmProblem() {
+		SvmProblem dataset = new SvmProblem();
 		dataset.y = new double[]{1,1,1,1,0,0,0,1,0};
 		dataset.x = new SvmNode[][] {
 				{ new SvmNode(1, 5), new SvmNode(2, 6), new SvmNode(3, 4), new SvmNode(4, 4), new SvmNode(-1, 0) },

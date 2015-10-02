@@ -1,7 +1,6 @@
 package org.mann.libsvm.integrationtests;
 
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
@@ -15,26 +14,19 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.mann.libsvm.SvmParameter;
-import org.mann.libsvm.svm_problem;
 import org.mann.libsvm.svm_train;
-import org.mann.libsvm.crossvalidation.CrossValidator;
-import org.mann.ui.ResultCollector;
-import org.mockito.Mockito;
 
 public class SvmTrainEndToEndTest {
-	private final OutputStreamHandler outputHandler = new OutputStreamHandler(true); // set
-																						// to
-																						// false
-																						// for
-																						// data
-																						// collecting
-																						// mode
+	// set to false for data collecting mode
+	private final OutputStreamHandler outputHandler = new OutputStreamHandler(true); 
 	private File resultsFile = new File("target/output/cross-validation-output.csv");
 
 	@Before
 	public void setUpOutputStream() {
 		outputHandler.setUpOutputStream();
+		
+		//TODO: remove this comment or handle resultsFile
+		//Expires 2nd November 2015
 		// if(resultsFile.exists()){
 		// resultsFile.delete();
 		// }
@@ -42,12 +34,12 @@ public class SvmTrainEndToEndTest {
 
 	@After
 	public void cleanUpObjects() {
-		System.setOut(null);
+		outputHandler.resetOutput();
 	}
 
 	@Test
 	public void svmTrainShouldProduceExpectedResultsForCSvc() throws IOException {
-		String expected = "......*\n" + "optimization finished, #iter = 6197\n" + "nu = 0.31647823832979366\n"
+		String expected = "optimization finished, #iter = 6197\n" + "nu = 0.31647823832979366\n"
 				+ "obj = -1300.2536635959898, rho = 0.28709349878580875\n" + "nSV = 2448, nBSV = 1183\n" + "Total nSV = 2448\n";
 		svm_train.main(new String[] { "-s", "c_svc", "-w", "2", "34", "src/test/resources/testdata/hfmTrainingData.train" });
 		assertResultsAsExpected(expected);

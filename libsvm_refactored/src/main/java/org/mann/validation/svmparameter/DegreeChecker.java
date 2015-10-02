@@ -24,4 +24,5 @@ public class DegreeChecker implements Checker {
 		return manager.runCheckAndGetResponse("Cache", manager, params);
 	}
 
+
 }

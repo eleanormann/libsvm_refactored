@@ -103,7 +103,7 @@ public class SvmTrainTest {
 		svm_train train  = new svm_train();
 		String expectedMessage = "Nu = 1.0: feasibility checked and is OK\nSvm type: nu_svc\nKernel type: linear\nGamma = 1.0\nDegree = 1\nCache size: 1.0\n"
 				+ "Epsilon (tolerance) = 1.0\nShrinking = 1\nProbability = 1\n";
-		String validationMessage = train.checkSvmParameter(new svm_problem(), createSvmParameter(SvmType.nu_svc));
+		String validationMessage = train.checkSvmParameter(new SvmProblem(), createSvmParameter(SvmType.nu_svc));
 		assertThat(validationMessage, equalTo(expectedMessage));
 	}
 
@@ -112,7 +112,7 @@ public class SvmTrainTest {
 		svm_train train  = new svm_train();
 		String expectedMessage = "Svm type: nu_svr\nKernel type: linear\nGamma = 1.0\nDegree = 1\nCache size: 1.0\n"
 				+ "Epsilon (tolerance) = 1.0\nC = 1.0\nNu = 1.0\nShrinking = 1\nProbability = 1\n";
-		String validationMessage = train.checkSvmParameter(new svm_problem(), createSvmParameter(SvmType.nu_svr));
+		String validationMessage = train.checkSvmParameter(new SvmProblem(), createSvmParameter(SvmType.nu_svr));
 		assertThat(validationMessage, equalTo(expectedMessage));
 	}
 	

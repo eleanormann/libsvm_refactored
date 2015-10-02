@@ -29,7 +29,7 @@ import org.mann.validation.svmparameter.ParameterValidationManager;
 public class svm_train {
 
 	private SvmParameter param; // set by parse_command_line
-	private svm_problem prob; // set by read_problem
+	private SvmProblem prob; // set by read_problem
 	private SvmModel model;
 	private String inputFilename; // set by parse_command_line
 	private String model_file_name; // set by parse_command_line
@@ -41,7 +41,7 @@ public class svm_train {
 		return param;
 	}
 	
-	public svm_problem getSvmProblem(){
+	public SvmProblem getSvmProblem(){
 		return prob;
 	}
 	
@@ -172,7 +172,7 @@ public class svm_train {
 				vx.addElement(x);
 			}
 
-			prob = new svm_problem();
+			prob = new SvmProblem();
 			prob.length = vy.size();
 			
 			prob.x = new SvmNode[prob.length][];
@@ -215,7 +215,7 @@ public class svm_train {
 		return result;
 	}
 
-	public String checkSvmParameter(svm_problem prob, SvmParameter param) {
+	public String checkSvmParameter(SvmProblem prob, SvmParameter param) {
 		ParameterValidationManager paramValManager = new ParameterValidationManager(new StringBuilder());
 		paramValManager.checkNuThenRunCheckAndGetResponse("Svm Type", paramValManager, param, prob);
 		return paramValManager.getValidationMessage().toString();

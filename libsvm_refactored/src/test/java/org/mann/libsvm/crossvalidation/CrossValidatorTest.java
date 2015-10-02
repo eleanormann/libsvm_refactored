@@ -10,8 +10,9 @@ import java.io.IOException;
 
 import org.junit.Test;
 import org.mann.libsvm.SvmParameter;
+import org.mann.libsvm.SvmParameter.SvmType;
+import org.mann.libsvm.SvmProblem;
 import org.mann.libsvm.svm;
-import org.mann.libsvm.svm_problem;
 import org.mann.libsvm.svm_train;
 import org.mann.ui.ResultCollector;
 
@@ -37,55 +38,113 @@ public class CrossValidatorTest {
 	//Expires 28th October 2015
 	@Test
 	public void iterationsShouldBeInExpectedRange() throws IOException{
-		svm_train train = new svm_train();
-		ResultCollector inputValidationResults = new ResultCollector();
-		
 		SvmParameter svmParam = new SvmParameter();
 		svmParam.setDefaultValues();
-		train.setParam(svmParam);
-		train.setInputFile("src/test/resources/testdata/hfmTrainingData.train");
-		train.read_problem(inputValidationResults);
-		svm_problem svmProblem = train.getSvmProblem();
+		svm_train train = setUpCrossValidation(svmParam);
+		SvmProblem svmProblem = train.getSvmProblem();
 		
-		ResultCollector crossValResults = new ResultCollector();
-		svm.setResultCollector(crossValResults);
+		ResultCollector crossValResults = setUpResultCollector();
 		int nFold = 2;
 		CrossValidator cv = new CrossValidator(nFold, crossValResults);
 		
 		cv.doCrossValidation(svmProblem, svmParam);
+		
 		int[] iterationBounds = new int[]{3002,3782} ;
 		double[] nuBounds = new double[]{0.3466453321,0.3767591501};
-		double[] objBounds = new double[]{};
-		double[] rhoBounds = new double[]{};
-		int[] nSvBounds = new int[]{};
-		int[] nBsvBounds = new int[]{};
-		int[] totalNsvBounds = new int[]{};
+		double[] objBounds = new double[]{-757.7887143019, -687.0801262167};
+		double[] rhoBounds = new double[]{0.1571931457,	0.2575432294};
+		int[] nSvBounds = new int[]{1381,1463};
+		int[] nBsvBounds = new int[]{570,658};
+		int[] totalNsvBounds = new int[]{1381,1463};
 		for(int iteration : crossValResults.getIterations()){			
 			assertThat(iteration, both(greaterThanOrEqualTo(iterationBounds[0])).and(lessThanOrEqualTo(iterationBounds[1])));
 		}
-		for(double nu : crossValResults.getNu()){
+		for(double nu : crossValResults.getNus()){
 			assertThat(nu, both(greaterThanOrEqualTo(nuBounds[0])).and(lessThanOrEqualTo(nuBounds[1])));
 		}
-		for(double obj : crossValResults.getObj()){
+		for(double obj : crossValResults.getObjs()){
 			assertThat(obj, both(greaterThanOrEqualTo(objBounds[0])).and(lessThanOrEqualTo(objBounds[1])));
 		}
-		for(double rho : crossValResults.getRho()){
+		for(double rho : crossValResults.getRhos()){
 			assertThat(rho, both(greaterThanOrEqualTo(rhoBounds[0])).and(lessThanOrEqualTo(rhoBounds[1])));
 		}
-		for(int nSv : crossValResults.getNSv()){
+		for(int nSv : crossValResults.getNSvs()){
 			assertThat(nSv, both(greaterThanOrEqualTo(nSvBounds[0])).and(lessThanOrEqualTo(nSvBounds[1])));
 		}
-		for(int nBsv : crossValResults.getNBsv()){
+		for(int nBsv : crossValResults.getNBsvs()){
 			assertThat(nBsv, both(greaterThanOrEqualTo(nBsvBounds[0])).and(lessThanOrEqualTo(nBsvBounds[1])));
 		}
-		for(int totalNsv : crossValResults.getTotalNsv()){
+		for(int totalNsv : crossValResults.getTotalNsvs()){
 			assertThat(totalNsv, both(greaterThanOrEqualTo(totalNsvBounds[0])).and(lessThanOrEqualTo(totalNsvBounds[1])));
+		}
+	}
+
+	@Test
+	public void crossValidationShouldCalculateCorrectMeanSquaredErrorWhenNuSvrAndNfold2() throws IOException {
+		SvmParameter svmParam = setUpParam();
+		svm_train train = setUpCrossValidation(svmParam);
+		SvmProblem svmProblem = train.getSvmProblem();
+
+		ResultCollector crossValResults = setUpResultCollector();
+		int nFold = 2;
+		CrossValidator cv = new CrossValidator(nFold, crossValResults);
+		double[] meanSquaredErrorBounds = {0.0827474974, 0.0937332518136174};
+		double[] rSquaredBounds = {0.5645463396112467, 0.6121409908};
+		
+		for(int i = 0; i<10; i++){
+
+			cv.doCrossValidation(svmProblem, svmParam);
+			System.out.println(crossValResults.getMeanSquaredError());
+			System.out.println(crossValResults.getRSquared());
+			assertThat(crossValResults.getMeanSquaredError(),
+					both(greaterThanOrEqualTo(meanSquaredErrorBounds[0])).and(lessThanOrEqualTo(meanSquaredErrorBounds[1])));
+			assertThat(crossValResults.getRSquared(),both(greaterThanOrEqualTo(rSquaredBounds[0])).and(lessThanOrEqualTo(rSquaredBounds[1])));
+			
 		}
 	}
 	
 	@Test
-	public void rhoShouldBeInExpectedRange(){
+	public void meanSquaredErrorCalculatedUsingApacheMathIsEqualToOriginalMethod() throws IOException{
+		calculateMeanSqErrorUsingOriginalMethod();
 		
+		double meanSquaredError = 0;
+	
+	}
+
+	private void calculateMeanSqErrorUsingOriginalMethod() throws IOException {
+		SvmParameter svmParam = setUpParam();
+		svm_train train = setUpCrossValidation(svmParam);
+		SvmProblem svmProblem = train.getSvmProblem();
+
+		ResultCollector crossValResults = setUpResultCollector();
+		int nFold = 2;
+		CrossValidator cv = new CrossValidator(nFold, crossValResults);
+		
+		cv.doCrossValidation(svmProblem, svmParam);
 	}
 	
+	
+
+	private SvmParameter setUpParam() {
+		SvmParameter svmParam = new SvmParameter();
+		svmParam.setDefaultValues();
+		svmParam.setSvmType(SvmType.nu_svr);
+		return svmParam;
+	}
+	
+	private ResultCollector setUpResultCollector() {
+		ResultCollector crossValResults = new ResultCollector();
+		svm.setResultCollector(crossValResults);
+		return crossValResults;
+	}
+
+	private svm_train setUpCrossValidation(SvmParameter svmParam) throws IOException {
+		svm_train train = new svm_train();
+		ResultCollector inputValidationResults = new ResultCollector();
+		
+		train.setParam(svmParam);
+		train.setInputFile("src/test/resources/testdata/hfmTrainingData.train");
+		train.read_problem(inputValidationResults);
+		return train;
+	}
 }

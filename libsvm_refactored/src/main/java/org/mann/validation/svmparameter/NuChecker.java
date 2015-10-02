@@ -4,7 +4,7 @@ import java.util.Arrays;
 
 import org.mann.libsvm.SvmParameter;
 import org.mann.libsvm.SvmParameter.SvmType;
-import org.mann.libsvm.svm_problem;
+import org.mann.libsvm.SvmProblem;
 import org.mann.validation.Checker;
 
 public class NuChecker implements Checker {
@@ -23,7 +23,7 @@ public class NuChecker implements Checker {
 		}
 	}
 
-	public void checkFeasibilityOfNu(svm_problem prob, SvmParameter param) {
+	public void checkFeasibilityOfNu(SvmProblem prob, SvmParameter param) {
 		if (param.getSvmType() == SvmType.nu_svc) {
 			int problemLength = prob.length;
 			int arrayLength = 16;
@@ -83,7 +83,7 @@ public class NuChecker implements Checker {
 		return manager.runCheckAndGetResponse("P", manager, params);
 	}
 
-	public void runFeasibilityCheckThenCheckParameter(svm_problem prob, SvmParameter params) {
+	public void runFeasibilityCheckThenCheckParameter(SvmProblem prob, SvmParameter params) {
 		checkFeasibilityOfNu(prob, params);
 	}
 

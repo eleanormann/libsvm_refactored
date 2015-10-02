@@ -3,7 +3,7 @@ package org.mann.libsvm.kernel;
 import org.mann.libsvm.Cache;
 import org.mann.libsvm.kernel.Kernel;
 import org.mann.libsvm.SvmParameter;
-import org.mann.libsvm.svm_problem;
+import org.mann.libsvm.SvmProblem;
 
 //
 //Q matrices for various formulations
@@ -13,7 +13,7 @@ public class SVC_Q extends Kernel {
 	private final Cache cache;
 	private final double[] QD;
 
-	public SVC_Q(svm_problem prob, SvmParameter param, byte[] y_) {
+	public SVC_Q(SvmProblem prob, SvmParameter param, byte[] y_) {
 		super(prob.length, prob.x, param);
 		y = (byte[]) y_.clone();
 		cache = new Cache(prob.length, (long) (param.getCache_size() * (1 << 20)));
