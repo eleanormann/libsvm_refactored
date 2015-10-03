@@ -37,7 +37,7 @@ public class CrossValidatorTest {
 	//TODO:need to add a persistent count of fails and check within expected
 	//Expires 28th October 2015
 	@Test
-	public void iterationsShouldBeInExpectedRange() throws IOException{
+	public void defaultOutputsShouldBeInExpectedRange() throws IOException{
 		SvmParameter svmParam = new SvmParameter();
 		svmParam.setDefaultValues();
 		svm_train train = setUpCrossValidation(svmParam);
@@ -91,7 +91,7 @@ public class CrossValidatorTest {
 		double[] meanSquaredErrorBounds = {0.0827474974, 0.0937332518136174};
 		double[] rSquaredBounds = {0.5645463396112467, 0.6121409908};
 		
-		for(int i = 0; i<10; i++){
+		for(int i = 0; i<1; i++){
 
 			cv.doCrossValidation(svmProblem, svmParam);
 			System.out.println(crossValResults.getMeanSquaredError());
@@ -105,8 +105,8 @@ public class CrossValidatorTest {
 	
 	@Test
 	public void meanSquaredErrorCalculatedUsingApacheMathIsEqualToOriginalMethod() throws IOException{
-		calculateMeanSqErrorUsingOriginalMethod();
-		
+		//calculateMeanSqErrorUsingOriginalMethod();
+		fail("Not yet implemented");
 		double meanSquaredError = 0;
 	
 	}

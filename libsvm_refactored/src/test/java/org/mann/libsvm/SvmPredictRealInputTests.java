@@ -12,23 +12,23 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mann.libsvm.svm_predict;
+import org.mann.libsvm.integrationtests.OutputStreamHandler;
 
 public class SvmPredictRealInputTests {
-	private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
-	private final ByteArrayOutputStream errContent = new ByteArrayOutputStream();
+  //set to false for data collecting mode
+  private final OutputStreamHandler outputHandler = new OutputStreamHandler(true); 
+  
+  @Before
+  public void setUpOutputStream() {
+      outputHandler.setUpOutputStream();
+      outputHandler.setUpErrorStream();
+  }
 
-	@Before
-	public void setUpStreams() {
-		System.setOut(new PrintStream(outContent));
-		System.setErr(new PrintStream(errContent));
-	}
-
-	@After
-	public void cleanUpStreams() {
-		System.setOut(null);
-		System.setErr(null);
-	}
-
+  @After
+  public void cleanUpObjects() {
+      outputHandler.resetOutput();
+      outputHandler.resetErrorOutput();
+  }
 	@Test
 	public void mainShouldPrintStandardOutputWhenRealInputIsGood() throws IOException {
 		svm_predict.main(new String[] {"src/main/resources/heart_scale", 
@@ -36,8 +36,9 @@ public class SvmPredictRealInputTests {
 				"dummyout" });
 		String successfulOutput = "^Accuracy = \\d+?.\\d+?% \\(\\d+?/\\d+?\\) \\(classification\\)";
 		Pattern p = Pattern.compile(successfulOutput);
-		Matcher m = p.matcher(outContent.toString());
-		assertTrue("Expecting an accuracy result but got " + outContent.toString(), m.find());
+		String output = outputHandler.getOutContent().toString();
+        Matcher m = p.matcher(output);
+		assertTrue("Expecting an accuracy result but got " + output, m.find());
 	}
 	
 	@Test
@@ -45,8 +46,8 @@ public class SvmPredictRealInputTests {
 		svm_predict.main(new String[] {"-q", "src/main/resources/heart_scale", 
 				"src/test/resources/hfmTrainingData.train.model",
 		"dummyout" });
-		assertEquals("", outContent.toString());
-		assertEquals("", errContent.toString());
+		assertEquals("", outputHandler.getOutContent().toString());
+		assertEquals("", outputHandler.getErrContent().toString());
 	}
 
 }

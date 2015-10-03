@@ -17,6 +17,8 @@ import java.io.DataOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.Arrays;
+import java.util.Collections;
 
 import mockit.Mock;
 import mockit.MockUp;
@@ -195,8 +197,7 @@ public class SvmTest {
 		train.read_problem(inputValidationResults);
 		SvmProblem svmProblem = train.getSvmProblem();
 		svm.setResultCollector(crossValidationResults);
-		svm.svm_cross_validation(svmProblem, train.getSvmParameter(), 5, new double[svmProblem.length]);
-			
+		svm.svm_cross_validation(svmProblem, train.getSvmParameter(), 5, new double[svmProblem.length]);		
 
 		int lowerbound = 4646;
 		int upperbound = 5541;

@@ -19,32 +19,31 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mann.libsvm.SvmModel;
 import org.mann.libsvm.SvmParameter.SvmType;
+import org.mann.libsvm.integrationtests.OutputStreamHandler;
 import org.mann.libsvm.svm;
 import org.mann.libsvm.svm_predict;
 
 public class SvmPredictTest {
 	
 	//TODO: remove this way of checking and replace with mockito methods
-	private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
-	private final ByteArrayOutputStream errContent = new ByteArrayOutputStream();
+//set to false for data collecting mode
+  private final OutputStreamHandler outputHandler = new OutputStreamHandler(true); 
+  
+  @Before
+  public void setUpOutputStream() {
+      outputHandler.setUpOutputStream();
+  }
 
-	@Before
-	public void setUpStreams() {
-		System.setOut(new PrintStream(outContent));
-		System.setErr(new PrintStream(errContent));
-	}
-
-	@After
-	public void cleanUpStreams() {
-		System.setOut(null);
-		System.setErr(null);
-	}
+  @After
+  public void cleanUpObjects() {
+      outputHandler.resetOutput();
+  }
 
 	@Test
 	public void mainShouldReachPredictMethodWhenInputIsValid() throws IOException{
 		setupMocksSoMethodReachesPredictCall();
 		svm_predict.main(new String[] {"input file", "model file", "output file"});
-		assertEquals("Accuracy = NaN% (0/0) (classification)\n", outContent.toString());
+		assertEquals("Accuracy = NaN% (0/0) (classification)\n", outputHandler.getOutContent().toString());
 	}
 	
 	@Test
@@ -54,7 +53,7 @@ public class SvmPredictTest {
 		when(input.readLine()).thenReturn(null);
 		SvmModel model = mockSvmModel(SvmType.epsilon_svr); 
 		svm_predict.predict(input, output, model, 0);
-		assertEquals("Mean squared error = NaN (regression)\nSquared correlation coefficient = NaN (regression)\n", outContent.toString());
+		assertEquals("Mean squared error = NaN (regression)\nSquared correlation coefficient = NaN (regression)\n", outputHandler.getOutContent().toString());
 	}
 
 	@Test
@@ -64,7 +63,7 @@ public class SvmPredictTest {
 		when(input.readLine()).thenReturn(null);
 		SvmModel model = mockSvmModel(SvmType.c_svc); 
 		svm_predict.predict(input, output, model, 0);
-		assertEquals("Accuracy = NaN% (0/0) (classification)\n", outContent.toString());
+		assertEquals("Accuracy = NaN% (0/0) (classification)\n", outputHandler.getOutContent().toString());
 	}
 	
 	private void setupMocksSoMethodReachesPredictCall() {

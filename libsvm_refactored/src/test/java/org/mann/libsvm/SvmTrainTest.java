@@ -13,11 +13,19 @@ import java.io.DataOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import mockit.Mock;
+import mockit.MockUp;
+import mockit.StrictExpectations;
+import mockit.integration.junit4.JMockit;
+
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mann.libsvm.SvmParameter.KernelType;
 import org.mann.libsvm.SvmParameter.SvmType;
+import org.mann.libsvm.crossvalidation.CrossValidator;
 import org.mann.ui.ResultCollector;
 
+@RunWith(JMockit.class)
 public class SvmTrainTest {
 	private static final String BASE_PATH = "src/test/resources/testdata/";
 
@@ -117,22 +125,15 @@ public class SvmTrainTest {
 	}
 	
 	@Test
-	public void crossValidationShouldCorrectlyCrossValidate() throws IOException{
-		ResultCollector result = new ResultCollector();
-		svm_train train = new svm_train();
-		train.run(new String[]{"-v", "2", "src/test/resources/testdata/hfmTrainingData.train"}, result);
-		fail();
-//			
-//		int lowerbound = 3002;
-//		int upperbound = 3782;
-//		for(int iteration : crossValidationResults.getIterations()){			
-//			assertThat(iteration, both(greaterThanOrEqualTo(lowerbound)).and(lessThanOrEqualTo(upperbound)));
-//		}
+	public void crossValidationBeCalledWhenVIsSet() throws IOException{
+		new svm_train().run(new String[]{"-v", "2", "src/test/resources/testdata/hfmTrainingData.train"}, new ResultCollector());
+		fail("Not yet implemented");
+		//just need to check that doCrossValidation is run when -v
 	}
 	
 	@Test
 	public void crossValidationShouldNotCrossValidateWhenNfoldTooLarge() throws IOException{
-		
+	  fail("Not yet implemented");
 	}
 	
 	

@@ -140,7 +140,7 @@ public class SvmTrainEndToEndTest {
 
 	@Test
 	public void svmTrainShouldProduceExpectedResultsForNuSvrWithDefaultParam() throws IOException {
-		String expected = "optimization finished, #iter = 88950\n" + "epsilon = 3.3687377371632854E-4\n"
+		String expected = "optimization finished, #iter = 88950\n" + "epsilon (in solve_nu_svr) = 3.3687377371632854E-4\n"
 				+ "obj = -47.268314606432924, rho = -0.8474714871285831\n" + "nSV = 892, nBSV = 295\n";
 		svm_train.main(new String[] { "-s", "nu_svr", "src/test/resources/testdata/shortTrainingData.train" });
 		assertResultsAsExpected(expected);
@@ -148,7 +148,7 @@ public class SvmTrainEndToEndTest {
 
 	@Test
 	public void svmTrainShouldProduceExpectedResultsForNuSvrWithNu() throws IOException {
-		String expected = "optimization finished, #iter = 1445\n" + "epsilon = 0.19327946909867955\n"
+		String expected = "optimization finished, #iter = 1445\n" + "epsilon (in solve_nu_svr) = 0.19327946909867955\n"
 				+ "obj = -41.15589019217956, rho = -0.7204229747169973\n" + "nSV = 428, nBSV = 59\n";
 		svm_train.main(new String[] { "-s", "nu_svr", "-n", "0.1", "src/test/resources/testdata/shortTrainingData.train" });
 		assertResultsAsExpected(expected);
