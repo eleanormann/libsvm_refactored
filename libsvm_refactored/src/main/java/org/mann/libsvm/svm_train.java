@@ -1,7 +1,6 @@
 package org.mann.libsvm;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.List;
@@ -9,14 +8,8 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.mann.helpers.HelpMessages;
 import org.mann.libsvm.SvmParameter.KernelType;
-import org.mann.libsvm.SvmParameter.SvmType;
 import org.mann.libsvm.crossvalidation.CrossValidator;
 import org.mann.ui.ResultCollector;
 import org.mann.ui.SvmPrintInterface;
