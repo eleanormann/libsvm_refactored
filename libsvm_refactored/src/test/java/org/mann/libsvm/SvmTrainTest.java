@@ -97,7 +97,7 @@ public class SvmTrainTest {
 
 		// Assert
 		assertThat(train.getSvmParameter().getKernelType(), equalTo(KernelType.precomputed));
-		assertThat(result.getResult(), containsString("ERROR: Wrong input format: sample_serial_number out of range\n"));
+		assertThat(result.getResult(), containsString("ERROR: Wrong kernel input format: sample_serial_number out of range\n"));
 	}
 
 	@Test

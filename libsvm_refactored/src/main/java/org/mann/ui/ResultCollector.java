@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.mann.helpers.HelpMessages;
-import org.mann.libsvm.svm;
 
 public class ResultCollector {
 	private static final String NEW_LINE = "\n";

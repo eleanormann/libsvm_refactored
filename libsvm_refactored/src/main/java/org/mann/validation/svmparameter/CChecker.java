@@ -25,7 +25,7 @@ public class CChecker implements Checker {
 		if (svmType == SvmType.c_svc || svmType == SvmType.epsilon_svr || svmType == SvmType.nu_svr) {
 			checkC(params.costC);
 		}
-		return manager.runCheckAndGetResponse("Nu", manager, params);
+		return manager.runCheckAndGetResponse("Nu", params);
 	}
 
 }

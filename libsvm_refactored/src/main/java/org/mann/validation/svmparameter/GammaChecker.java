@@ -21,7 +21,7 @@ private ParameterValidationManager manager;
 
 	public Checker checkParameter(SvmParameter params) {
 		checkGamma(params.getGamma());
-		return manager.runCheckAndGetResponse("Degree", manager, params);
+		return manager.runCheckAndGetResponse("Degree", params);
 	}
 
 }

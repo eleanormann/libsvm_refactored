@@ -80,7 +80,7 @@ public class NuChecker implements Checker {
 		if (svmType == SvmType.one_class || svmType == SvmType.nu_svr) {
 			checkNu(params.getNu());
 		}
-		return manager.runCheckAndGetResponse("P", manager, params);
+		return manager.runCheckAndGetResponse("P", params);
 	}
 
 	public void runFeasibilityCheckThenCheckParameter(SvmProblem prob, SvmParameter params) {

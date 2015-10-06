@@ -21,7 +21,7 @@ public class EpsilonToleranceChecker implements Checker {
 
 	public Checker checkParameter(SvmParameter params) {
 		checkEps(params.getEpsilonTolerance());
-		return manager.runCheckAndGetResponse("C", manager, params);
+		return manager.runCheckAndGetResponse("C", params);
 	}
 
 }

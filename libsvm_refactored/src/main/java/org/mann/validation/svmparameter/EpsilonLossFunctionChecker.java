@@ -24,7 +24,7 @@ public class EpsilonLossFunctionChecker implements Checker {
 		if (params.getSvmType() == SvmType.epsilon_svr) {
 			checkEpsilonLossFunction(params.getEpsilonLossFunction());
 		}
-		return manager.runCheckAndGetResponse("Shrinking", manager, params);
+		return manager.runCheckAndGetResponse("Shrinking", params);
 	}
 
 }

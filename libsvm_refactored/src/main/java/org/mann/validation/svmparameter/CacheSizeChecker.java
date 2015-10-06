@@ -22,6 +22,6 @@ public class CacheSizeChecker implements Checker {
 
 	public Checker checkParameter(SvmParameter params) {
 		checkCacheSize(params.getCache_size());
-		return manager.runCheckAndGetResponse("Eps", manager, params);
+		return manager.runCheckAndGetResponse("Eps", params);
 	}
 }

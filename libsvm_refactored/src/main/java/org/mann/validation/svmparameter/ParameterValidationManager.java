@@ -15,13 +15,13 @@ public class ParameterValidationManager {
 		return validationMessage;
 	}
 	
-	public void checkNuThenRunCheckAndGetResponse(String checkType, ParameterValidationManager manager, SvmParameter params,
-			SvmProblem prob) {
+	public void checkNuThenRunCheckAndGetResponse(String checkType, SvmParameter params, SvmProblem prob) {
 		new NuChecker(this).checkFeasibilityOfNu(prob, params);
-		runCheckAndGetResponse(checkType, this, params);
+		runCheckAndGetResponse(checkType, params);
 	}
 	
-	public Checker runCheckAndGetResponse(String checkType, ParameterValidationManager manager, SvmParameter params) {
+	//manager is used by subclasses
+	public Checker runCheckAndGetResponse(String checkType, SvmParameter params) {
 		Checker checker = null;
 		switch(checkType){
 			case "Svm Type":

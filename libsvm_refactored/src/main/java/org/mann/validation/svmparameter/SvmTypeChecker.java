@@ -19,7 +19,7 @@ public class SvmTypeChecker implements Checker{
 		}else{
 			manager.getValidationMessage().append("Svm type: ").append(svmType).append("\n");			
 		}
-		return manager.runCheckAndGetResponse("Kernel", manager, params);
+		return manager.runCheckAndGetResponse("Kernel", params);
 	}
 
 	protected ParameterValidationManager getManager() {

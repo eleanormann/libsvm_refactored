@@ -21,7 +21,7 @@ public class DegreeChecker implements Checker {
 
 	public Checker checkParameter(SvmParameter params) {
 		checkDegreeOfPolynomialKernel(params.getDegree());
-		return manager.runCheckAndGetResponse("Cache", manager, params);
+		return manager.runCheckAndGetResponse("Cache", params);
 	}
 
 

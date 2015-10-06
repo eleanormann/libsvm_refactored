@@ -21,7 +21,7 @@ public class ShrinkingChecker implements Checker {
 
 	public Checker checkParameter(SvmParameter params) {
 		checkShrinking(params.getShrinking());
-		return manager.runCheckAndGetResponse("Probability", manager, params);
+		return manager.runCheckAndGetResponse("Probability", params);
 	}
 
 }

@@ -17,6 +17,7 @@ public class KernelChecker implements Checker {
 		}else{ 			
 			manager.getValidationMessage().append("Kernel type: ").append(kernelType).append("\n");
 		}
-		return manager.runCheckAndGetResponse("Gamma", manager, params);
+		return manager.runCheckAndGetResponse("Gamma", params);
 	}
+	
 }

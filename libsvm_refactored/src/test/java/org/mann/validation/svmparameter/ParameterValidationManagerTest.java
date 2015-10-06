@@ -25,7 +25,7 @@ public class ParameterValidationManagerTest {
 	public void checkValidationMessageIsComplete() {
 		String expectedMessage = "Svm type: nu_svr\nKernel type: poly\nGamma = 1.0\nDegree = 1\nCache size: 1.0\n"
 				+ "Epsilon (tolerance) = 1.0\nC = 1.0\nNu = 1.0\nShrinking = 1\nProbability = 1\n";
-		manager.runCheckAndGetResponse("Svm Type", manager, createSvmParameter(SvmType.nu_svr));
+		manager.runCheckAndGetResponse("Svm Type", createSvmParameter(SvmType.nu_svr));
 		assertThat(manager.getValidationMessage().toString(), equalTo(expectedMessage));
 	}
 
@@ -92,11 +92,11 @@ public class ParameterValidationManagerTest {
 
 	@Test(expected = IllegalArgumentException.class)
 	public void parameterCheckerShouldReturnExceptionWhenCheckTypeNotRecognised() {
-		manager.runCheckAndGetResponse("Feasibility of Nu", manager, createSvmParameter(SvmType.c_svc));
+		manager.runCheckAndGetResponse("Feasibility of Nu", createSvmParameter(SvmType.c_svc));
 	}
 
 	private void checkValidationMessageContainsString(String checkType, String expectedMessage, SvmType svmType) {
-		manager.runCheckAndGetResponse(checkType, manager, createSvmParameter(svmType));
+		manager.runCheckAndGetResponse(checkType, createSvmParameter(svmType));
 		assertThat(manager.getValidationMessage().toString(), containsString(expectedMessage));
 	}
 

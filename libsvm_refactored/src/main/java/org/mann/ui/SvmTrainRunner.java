@@ -17,7 +17,7 @@ public class SvmTrainRunner {
 		train.run(runConfig, resultCollector);
 	}
 
-	public void addError(ResultCollector resultCollector, Throwable error) {
+	public void addError(ResultCollector resultCollector) {
 		System.out.println(resultCollector);
 	}
 	

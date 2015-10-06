@@ -18,6 +18,7 @@ import org.mann.ui.SvmPrinterFactory.PrintMode;
 import org.mann.validation.commandline.CommandLineWrapper;
 import org.mann.validation.commandline.SvmTrainCommandLineParser;
 import org.mann.validation.svmparameter.ParameterValidationManager;
+import org.mann.validation.svmproblem.PrecomputedKernelChecker;
 
 public class svm_train {
 
@@ -183,34 +184,17 @@ public class svm_train {
 			}
 
 			if (param.getKernelType() == KernelType.precomputed) {
-
-				checkPrecomputedKernelProperlySet(result, max_index);
+			  //TODO: integration this properly
+			  //Expires 6th November 2015
+			  String output =  new PrecomputedKernelChecker().checkPrecomputedKernelProperlySet(prob, max_index);
+			  result.addInfo(output);
 			}
 		}
-	}
-
-	private ResultCollector checkPrecomputedKernelProperlySet(ResultCollector result, int max_index) {
-		for (int i = 0; i < prob.length; i++) {
-			if (prob.x[i][0].index != 0) {
-				// TODO: put this check in the validation section
-				// Expires 6th October 2015
-				result.addError("Wrong kernel matrix: first column must be 0:sample_serial_number");
-				return result;
-			}
-			if ((int) prob.x[i][0].value <= 0 || (int) prob.x[i][0].value > max_index) {
-				// TODO: put this check in the validation section
-				// Expires 6th October 2015
-				result.addError("Wrong input format: sample_serial_number out of range");
-				return result;
-			}
-		}
-		result.addInfo("precomputed kernel correctly formated\n");
-		return result;
 	}
 
 	public String checkSvmParameter(SvmProblem prob, SvmParameter param) {
 		ParameterValidationManager paramValManager = new ParameterValidationManager(new StringBuilder());
-		paramValManager.checkNuThenRunCheckAndGetResponse("Svm Type", paramValManager, param, prob);
+		paramValManager.checkNuThenRunCheckAndGetResponse("Svm Type", param, prob);
 		return paramValManager.getValidationMessage().toString();
 	}
 	
