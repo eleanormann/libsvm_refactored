@@ -8,6 +8,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Random;
 import java.util.StringTokenizer;
+import java.util.logging.Logger;
 
 import org.mann.libsvm.SvmParameter.KernelType;
 import org.mann.libsvm.SvmParameter.SvmType;
@@ -18,7 +19,6 @@ import org.mann.libsvm.kernel.SVC_Q;
 import org.mann.libsvm.kernel.SVR_Q;
 import org.mann.ui.ResultCollector;
 import org.mann.ui.SvmPrintInterface;
-import org.mann.validation.svmparameter.ParameterValidationManager;
 
 
 // An SMO algorithm in Fan et al., JMLR 6(2005), p. 1889--1918
@@ -57,14 +57,13 @@ class Solver {
 	double[] gBar; // gradient, if we treat free variables as 0
 	int l;
 	boolean unshrink; // XXX
-	private int counter;
 	static final double INF = Double.POSITIVE_INFINITY;
 	
 	double get_C(int i) {
 		return (y[i] > 0) ? Cp : Cn;
 	}
 
-	private void update_alpha_status(int i) {
+	private void updateAlphaStatus(int i) {
 		if (alpha[i] >= get_C(i))
 			alphaStatus[i] = UPPER_BOUND;
 		else if (alpha[i] <= 0)
@@ -73,11 +72,11 @@ class Solver {
 			alphaStatus[i] = FREE;
 	}
 
-	boolean is_upper_bound(int i) {
+	boolean isUpperbound(int i) {
 		return alphaStatus[i] == UPPER_BOUND;
 	}
 
-	boolean is_lower_bound(int i) {
+	boolean isLowerbound(int i) {
 		return alphaStatus[i] == LOWER_BOUND;
 	}
 
@@ -143,8 +142,10 @@ class Solver {
 	void reconstruct_gradient() {
 		// reconstruct inactive elements of g from G_bar and free variables
 
-		if (activeSize == l)
-			return;
+		if (activeSize == l){
+		  System.out.println("active size equals length: returning from svm.reconstructGradient");
+		  return;		  
+		}
 
 		int i, j;
 		int nr_free = 0;
@@ -191,41 +192,13 @@ class Solver {
 		this.unshrink = false;
 
 		// initialize alphaStatus
-		{
-			alphaStatus = new byte[l];
-			for (int i = 0; i < l; i++)
-				update_alpha_status(i);
-		}
-
+		initializeAlphaStatus(l);
+		
 		// initialize active set (for shrinking)
-		{
-		  activeSet = new int[l];
-			for (int i = 0; i < l; i++)
-			  activeSet[i] = i;
-			activeSize = l;
-		}
-
+		initializeActiveSet(l);
+		
 		// initialize gradient
-		{
-			g = new double[l];
-			gBar = new double[l];
-			int i;
-			for (i = 0; i < l; i++) {
-				g[i] = p[i];
-				gBar[i] = 0;
-			}
-			for (i = 0; i < l; i++)
-				if (!is_lower_bound(i)) {
-					float[] Q_i = Q.get_Q(i, l);
-					double alpha_i = alpha[i];
-					int j;
-					for (j = 0; j < l; j++)
-						g[j] += alpha_i * Q_i[j];
-					if (is_upper_bound(i))
-						for (j = 0; j < l; j++)
-						  gBar[j] += get_C(i) * Q_i[j];
-				}
-		}
+		initializeGradient(l, Q);
 
 		// optimization step
 
@@ -350,12 +323,12 @@ class Solver {
 			// update alphaStatus and G_bar
 
 			{
-				boolean ui = is_upper_bound(i);
-				boolean uj = is_upper_bound(j);
-				update_alpha_status(i);
-				update_alpha_status(j);
+				boolean ui = isUpperbound(i);
+				boolean uj = isUpperbound(j);
+				updateAlphaStatus(i);
+				updateAlphaStatus(j);
 				int k;
-				if (ui != is_upper_bound(i)) {
+				if (ui != isUpperbound(i)) {
 					Q_i = Q.get_Q(i, l);
 					if (ui)
 						for (k = 0; k < l; k++)
@@ -365,7 +338,7 @@ class Solver {
 						  gBar[k] += C_i * Q_i[k];
 				}
 
-				if (uj != is_upper_bound(j)) {
+				if (uj != isUpperbound(j)) {
 					Q_j = Q.get_Q(j, l);
 					if (uj)
 						for (k = 0; k < l; k++)
@@ -393,19 +366,14 @@ class Solver {
 		si.rho = calculate_rho();
 
 		// calculate objective value
-		{
-			double v = 0;
-			int i;
-			for (i = 0; i < l; i++)
-				v += alpha[i] * (g[i] + p[i]);
-
-			si.obj = v / 2;
-		}
+		calculateObjectiveValue(l, si);
 
 		// put back the solution
+		//TODO: remove anon block
 		{
-			for (int i = 0; i < l; i++)
-				alpha_[activeSet[i]] = alpha[i];
+			for (int i = 0; i < l; i++){
+			  alpha_[activeSet[i]] = alpha[i];			  
+			}
 		}
 
 		si.upper_bound_p = Cp;
@@ -416,7 +384,60 @@ class Solver {
 		svm.addResult(iter, "iterations"); 
 	}
 
-	// return 1 if already optimal, return 0 otherwise
+  private void calculateObjectiveValue(int l, SolutionInfo si) {
+    double v = 0;
+    int i;
+    for (i = 0; i < l; i++){
+      v += alpha[i] * (g[i] + p[i]);			  
+    }
+
+    si.obj = v / 2;
+  }
+
+  private void initializeGradient(int l, QMatrix Q) {
+    g = new double[l];
+    gBar = new double[l];
+    
+    for (int i = 0; i < l; i++) {
+    	g[i] = p[i];
+    	gBar[i] = 0;
+    }
+    
+    for (int i = 0; i < l; i++){
+      if (!isLowerbound(i)) {
+        float[] Q_i = Q.get_Q(i, l);
+        double alpha_i = alpha[i];
+        
+        for (int j = 0; j < l; j++){
+          g[j] += alpha_i * Q_i[j];          
+        }
+    
+        if (isUpperbound(i)){
+          for (int j = 0; j < l; j++){
+            gBar[j] += get_C(i) * Q_i[j];                      
+          }
+        }
+      }      
+    }
+  }
+
+
+
+  private void initializeActiveSet(int length) {
+      activeSet = new int[length];
+        for (int i = 0; i < length; i++)
+          activeSet[i] = i;
+        activeSize = length;
+  }
+
+  private void initializeAlphaStatus(int length) {
+    alphaStatus = new byte[length];
+    for (int i = 0; i < length; i++){
+      updateAlphaStatus(i);      
+    }
+  }
+
+  // return 1 if already optimal, return 0 otherwise
 	int select_working_set(int[] working_set) {
 		// return i,j such that
 		// i: maximizes -y_i * grad(f)_i, i in I_up(\alpha)
@@ -432,13 +453,13 @@ class Solver {
 
 		for (int t = 0; t < activeSize; t++)
 			if (y[t] == +1) {
-				if (!is_upper_bound(t))
+				if (!isUpperbound(t))
 					if (-g[t] >= Gmax) {
 						Gmax = -g[t];
 						Gmax_idx = t;
 					}
 			} else {
-				if (!is_lower_bound(t))
+				if (!isLowerbound(t))
 					if (g[t] >= Gmax) {
 						Gmax = g[t];
 						Gmax_idx = t;
@@ -452,7 +473,7 @@ class Solver {
 
 		for (int j = 0; j < activeSize; j++) {
 			if (y[j] == +1) {
-				if (!is_lower_bound(j)) {
+				if (!isLowerbound(j)) {
 					double grad_diff = Gmax + g[j];
 					if (g[j] >= Gmax2)
 						Gmax2 = g[j];
@@ -471,7 +492,7 @@ class Solver {
 					}
 				}
 			} else {
-				if (!is_upper_bound(j)) {
+				if (!isUpperbound(j)) {
 					double grad_diff = Gmax - g[j];
 					if (-g[j] >= Gmax2)
 						Gmax2 = -g[j];
@@ -501,12 +522,12 @@ class Solver {
 	}
 
 	private boolean be_shrunk(int i, double Gmax1, double Gmax2) {
-		if (is_upper_bound(i)) {
+		if (isUpperbound(i)) {
 			if (y[i] == +1)
 				return (-g[i] > Gmax1);
 			else
 				return (-g[i] > Gmax2);
-		} else if (is_lower_bound(i)) {
+		} else if (isLowerbound(i)) {
 			if (y[i] == +1)
 				return (g[i] > Gmax2);
 			else
@@ -523,20 +544,20 @@ class Solver {
 		// find maximal violating pair first
 		for (i = 0; i < activeSize; i++) {
 			if (y[i] == +1) {
-				if (!is_upper_bound(i)) {
+				if (!isUpperbound(i)) {
 					if (-g[i] >= Gmax1)
 						Gmax1 = -g[i];
 				}
-				if (!is_lower_bound(i)) {
+				if (!isLowerbound(i)) {
 					if (g[i] >= Gmax2)
 						Gmax2 = g[i];
 				}
 			} else {
-				if (!is_upper_bound(i)) {
+				if (!isUpperbound(i)) {
 					if (-g[i] >= Gmax2)
 						Gmax2 = -g[i];
 				}
-				if (!is_lower_bound(i)) {
+				if (!isLowerbound(i)) {
 					if (g[i] >= Gmax1)
 						Gmax1 = g[i];
 				}
@@ -571,12 +592,12 @@ class Solver {
 		for (int i = 0; i < activeSize; i++) {
 			double yG = y[i] * g[i];
 
-			if (is_lower_bound(i)) {
+			if (isLowerbound(i)) {
 				if (y[i] > 0)
 					upperBound = Math.min(upperBound, yG);
 				else
 					lowerBound = Math.max(lowerBound, yG);
-			} else if (is_upper_bound(i)) {
+			} else if (isUpperbound(i)) {
 				if (y[i] < 0)
 					upperBound = Math.min(upperBound, yG);
 				else
@@ -604,12 +625,12 @@ class Solver {
 //
 final class Solver_NU extends Solver {
 	
-	private SolutionInfo si;
+	private SolutionInfo solutionInfo;
 	
 	@Override
 	void Solve(int l, QMatrix Q, double[] p, byte[] y, double[] alpha,
 			double Cp, double Cn, double eps, SolutionInfo si, int shrinking) {
-		this.si = si;
+		this.solutionInfo = si;
 		super.Solve(l, Q, p, y, alpha, Cp, Cn, eps, si, shrinking);
 	}
 
@@ -634,13 +655,13 @@ final class Solver_NU extends Solver {
 
 		for (int t = 0; t < activeSize; t++)
 			if (y[t] == +1) {
-				if (!is_upper_bound(t))
+				if (!isUpperbound(t))
 					if (-g[t] >= Gmaxp) {
 						Gmaxp = -g[t];
 						Gmaxp_idx = t;
 					}
 			} else {
-				if (!is_lower_bound(t))
+				if (!isLowerbound(t))
 					if (g[t] >= Gmaxn) {
 						Gmaxn = g[t];
 						Gmaxn_idx = t;
@@ -658,7 +679,7 @@ final class Solver_NU extends Solver {
 
 		for (int j = 0; j < activeSize; j++) {
 			if (y[j] == +1) {
-				if (!is_lower_bound(j)) {
+				if (!isLowerbound(j)) {
 					double grad_diff = Gmaxp + g[j];
 					if (g[j] >= Gmaxp2)
 						Gmaxp2 = g[j];
@@ -677,7 +698,7 @@ final class Solver_NU extends Solver {
 					}
 				}
 			} else {
-				if (!is_upper_bound(j)) {
+				if (!isUpperbound(j)) {
 					double grad_diff = Gmaxn - g[j];
 					if (-g[j] >= Gmaxn2)
 						Gmaxn2 = -g[j];
@@ -712,12 +733,12 @@ final class Solver_NU extends Solver {
 
 	private boolean be_shrunk(int i, double Gmax1, double Gmax2, double Gmax3,
 			double Gmax4) {
-		if (is_upper_bound(i)) {
+		if (isUpperbound(i)) {
 			if (y[i] == +1)
 				return (-g[i] > Gmax1);
 			else
 				return (-g[i] > Gmax4);
-		} else if (is_lower_bound(i)) {
+		} else if (isLowerbound(i)) {
 			if (y[i] == +1)
 				return (g[i] > Gmax2);
 			else
@@ -739,14 +760,14 @@ final class Solver_NU extends Solver {
 		// find maximal violating pair first
 		int i;
 		for (i = 0; i < activeSize; i++) {
-			if (!is_upper_bound(i)) {
+			if (!isUpperbound(i)) {
 				if (y[i] == +1) {
 					if (-g[i] > Gmax1)
 						Gmax1 = -g[i];
 				} else if (-g[i] > Gmax4)
 					Gmax4 = -g[i];
 			}
-			if (!is_lower_bound(i)) {
+			if (!isLowerbound(i)) {
 				if (y[i] == +1) {
 					if (g[i] > Gmax2)
 						Gmax2 = g[i];
@@ -775,52 +796,58 @@ final class Solver_NU extends Solver {
 			}
 	}
 
-	double calculate_rho() {
-		int nr_free1 = 0, nr_free2 = 0;
-		double upperBound1 = Double.POSITIVE_INFINITY; 
-		double uppperBound2 = Double.POSITIVE_INFINITY;
-		double lowerBound1 = Double.NEGATIVE_INFINITY;
-		double lowerBound2 = Double.NEGATIVE_INFINITY;
-		double sum_free1 = 0, sum_free2 = 0;
+	double calculateRho() {
+		int hitNumFree = 0; 
+		int missNumFree = 0;
+		double hitUpperbound = Double.POSITIVE_INFINITY; 
+		double missUpperbound = Double.POSITIVE_INFINITY;
+		double hitLowerBound = Double.NEGATIVE_INFINITY;
+		double missLowerbound = Double.NEGATIVE_INFINITY;
+		
+		double hitSumOfNumFree = 0;
+		double missSumOfNumFree = 0;
 
 		for (int i = 0; i < activeSize; i++) {
 			if (y[i] == +1) {
-				if (is_lower_bound(i)){
-					upperBound1 = Math.min(upperBound1, g[i]);					
-				}else if (is_upper_bound(i)){
-					lowerBound1 = Math.max(lowerBound1, g[i]);					
+				if (isLowerbound(i)){
+				  hitUpperbound = Math.min(Double.POSITIVE_INFINITY, g[i]);					
+				}else if (isUpperbound(i)){
+					hitLowerBound = Math.max(Double.NEGATIVE_INFINITY, g[i]);					
 				}else {
-					++nr_free1;
-					sum_free1 += g[i];
+					++hitNumFree;
+					hitSumOfNumFree += g[i];
 				}
 			} else {
-				if (is_lower_bound(i)) {
-					uppperBound2 = Math.min(uppperBound2, g[i]);					
-				} else if (is_upper_bound(i)) {
-					lowerBound2 = Math.max(lowerBound2, g[i]);					
+				if (isLowerbound(i)) {
+				  missUpperbound = Math.min( Double.POSITIVE_INFINITY, g[i]);					
+				} else if (isUpperbound(i)) {
+				  missLowerbound = Math.max(Double.NEGATIVE_INFINITY, g[i]);					
 				} else {
-					++nr_free2;
-					sum_free2 += g[i];
+					++missNumFree;
+					missSumOfNumFree += g[i];
 				}
 			}
 		}
 
-		double r1, r2;
-		
-		if (nr_free1 > 0){
-			r1 = sum_free1 / nr_free1;			
+
+		//y[i] == +1, i.e. a 'hit'
+		double rForHits;
+		if (hitNumFree > 0){
+		  rForHits = hitSumOfNumFree / hitNumFree;			
 		} else{			
-			r1 = (upperBound1 + lowerBound1) / 2;
-		}
-		
-		if (nr_free2 > 0){
-			r2 = sum_free2 / nr_free2;			
-		} else {
-			r2 = (uppperBound2 + lowerBound2) / 2;			
+		  rForHits = (hitUpperbound + hitLowerBound) / 2;
 		}
 
-		si.r = (r1 + r2) / 2;
-		return (r1 - r2) / 2;
+		//y[i] != +1, i.e. a 'miss'
+		double rForMisses;
+		if (missNumFree > 0){
+		  rForMisses = missSumOfNumFree / missNumFree;			
+		} else {
+		  rForMisses = (missUpperbound + missLowerbound) / 2;			
+		}
+
+		solutionInfo.r = (rForHits + rForMisses) / 2;
+		return solutionInfo.r;
 	}
 }
 
@@ -1113,7 +1140,7 @@ public class svm {
 	}
 
 	// Platt's binary SVM Probablistic Output: an improvement from Lin et al.
-	private static void sigmoid_train(int l, double[] dec_values,
+	private static void sigmoid_train(int l, double[] dec_values, 
 			double[] labels, double[] probAB) {
 		double A, B;
 		double prior1 = 0, prior0 = 0;
@@ -1359,7 +1386,7 @@ public class svm {
 					svm_predict_values(submodel, prob.x[perm[j]], dec_value);
 					dec_values[perm[j]] = dec_value[0];
 					// ensure +1 -1 order; reason not using CV subroutine
-					dec_values[perm[j]] *= submodel.label[0];
+					dec_values[perm[j]] *= submodel.classLabel[0];
 				}
 			}
 		}
@@ -1367,8 +1394,7 @@ public class svm {
 	}
 
 	// Return parameter of a Laplace distribution
-	private static double svm_svr_probability(SvmProblem prob,
-			SvmParameter param) {
+	private static double svm_svr_probability(SvmProblem prob, SvmParameter param) {
 		int i;
 		int nr_fold = 5;
 		double[] ymv = new double[prob.length];
@@ -1399,86 +1425,86 @@ public class svm {
 	// label: label name, start: begin of each class, count: #data of classes,
 	// perm: indices to the original data
 	// perm, length l, must be allocated before calling this subroutine
-	private static void svm_group_classes(SvmProblem prob, int[] nr_class_ret,
-			int[][] label_ret, int[][] start_ret, int[][] count_ret, int[] perm) {
-		int l = prob.length;
-		int max_nr_class = 16;
-		int nr_class = 0;
-		int[] label = new int[max_nr_class];
-		int[] count = new int[max_nr_class];
-		int[] data_label = new int[l];
-		int i;
+  private static void svm_group_classes(SvmProblem prob, int[] nr_class_ret, int[][] label_ret,
+      int[][] start_ret, int[][] count_ret, int[] perm) {
+    int l = prob.length;
+    int maxNumClasses = 16;
+    int nr_class = 0;
+    int[] label = new int[maxNumClasses];
+    int[] count = new int[maxNumClasses];
+    int[] data_label = new int[l];
+    int i;
 
-		for (i = 0; i < l; i++) {
-			int this_label = (int) (prob.y[i]);
-			int j;
+    for (i = 0; i < l; i++) {
+      int this_label = (int) (prob.y[i]);
+      int j;
 
-			for (j = 0; j < nr_class; j++){
-				if (this_label == label[j]) { 
-					++count[j];
-					break;
-				}					
-			}
+      for (j = 0; j < nr_class; j++) {
+        if (this_label == label[j]) {
+          ++count[j];
+          break;
+        }
+      }
 
-			data_label[i] = j;
-			if (j == nr_class) {
-				if (nr_class == max_nr_class) {
-					max_nr_class *= 2;
-					int[] new_data = new int[max_nr_class];
-					System.arraycopy(label, 0, new_data, 0, label.length);
-					label = new_data;
-					new_data = new int[max_nr_class];
-					System.arraycopy(count, 0, new_data, 0, count.length);
-					count = new_data;
-				}
-				label[nr_class] = this_label;
-				count[nr_class] = 1;
-				++nr_class;
-			}
-		}
+      data_label[i] = j;
+      if (j == nr_class) {
+        if (nr_class == maxNumClasses) {
+          maxNumClasses *= 2;
+          int[] new_data = new int[maxNumClasses];
+          System.arraycopy(label, 0, new_data, 0, label.length);
+          label = new_data;
+          new_data = new int[maxNumClasses];
+          System.arraycopy(count, 0, new_data, 0, count.length);
+          count = new_data;
+        }
+        label[nr_class] = this_label;
+        count[nr_class] = 1;
+        ++nr_class;
+      }
+    }
 
-		//
-		// Labels are ordered by their first occurrence in the training set.
-		// However, for two-class sets with -1/+1 labels and -1 appears first,
-		// we swap labels to ensure that internally the binary SVM has positive
-		// data corresponding to the +1 instances.
-		//
-		if (nr_class == 2 && label[0] == -1 && label[1] == +1) {
-			do {
-				int _ = label[0];
-				label[0] = label[1];
-				label[1] = _;
-			} while (false);
-			do {
-				int _ = count[0];
-				count[0] = count[1];
-				count[1] = _;
-			} while (false);
-			for (i = 0; i < l; i++) {
-				if (data_label[i] == 0)
-					data_label[i] = 1;
-				else
-					data_label[i] = 0;
-			}
-		}
+    //
+    // Labels are ordered by their first occurrence in the training set.
+    // However, for two-class sets with -1/+1 labels and -1 appears first,
+    // we swap labels to ensure that internally the binary SVM has positive
+    // data corresponding to the +1 instances.
+    //
+    if (nr_class == 2 && label[0] == -1 && label[1] == +1) {
+      do {
+        int _ = label[0];
+        label[0] = label[1];
+        label[1] = _;
+      } while (false);
+      do {
+        int _ = count[0];
+        count[0] = count[1];
+        count[1] = _;
+      } while (false);
+      for (i = 0; i < l; i++) {
+        if (data_label[i] == 0)
+          data_label[i] = 1;
+        else
+          data_label[i] = 0;
+      }
+    }
 
-		int[] start = new int[nr_class];
-		start[0] = 0;
-		for (i = 1; i < nr_class; i++)
-			start[i] = start[i - 1] + count[i - 1];
-		for (i = 0; i < l; i++) {
-			perm[start[data_label[i]]] = i;
-			++start[data_label[i]];
-		}
-		start[0] = 0;
-		for (i = 1; i < nr_class; i++)
-			start[i] = start[i - 1] + count[i - 1];
+    int[] start = new int[nr_class];
+    start[0] = 0;
+    for (i = 1; i < nr_class; i++)
+      start[i] = start[i - 1] + count[i - 1];
+    for (i = 0; i < l; i++) {
+      perm[start[data_label[i]]] = i;
+      ++start[data_label[i]];
+    }
+    start[0] = 0;
+    for (i = 1; i < nr_class; i++)
+      start[i] = start[i - 1] + count[i - 1];
 
-		nr_class_ret[0] = nr_class;
-		label_ret[0] = label;
-		start_ret[0] = start;
-		count_ret[0] = count;
-	}
+    nr_class_ret[0] = nr_class;
+    label_ret[0] = label;
+    start_ret[0] = start;
+    count_ret[0] = count;
+  }
 
 	//
 	// Interface functions
@@ -1492,8 +1518,8 @@ public class svm {
 				|| svmType == SvmType.epsilon_svr
 				|| svmType == SvmType.nu_svr) {
 			// regression or one-class-svm
-			model.nr_class = 2;
-			model.label = null;
+			model.numClasses = 2;
+			model.classLabel = null;
 			model.nSV = null;
 			model.probA = null;
 			model.probB = null;
@@ -1514,7 +1540,7 @@ public class svm {
 			for (i = 0; i < prob.length; i++)
 				if (Math.abs(f.alpha[i]) > 0)
 					++nSV;
-			model.l = nSV;
+			model.totalSv = nSV;
 			model.SV = new SvmNode[nSV][];
 			model.sv_coef[0] = new double[nSV];
 			model.sv_indices = new int[nSV];
@@ -1624,11 +1650,11 @@ public class svm {
 
 			// build output
 
-			model.nr_class = nr_class;
+			model.numClasses = nr_class;
 
-			model.label = new int[nr_class];
+			model.classLabel = new int[nr_class];
 			for (i = 0; i < nr_class; i++)
-				model.label[i] = label[i];
+				model.classLabel[i] = label[i];
 
 			model.rho = new double[nr_class * (nr_class - 1) / 2];
 			for (i = 0; i < nr_class * (nr_class - 1) / 2; i++)
@@ -1665,7 +1691,7 @@ public class svm {
 			resultCollector.addDeprecatedTotalNsv("" + totalNSv);
 			resultCollector.addTotalNSv(totalNSv);
 			
-			model.l = totalNSv;
+			model.totalSv = totalNSv;
 			model.SV = new SvmNode[totalNSv][];
 			model.sv_indices = new int[totalNSv];
 			p = 0;
@@ -1816,7 +1842,7 @@ public class svm {
 			}
 			
 			if (param.getProbability() == 1 && (svmType == SvmType.c_svc || svmType == SvmType.nu_svc)) {
-				double[] prob_estimates = new double[svm_get_nr_class(submodel)];
+				double[] prob_estimates = new double[submodel.numClasses];
 				for (j = begin; j < end; j++){
 					target[perm[j]] = svm_predict_probability(submodel, prob.x[perm[j]], prob_estimates);
 				}
@@ -1832,25 +1858,29 @@ public class svm {
 		return model.getParam().getSvmType();
 	}
 
-	public static int svm_get_nr_class(SvmModel model) {
-		return model.nr_class;
+//	public static int svm_get_nr_class(SvmModel model) {
+//		return model.numClasses;
+//	}
+//
+	public static void setModelLabels(SvmModel model, int[] label) {
+		if (model.classLabel != null){
+		  for (int i = 0; i < model.numClasses; i++){
+		    label[i] = model.classLabel[i];		  		    
+		  }
+		}
 	}
 
-	public static void svm_get_labels(SvmModel model, int[] label) {
-		if (model.label != null)
-			for (int i = 0; i < model.nr_class; i++)
-				label[i] = model.label[i];
-	}
+//	public static void svm_get_sv_indices(SvmModel model, int[] indices) {
+//		if (model.sv_indices != null){
+//		  for (int i = 0; i < model.totalSv; i++){
+//		    indices[i] = model.sv_indices[i];		  		    
+//		  }
+//		}
+//	}
 
-	public static void svm_get_sv_indices(SvmModel model, int[] indices) {
-		if (model.sv_indices != null)
-			for (int i = 0; i < model.l; i++)
-				indices[i] = model.sv_indices[i];
-	}
-
-	public static int svm_get_nr_sv(SvmModel model) {
-		return model.l;
-	}
+//	public static int svm_get_nr_sv(SvmModel model) {
+//		return model.totalSv;
+//	}
 
 	public static double svm_get_svr_probability(SvmModel model) {
 		if ((model.getParam().getSvmType() == SvmType.epsilon_svr || model
@@ -1871,7 +1901,7 @@ public class svm {
 				|| model.getParam().getSvmType() == SvmType.nu_svr) {
 			double[] sv_coef = model.sv_coef[0];
 			double sum = 0;
-			for (i = 0; i < model.l; i++)
+			for (i = 0; i < model.totalSv; i++)
 				sum += sv_coef[i]
 						* Kernel.k_function(x, model.SV[i], model.getParam());
 			sum -= model.rho[0];
@@ -1882,25 +1912,25 @@ public class svm {
 			else
 				return sum;
 		} else {
-			int nr_class = model.nr_class;
-			int l = model.l;
+			int numClasses = model.numClasses;
+			int l = model.totalSv;
 
 			double[] kvalue = new double[l];
 			for (i = 0; i < l; i++)
 				kvalue[i] = Kernel.k_function(x, model.SV[i], model.getParam());
 
-			int[] start = new int[nr_class];
+			int[] start = new int[numClasses];
 			start[0] = 0;
-			for (i = 1; i < nr_class; i++)
+			for (i = 1; i < numClasses; i++)
 				start[i] = start[i - 1] + model.nSV[i - 1];
 
-			int[] vote = new int[nr_class];
-			for (i = 0; i < nr_class; i++)
+			int[] vote = new int[numClasses];
+			for (i = 0; i < numClasses; i++)
 				vote[i] = 0;
 
 			int p = 0;
-			for (i = 0; i < nr_class; i++)
-				for (int j = i + 1; j < nr_class; j++) {
+			for (i = 0; i < numClasses; i++)
+				for (int j = i + 1; j < numClasses; j++) {
 					double sum = 0;
 					int si = start[i];
 					int sj = start[j];
@@ -1925,23 +1955,24 @@ public class svm {
 				}
 
 			int vote_max_idx = 0;
-			for (i = 1; i < nr_class; i++)
+			for (i = 1; i < numClasses; i++)
 				if (vote[i] > vote[vote_max_idx])
 					vote_max_idx = i;
 
-			return model.label[vote_max_idx];
+			return model.classLabel[vote_max_idx];
 		}
 	}
 
 	public static double svm_predict(SvmModel model, SvmNode[] x) {
-		int nr_class = model.nr_class;
+		int numClasses = model.numClasses;
 		double[] dec_values;
 		if (model.getParam().getSvmType() == SvmType.one_class
 				|| model.getParam().getSvmType() == SvmType.epsilon_svr
 				|| model.getParam().getSvmType() == SvmType.nu_svr)
 			dec_values = new double[1];
 		else
-			dec_values = new double[nr_class * (nr_class - 1) / 2];
+			dec_values = new double[numClasses * (numClasses - 1) / 2];
+		
 		double pred_result = svm_predict_values(model, x, dec_values);
 		return pred_result;
 	}
@@ -1951,7 +1982,7 @@ public class svm {
 		if ((model.getParam().getSvmType() == SvmType.c_svc || model.getParam().getSvmType() == SvmType.nu_svc)
 				&& model.probA != null && model.probB != null) {
 			int i;
-			int nr_class = model.nr_class;
+			int nr_class = model.numClasses;
 			double[] dec_values = new double[nr_class * (nr_class - 1) / 2];
 			svm_predict_values(model, x, dec_values);
 
@@ -1973,7 +2004,7 @@ public class svm {
 			for (i = 1; i < nr_class; i++)
 				if (prob_estimates[i] > prob_estimates[prob_max_idx])
 					prob_max_idx = i;
-			return model.label[prob_max_idx];
+			return model.classLabel[prob_max_idx];
 		} else
 			return svm_predict(model, x);
 	}
@@ -2000,8 +2031,8 @@ public class svm {
 				|| param.getKernelType() == KernelType.sigmoid)
 			fp.writeBytes("coef0 " + param.getCoef0() + "\n");
 
-		int nr_class = model.nr_class;
-		int l = model.l;
+		int nr_class = model.numClasses;
+		int l = model.totalSv;
 		fp.writeBytes("nr_class " + nr_class + "\n");
 		fp.writeBytes("total_sv " + l + "\n");
 
@@ -2012,10 +2043,10 @@ public class svm {
 			fp.writeBytes("\n");
 		}
 
-		if (model.label != null) {
+		if (model.classLabel != null) {
 			fp.writeBytes("label");
 			for (int i = 0; i < nr_class; i++)
-				fp.writeBytes(" " + model.label[i]);
+				fp.writeBytes(" " + model.classLabel[i]);
 			fp.writeBytes("\n");
 		}
 
@@ -2098,35 +2129,35 @@ public class svm {
 				else if (cmd.startsWith("coef0"))
 					param.setCoef0(Double.parseDouble(arg));
 				else if (cmd.startsWith("nr_class"))
-					model.nr_class = Integer.parseInt(arg);
+					model.numClasses = Integer.parseInt(arg);
 				else if (cmd.startsWith("total_sv"))
-					model.l = Integer.parseInt(arg);
+					model.totalSv = Integer.parseInt(arg);
 				else if (cmd.startsWith("rho")) {
-					int n = model.nr_class * (model.nr_class - 1) / 2;
+					int n = model.numClasses * (model.numClasses - 1) / 2;
 					model.rho = new double[n];
 					StringTokenizer st = new StringTokenizer(arg);
 					for (int i = 0; i < n; i++)
 						model.rho[i] = Double.parseDouble(st.nextToken());
 				} else if (cmd.startsWith("label")) {
-					int n = model.nr_class;
-					model.label = new int[n];
+					int n = model.numClasses;
+					model.classLabel = new int[n];
 					StringTokenizer st = new StringTokenizer(arg);
 					for (int i = 0; i < n; i++)
-						model.label[i] = Integer.parseInt(st.nextToken());
+						model.classLabel[i] = Integer.parseInt(st.nextToken());
 				} else if (cmd.startsWith("probA")) {
-					int n = model.nr_class * (model.nr_class - 1) / 2;
+					int n = model.numClasses * (model.numClasses - 1) / 2;
 					model.probA = new double[n];
 					StringTokenizer st = new StringTokenizer(arg);
 					for (int i = 0; i < n; i++)
 						model.probA[i] = Double.parseDouble(st.nextToken());
 				} else if (cmd.startsWith("probB")) {
-					int n = model.nr_class * (model.nr_class - 1) / 2;
+					int n = model.numClasses * (model.numClasses - 1) / 2;
 					model.probB = new double[n];
 					StringTokenizer st = new StringTokenizer(arg);
 					for (int i = 0; i < n; i++)
 						model.probB[i] = Double.parseDouble(st.nextToken());
 				} else if (cmd.startsWith("nr_sv")) {
-					int n = model.nr_class;
+					int n = model.numClasses;
 					model.nSV = new int[n];
 					StringTokenizer st = new StringTokenizer(arg);
 					for (int i = 0; i < n; i++)
@@ -2158,7 +2189,7 @@ public class svm {
 		model.rho = null;
 		model.probA = null;
 		model.probB = null;
-		model.label = null;
+		model.classLabel = null;
 		model.nSV = null;
 
 		if (read_model_header(fp, model) == false) {
@@ -2168,8 +2199,8 @@ public class svm {
 
 		// read sv_coef and SV
 
-		int m = model.nr_class - 1;
-		int l = model.l;
+		int m = model.numClasses - 1;
+		int l = model.totalSv;
 		model.sv_coef = new double[m][l];
 		model.SV = new SvmNode[l][];
 

@@ -28,8 +28,7 @@ public class svm_train {
 	private String inputFilename; // set by parse_command_line
 	private String model_file_name; // set by parse_command_line
 	private String error_msg;
-	private int cross_validation;
-	private int nFold;
+	private CrossValidator crossValidation;
 
 	protected SvmParameter getSvmParameter(){
 		return param;
@@ -56,8 +55,8 @@ public class svm_train {
 			}
 			
 			
-			if (cross_validation != 0) {
-				new CrossValidator(nFold, result).doCrossValidation(prob, param);;
+			if (crossValidation != null) {
+				crossValidation.doCrossValidation(prob, param);
 			} else {
 				model = svm.svm_train(prob, param);
 				svm.svm_save_model(model_file_name, model);
@@ -84,15 +83,13 @@ public class svm_train {
 		CommandLine cmd = options.getCommandLine();
 		param = new SvmParameter();
 		param.initializeFields(options, optionsValidator);
-		cross_validation = 0;
 		
 		if(cmd.hasOption('q')){
 			print_func = SvmPrinterFactory.getPrinter(PrintMode.QUIET);
 		}
 		if(cmd.hasOption('v')){
-			cross_validation = 1;
-			nFold = (int) options.getOptionValue("v");
-			checkNFold(result);
+			int nFold = (int) options.getOptionValue("v");
+			crossValidation = new CrossValidator(nFold, result).checkNfold();
 		}
 		if(cmd.hasOption("w")){ 
 			++param.nr_weight;
@@ -128,13 +125,6 @@ public class svm_train {
 
 	}
 
-	private void checkNFold(ResultCollector result) {
-		if (nFold < 2) {
-			result.addError("n-fold cross validation: n must >= 2");
-		}else{
-			result.addInfo(nFold + "-fold cross validation");
-		}
-	}
 
 	// read in a problem (in svmlight format)
 
@@ -205,10 +195,6 @@ public class svm_train {
 
 	public void setInputFile(String filename) {
 		this.inputFilename = filename;
-	}
-
-	public void setNrFold(int nFold) {
-		this.nFold = nFold;
 	}
 
 	public void setParam(SvmParameter svmParam) {

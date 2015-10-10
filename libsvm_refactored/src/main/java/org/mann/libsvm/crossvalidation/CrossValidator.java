@@ -21,16 +21,19 @@ public class CrossValidator {
 		this.crossValidationResults = crossValResults;
 	}
 
-	public void checkNfold() {
+	public CrossValidator checkNfold() {
 		if (nFold < 2) {
 			crossValidationResults.addError("n-fold cross validation: n was "+ nFold + " but must be >= 2");
+			return null;
 		}else{
 			crossValidationResults.addInfo(nFold + "-fold cross validation");
+			return this;
 		}
 	}
 
 	public void doCrossValidation(SvmProblem trainingDataset, SvmParameter param) {
-		double[] target = new double[trainingDataset.length];
+		
+	  double[] target = new double[trainingDataset.length];
 		svm.setResultCollector(crossValidationResults);
 		svm.svm_cross_validation(trainingDataset, param, nFold, target);
 		

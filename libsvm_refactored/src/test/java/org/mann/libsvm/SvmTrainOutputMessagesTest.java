@@ -1,9 +1,7 @@
 package org.mann.libsvm;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
 
@@ -14,7 +12,6 @@ import mockit.integration.junit4.JMockit;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mann.helpers.HelpMessages;
 import org.mann.ui.ResultCollector;
 
 @RunWith(JMockit.class)
@@ -37,7 +34,7 @@ public class SvmTrainOutputMessagesTest {
 	@Test
 	public void parseCommandLineShouldAddErrorMessageWhenNFoldLessThanTwo() throws IOException {
 		new svm_train().run(new String[] { "-v", "1" }, result);
-		assertThat(result.getResult(), containsString("ERROR: n-fold cross validation: n must >= 2\n"));
+		assertThat(result.getResult(), containsString("ERROR: n-fold cross validation: n was 1 but must be >= 2\n"));
 	}
 
 	@Test

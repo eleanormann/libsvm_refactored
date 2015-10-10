@@ -35,7 +35,7 @@ class svm_predict {
     double sumv = 0, sumy = 0, sumvv = 0, sumyy = 0, sumvy = 0;
 
     SvmType svmType = svm.getSvmTypeFromModel(model);
-    int nr_class = svm.svm_get_nr_class(model);
+    int nr_class = model.numClasses;
     double[] prob_estimates = null;
 
     if (predict_probability == 1) {
@@ -45,7 +45,7 @@ class svm_predict {
             + svm.svm_get_svr_probability(model));
       } else {
         int[] labels = new int[nr_class];
-        svm.svm_get_labels(model, labels);
+        svm.setModelLabels(model, labels);
         prob_estimates = new double[nr_class];
         output.writeBytes("labels");
         for (int j = 0; j < nr_class; j++)

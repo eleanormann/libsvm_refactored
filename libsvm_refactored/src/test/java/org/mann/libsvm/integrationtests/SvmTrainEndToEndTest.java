@@ -4,10 +4,7 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 
 import org.junit.After;
@@ -156,7 +153,7 @@ public class SvmTrainEndToEndTest {
 
 	@Test
 	public void runShouldRunCrossValidation() throws IOException {
-		
+		fail("Not yet implemented");
 	}
 
 	@Ignore
@@ -171,15 +168,4 @@ public class SvmTrainEndToEndTest {
 		return new String[] { "-v", String.valueOf(times), "src/test/resources/testdata/hfmTrainingData.train" };
 	}
 
-	private StringBuilder loadCrossValidationResults() throws IOException, FileNotFoundException {
-		StringBuilder results = new StringBuilder();
-		try (BufferedReader br = new BufferedReader(new FileReader(resultsFile))) {
-			String line = br.readLine();
-			while (line != null) {
-				results.append(line).append("\n");
-				line = br.readLine();
-			}
-		}
-		return results;
-	}
 }

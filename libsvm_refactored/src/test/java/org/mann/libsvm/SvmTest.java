@@ -215,9 +215,9 @@ public class SvmTest {
 		param.setSvmType(svmType);
 		param.setKernelType(kernelType);
 		model.setParam(param);
-		model.nr_class = 2;
+		model.numClasses = 2;
 		model.rho = new double[]{0,0};
-		model.l = 1;
+		model.totalSv = 1;
 		model.sv_coef = new double[][]{{0},{0}};
 		model.SV = new SvmNode[][]{{new SvmNode()},{new SvmNode()}};
 		return model;
