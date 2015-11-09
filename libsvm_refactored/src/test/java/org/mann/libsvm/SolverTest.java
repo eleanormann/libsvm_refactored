@@ -21,6 +21,77 @@ public class SolverTest {
     checkAllArraysHaveSwapped(solver);
   }
 
+  @Test 
+  public void calculateObjectiveValueShouldCorrectlyCalculateObj(){
+    QMatrix svcQ = mock(SVC_Q.class);
+    Solver solver = new Solver();
+    setSolverFields(svcQ, solver);
+    double obj = solver.calculateObjectiveValue();
+    assertThat(obj, equalTo(7.5));
+  }
+  
+//  @Test
+//  public void getCReturnsCpWhenYIsPositive(){
+//    Solver solver = new Solver();
+//    solver.Cn = -1.9;
+//    solver.Cp = 1.9;
+//    solver.y = new byte[]{1};
+//    double expectedCp = 1.9;
+//    assertThat(solver.getC(0), equalTo(expectedCp));
+//  }
+//  
+//  @Test
+//  public void getCReturnsCnWhenYIsNegative(){
+//    Solver solver = new Solver();
+//    solver.Cn = -1.9;
+//    solver.Cp = 1.9;
+//    solver.y = new byte[]{-1};
+//    double expectedCp = -1.9;
+//    assertThat(solver.getC(0), equalTo(expectedCp));
+//  }
+  
+  @Test
+  public void updateAlphaStatusReturnsCorrectAlphaWhenGreaterThanOrEqualToC(){
+    Solver solver = new Solver();
+    solver.Cp = 1.9;
+    solver.y = new byte[]{1};
+    solver.alpha = new double[]{2.0};
+    solver.alphaStatus = new byte[]{0};
+    solver.updateAlphaStatus(0);
+    assertThat(solver.alphaStatus[0], equalTo((byte)1));
+  }
+  
+  @Test
+  public void updateAlphaStatusReturnsCorrectAlphaWhenGreaterThanOrEqualToCAndCIsNegative(){
+    Solver solver = new Solver();
+    solver.Cn = -1.9;
+    solver.y = new byte[]{-1};
+    solver.alpha = new double[]{-1.9};
+    solver.alphaStatus = new byte[]{0};
+    solver.updateAlphaStatus(0);
+    assertThat(solver.alphaStatus[0], equalTo((byte)1));
+  }
+  
+  @Test
+  public void updateAlphaStatusReturnsCorrectAlphaWhenLessThanOrEqualToZero(){
+    Solver solver = new Solver();
+    solver.Cp = 1.9;
+    solver.y = new byte[]{1};
+    solver.alpha = new double[]{0};
+    solver.alphaStatus = new byte[]{1};
+    solver.updateAlphaStatus(0);
+    assertThat(solver.alphaStatus[0], equalTo((byte)0));
+  }
+  
+  @Test
+  public void initializeAlphaStatusShouldCorrectlyInitAlphaStatus(){
+    QMatrix svcQ = mock(SVC_Q.class);
+    Solver solver = new Solver();
+    setSolverFields(svcQ, solver);
+    byte[] expectedAlphaStatus = {};
+    solver.initializeAlphaStatus();
+    assertThat(solver.alphaStatus, equalTo(expectedAlphaStatus));
+  }
  
   private void checkAllArraysHaveSwapped(Solver solver) {
     assertThat(solver.y[0], equalTo((byte)1));
@@ -56,6 +127,7 @@ public class SolverTest {
   private void setSolverFields(QMatrix svcQ, Solver solver) {
     solver.Q = svcQ;
     doNothing().when(svcQ).swap_index(0, 1);
+    solver.l = 4;
     solver.y = new byte[]{0, 1, 0, 1};
     solver.g = new double[]{0.5, 1.0, 1.5, 2.0};
     solver.alphaStatus = new byte[]{0, 1, 0, 1};

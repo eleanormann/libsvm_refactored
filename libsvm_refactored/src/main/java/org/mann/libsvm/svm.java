@@ -8,7 +8,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Random;
 import java.util.StringTokenizer;
-import java.util.logging.Logger;
 
 import org.mann.libsvm.SvmParameter.KernelType;
 import org.mann.libsvm.SvmParameter.SvmType;
@@ -59,12 +58,14 @@ class Solver {
 	boolean unshrink; // XXX
 	static final double INF = Double.POSITIVE_INFINITY;
 	
-	double get_C(int i) {
+	//C is not used for all types
+	//if c_svc
+	private double getC(int i) {
 		return (y[i] > 0) ? Cp : Cn;
 	}
-
-	private void updateAlphaStatus(int i) {
-		if (alpha[i] >= get_C(i))
+	
+	protected void updateAlphaStatus(int i) {
+		if (alpha[i] >= getC(i))
 			alphaStatus[i] = UPPER_BOUND;
 		else if (alpha[i] <= 0)
 			alphaStatus[i] = LOWER_BOUND;
@@ -72,15 +73,15 @@ class Solver {
 			alphaStatus[i] = FREE;
 	}
 
-	boolean isUpperbound(int i) {
+	protected boolean isUpperbound(int i) {
 		return alphaStatus[i] == UPPER_BOUND;
 	}
 
-	boolean isLowerbound(int i) {
+	protected boolean isLowerbound(int i) {
 		return alphaStatus[i] == LOWER_BOUND;
 	}
 
-	boolean is_free(int i) {
+	protected boolean is_free(int i) {
 		return alphaStatus[i] == FREE;
 	}
 
@@ -178,6 +179,22 @@ class Solver {
 		}
 	}
 
+  protected double calculateObjectiveValue() {
+    double v = 0;
+    for (int i = 0; i < l; i++) {
+      v += alpha[i] * (g[i] + p[i]);      
+    }
+    return v / 2;
+  }
+  
+  protected void initializeAlphaStatus(){
+      alphaStatus = new byte[l];
+      for (int i = 0; i < l; i++){
+        updateAlphaStatus(i);        
+      }
+  }
+  
+  
 	void Solve(int l, QMatrix Q, double[] p_, byte[] y_, double[] alpha_,
 			double Cp, double Cn, double eps, SolutionInfo si, int shrinking) {
 		this.l = l;
@@ -192,13 +209,37 @@ class Solver {
 		this.unshrink = false;
 
 		// initialize alphaStatus
-		initializeAlphaStatus(l);
+		initializeAlphaStatus();
 		
 		// initialize active set (for shrinking)
-		initializeActiveSet(l);
-		
+		{
+		  activeSet = new int[l];
+			for (int i = 0; i < l; i++)
+			  activeSet[i] = i;
+			activeSize = l;
+		}
+
 		// initialize gradient
-		initializeGradient(l, Q);
+		{
+			g = new double[l];
+			gBar = new double[l];
+			int i;
+			for (i = 0; i < l; i++) {
+				g[i] = p[i];
+				gBar[i] = 0;
+			}
+			for (i = 0; i < l; i++)
+				if (!isLowerbound(i)) {
+					float[] Q_i = Q.get_Q(i, l);
+					double alpha_i = alpha[i];
+					int j;
+					for (j = 0; j < l; j++)
+						g[j] += alpha_i * Q_i[j];
+					if (isUpperbound(i))
+						for (j = 0; j < l; j++)
+						  gBar[j] += getC(i) * Q_i[j];
+				}
+		}
 
 		// optimization step
 
@@ -241,8 +282,8 @@ class Solver {
 			float[] Q_i = Q.get_Q(i, activeSize);
 			float[] Q_j = Q.get_Q(j, activeSize);
 
-			double C_i = get_C(i);
-			double C_j = get_C(j);
+			double C_i = getC(i);
+			double C_j = getC(j);
 
 			double old_alpha_i = alpha[i];
 			double old_alpha_j = alpha[j];
@@ -363,10 +404,13 @@ class Solver {
 
 		// calculate rho
 
-		si.rho = calculate_rho();
+		si.rho = calculateRho();
 
 		// calculate objective value
-		calculateObjectiveValue(l, si);
+		
+		si.obj = calculateObjectiveValue();
+		
+		
 
 		// put back the solution
 		//TODO: remove anon block
@@ -384,60 +428,7 @@ class Solver {
 		svm.addResult(iter, "iterations"); 
 	}
 
-  private void calculateObjectiveValue(int l, SolutionInfo si) {
-    double v = 0;
-    int i;
-    for (i = 0; i < l; i++){
-      v += alpha[i] * (g[i] + p[i]);			  
-    }
-
-    si.obj = v / 2;
-  }
-
-  private void initializeGradient(int l, QMatrix Q) {
-    g = new double[l];
-    gBar = new double[l];
-    
-    for (int i = 0; i < l; i++) {
-    	g[i] = p[i];
-    	gBar[i] = 0;
-    }
-    
-    for (int i = 0; i < l; i++){
-      if (!isLowerbound(i)) {
-        float[] Q_i = Q.get_Q(i, l);
-        double alpha_i = alpha[i];
-        
-        for (int j = 0; j < l; j++){
-          g[j] += alpha_i * Q_i[j];          
-        }
-    
-        if (isUpperbound(i)){
-          for (int j = 0; j < l; j++){
-            gBar[j] += get_C(i) * Q_i[j];                      
-          }
-        }
-      }      
-    }
-  }
-
-
-
-  private void initializeActiveSet(int length) {
-      activeSet = new int[length];
-        for (int i = 0; i < length; i++)
-          activeSet[i] = i;
-        activeSize = length;
-  }
-
-  private void initializeAlphaStatus(int length) {
-    alphaStatus = new byte[length];
-    for (int i = 0; i < length; i++){
-      updateAlphaStatus(i);      
-    }
-  }
-
-  // return 1 if already optimal, return 0 otherwise
+	// return 1 if already optimal, return 0 otherwise
 	int select_working_set(int[] working_set) {
 		// return i,j such that
 		// i: maximizes -y_i * grad(f)_i, i in I_up(\alpha)
@@ -583,7 +574,7 @@ class Solver {
 			}
 	}
 
-	double calculate_rho() {
+	double calculateRho() {
 		double r;
 		int nr_free = 0;
 		double upperBound = Double.POSITIVE_INFINITY;
@@ -796,58 +787,56 @@ final class Solver_NU extends Solver {
 			}
 	}
 
+	@Override
 	double calculateRho() {
-		int hitNumFree = 0; 
+		int hitsNumFree = 0;
 		int missNumFree = 0;
 		double hitUpperbound = Double.POSITIVE_INFINITY; 
 		double missUpperbound = Double.POSITIVE_INFINITY;
-		double hitLowerBound = Double.NEGATIVE_INFINITY;
+		double hitLowerbound = Double.NEGATIVE_INFINITY;
 		double missLowerbound = Double.NEGATIVE_INFINITY;
-		
-		double hitSumOfNumFree = 0;
-		double missSumOfNumFree = 0;
+		double hitsSumNumFree = 0;
+		double missSumNumFree = 0;
 
 		for (int i = 0; i < activeSize; i++) {
 			if (y[i] == +1) {
 				if (isLowerbound(i)){
-				  hitUpperbound = Math.min(Double.POSITIVE_INFINITY, g[i]);					
+					hitUpperbound = Math.min(Double.POSITIVE_INFINITY, g[i]);					
 				}else if (isUpperbound(i)){
-					hitLowerBound = Math.max(Double.NEGATIVE_INFINITY, g[i]);					
+				  hitLowerbound = Math.max(Double.NEGATIVE_INFINITY, g[i]);					
 				}else {
-					++hitNumFree;
-					hitSumOfNumFree += g[i];
+					++hitsNumFree;
+					hitsSumNumFree += g[i];
 				}
 			} else {
 				if (isLowerbound(i)) {
-				  missUpperbound = Math.min( Double.POSITIVE_INFINITY, g[i]);					
+				  missUpperbound = Math.min(Double.POSITIVE_INFINITY, g[i]);					
 				} else if (isUpperbound(i)) {
 				  missLowerbound = Math.max(Double.NEGATIVE_INFINITY, g[i]);					
 				} else {
 					++missNumFree;
-					missSumOfNumFree += g[i];
+					missSumNumFree += g[i];
 				}
 			}
 		}
 
-
-		//y[i] == +1, i.e. a 'hit'
 		double rForHits;
-		if (hitNumFree > 0){
-		  rForHits = hitSumOfNumFree / hitNumFree;			
-		} else{			
-		  rForHits = (hitUpperbound + hitLowerBound) / 2;
-		}
-
-		//y[i] != +1, i.e. a 'miss'
 		double rForMisses;
+		
+		if (hitsNumFree > 0){
+		  rForHits = hitsSumNumFree / hitsNumFree;			
+		} else{			
+		  rForHits = (hitUpperbound + hitLowerbound) / 2;
+		}
+		
 		if (missNumFree > 0){
-		  rForMisses = missSumOfNumFree / missNumFree;			
+		  rForMisses = missSumNumFree / missNumFree;			
 		} else {
 		  rForMisses = (missUpperbound + missLowerbound) / 2;			
 		}
 
 		solutionInfo.r = (rForHits + rForMisses) / 2;
-		return solutionInfo.r;
+		return (rForHits - rForMisses) / 2;
 	}
 }
 
@@ -1082,7 +1071,8 @@ public class svm {
 			SvmParameter param, double Cp, double Cn) {
 		double[] alpha = new double[prob.length];
 		Solver.SolutionInfo si = new Solver.SolutionInfo();
-		switch (param.getSvmType()) {
+		SvmType svmType = param.getSvmType();
+    switch (svmType) {
 		case c_svc:
 			solve_c_svc(prob, param, alpha, si, Cp, Cn);
 			break;
@@ -1125,7 +1115,8 @@ public class svm {
 
 		resultCollector.addConsoleOutput("nSV = " , String.valueOf(nSV), false);
 		resultCollector.addConsoleOutput(", nBSV = ", String.valueOf(nBSV), true);
-		if(param.getSvmType().equals(SvmType.nu_svr)){
+		
+		if(svmType.equals(SvmType.nu_svr) || svmType.equals(SvmType.one_class) || svmType.equals(SvmType.epsilon_svr)){
 		  System.out.println(resultCollector.getConsoleOutput());
 		}
 		resultCollector.addCrossValResult("" + nSV);

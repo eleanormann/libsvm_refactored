@@ -152,6 +152,27 @@ public class SvmTrainEndToEndTest {
 	}
 
 	@Test
+	//c_svc, nu_svc, one_class, epsilon_svr, nu_svr
+	public void svmTrainShouldTrainWithOneClass() throws IOException{
+	  String expected = "optimization finished, #iter = 2366\n"
+	      + "obj = 16295.933791201422, rho = 18.10620658361271\n"
+	      + "nSV = 2957, nBSV = 2763\n";
+	  svm_train.main(new String[]{"-s", "one_class", "src/test/resources/testdata/hfmTrainingData.train"});
+	  assertResultsAsExpected(expected);
+	}
+	
+	@Test
+    //c_svc, nu_svc, one_class, epsilon_svr, nu_svr
+    public void svmTrainShouldTrainWithEpsilonSvr() throws IOException{
+      String expected = "optimization finished, #iter = 7923\n"
+          + "nu = 0.23611580871154153\n"
+          + "obj = -365.4275800568434, rho = -0.5956074383555992\n"
+          + "nSV = 2397, nBSV = 819";
+      svm_train.main(new String[]{"-s", "epsilon_svr", "src/test/resources/testdata/hfmTrainingData.train"});
+      assertResultsAsExpected(expected);
+    }
+	
+	@Test
 	public void runShouldRunCrossValidation() throws IOException {
 		fail("Not yet implemented");
 	}
